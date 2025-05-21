@@ -61,9 +61,29 @@ Integration|	Role
 
 
 ```mermaid
-graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
+---
+config:
+  theme: redux
+---
+flowchart TD
+    A["Message"] --> B(["MCP Client"])
+    B <--> D(["MCP Server"])
+    B --> C["Response"]
+    D <--> E(["RAG"]) & F(["User DB"]) & G(["Internet"]) & H(["Google Calendar"])
+     A:::Aqua
+     A:::Class_01
+     A:::Class_01
+     C:::Pine
+     C:::Class_01
+     E:::Class_03
+     F:::Pine
+     H:::Class_02
+    classDef Aqua stroke-width:1px, stroke-dasharray:none, stroke:#46EDC8, fill:#DEFFF8, color:#378E7A
+    classDef Class_01 stroke:#00C853, color:#FFFFFF, stroke-width:4px, stroke-dasharray: 0, fill:#15e46b
+    classDef Class_02 stroke:#2962FF, fill:#5581f9, color:#FFFFFF
+    classDef Pine stroke-width:1px, stroke-dasharray:none, stroke:#254336, fill:#27654A, color:#FFFFFF
+    classDef Class_03 stroke:#AA00FF, fill:#c250fb
+    style E color:#FFFFFF
+
 ```
+

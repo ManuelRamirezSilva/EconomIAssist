@@ -59,6 +59,8 @@ Integration|	Role
 **Internet Access**	|Allows real-time retrieval or verification of financial info
 **Graphical Tools**	|Generate statistical graphs and reports for visual insight
 
+---
+## 📈 General Infrastructure
 
 ```mermaid
 ---

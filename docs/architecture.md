@@ -58,4 +58,12 @@ Integration|	Role
 **Google Calendar**	|Manages reminders and scheduled events
 **Internet Access**	|Allows real-time retrieval or verification of financial info
 **Graphical Tools**	|Generate statistical graphs and reports for visual insight
-<pre> ```mermaid flowchart TD A["Message"] --> B(["MCP Client"]) B <--> D(["MCP Server"]) B --> C["Response"] D <--> E(["RAG"]) D <--> F(["User DB"]) D <--> G(["Internet"]) D <--> H(["Google Calendar"]) A:::Aqua C:::Pine E:::Class_03 F:::Pine H:::Class_02 classDef Aqua stroke-width:1px, stroke-dasharray:none, stroke:#46EDC8, fill:#DEFFF8, color:#378E7A classDef Class_01 stroke:#00C853, color:#FFFFFF, stroke-width:4px, stroke-dasharray:0, fill:#15e46b classDef Class_02 stroke:#2962FF, fill:#5581f9, color:#FFFFFF classDef Pine stroke-width:1px, stroke-dasharray:none, stroke:#254336, fill:#27654A, color:#FFFFFF classDef Class_03 stroke:#AA00FF, fill:#c250fb ``` </pre>
+
+
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```

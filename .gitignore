@@ -19,7 +19,17 @@ __pycache__/
 .env
 .venv/
 venv/
+venv_*/
 ENV/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+*.cover
+coverage.xml
+htmlcov/
+.tox/
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
@@ -55,12 +65,6 @@ build/
 dist/
 *.egg-info/
 
-# Coverage
-.coverage
-*.cover
-coverage.xml
-htmlcov/
-
 # Git
 *.orig
 *.patch
@@ -69,4 +73,7 @@ htmlcov/
 *.bak
 *.swp
 *.tmp
-*.txt
+
+# Project specific
+resumeProyect.txt
+test_project.sh

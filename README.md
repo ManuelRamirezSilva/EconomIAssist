@@ -83,3 +83,18 @@ In the context of:
 * Agustin Manzano – amanzano@udesa.edu.ar
 
 * Manuel Ramirez Silva – mramirezsilva@udesa.edu.ar
+
+---
+
+## 🤖 Integración con OpenAI Agents
+
+1. Instala dependencias:  
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Define tu configuración en `config/agent_config.yaml`.  
+3. Ejecuta el agente:  
+   ```bash
+   python -c "from src.agent.openai_agent import run_agent; print(run_agent('¿Cuál es mi saldo actual?'))"
+   ```
+4. Integra este flujo en tu orquestador de WhatsApp o UI.

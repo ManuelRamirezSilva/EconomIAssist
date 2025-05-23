@@ -1,0 +1,21 @@
+# Dependencias principales del proyecto MCP
+mcp
+python-dotenv
+fastapi
+uvicorn
+pydantic
+
+# OpenAI Agents SDK - framework oficial nuevo (marzo 2025)
+openai-agents
+openai
+
+# OpenAI Agents con soporte MCP nativo - VERSIÓN SIMPLIFICADA
+openai-agents-mcp
+
+# Para desarrollo y testing
+pytest
+httpx
+pyyaml
+
+# Para logging y observabilidad
+structlog

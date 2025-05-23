@@ -1,82 +1,115 @@
-from mcp.server.fastmcp import FastMCP, Context
-from contextlib import asynccontextmanager
-from collections.abc import AsyncIterator
-from dataclasses import dataclass
+from mcp.server.fastmcp import FastMCP
+import json
+import sys
+import os
 
-# from fake_database import Database # Replace with your actual DB type or remove
+# Agregar el directorio utils al path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.env_loader import load_environment_variables
 
-# @dataclass
-# class AppContext:
-# db: Database
+# Cargar variables de entorno
+load_environment_variables()
 
-# @asynccontextmanager
-# async def app_lifespan(server: FastMCP) -> AsyncIterator[AppContext]:
-# """Manage application lifecycle with type-safe context"""
-# # Initialize on startup
-# db = await Database.connect()
-# try:
-# yield AppContext(db=db)
-# finally:
-# # Cleanup on shutdown
-# await db.disconnect()
+# Crear servidor MCP
+mcp = FastMCP(name="EconomIAssist", description="Asistente financiero personal")
 
-# Create an MCP server instance
-# Pass lifespan to server if you have one: lifespan=app_lifespan
-mcp = FastMCP(name="EconomIAssistServer", description="Servidor MCP para EconomIAssist")
-
-# Example Tool (to be replaced or expanded)
-@mcp.tool()
-def example_tool(query: str) -> str:
-    """An example tool that echoes the input."""
-    return f"Echo from EconomIAssist: {query}"
-
-# Example Resource (to be replaced or expanded)
-@mcp.resource("economiassist://example/info")
-def get_example_info() -> dict:
-    """An example resource providing static information."""
-    return {"version": "0.1.0", "status": "development"}
-
-# --- EconomIAssist Specific Tools ---
+# Datos simulados en memoria para pruebas
+transacciones = []
+saldo_inicial = 1000.0
 
 @mcp.tool()
-def registrar_transaccion(tipo: str, monto: float, descripcion: str, ctx: Context | None = None) -> dict:
+def echo(message: str) -> str:
+    """Herramienta de prueba que hace eco de un mensaje"""
+    return f"Echo: {message}"
+
+@mcp.tool()
+def registrar_transaccion(tipo: str, monto: float, descripcion: str, categoria: str = "General") -> dict:
     """
-    Registra una transacción financiera (ingreso o egreso).
+    Registra una transacción financiera.
+    
     Args:
-        tipo: "ingreso" o "egreso".
-        monto: El monto de la transacción.
-        descripcion: Una breve descripción de la transacción.
-        ctx: El contexto MCP (opcional por ahora).
-    Returns:
-        Un diccionario confirmando la transacción.
+        tipo: "ingreso" o "gasto"
+        monto: Cantidad de dinero (positiva)
+        descripcion: Descripción de la transacción
+        categoria: Categoría opcional (ej: "comida", "transporte")
     """
-    # En una implementación real, esto interactuaría con Google Sheets o una BD.
-    # ctx.info(f"Registrando transacción: {tipo} de {monto} ({descripcion})") # Ejemplo si usaras ctx
-    print(f"Transacción registrada (simulado): {tipo} de {monto} - {descripcion}")
-    return {"status": "exito", "mensaje": f"Transacción '{descripcion}' de tipo '{tipo}' por {monto} registrada."}
-
-# --- EconomIAssist Specific Resources ---
-
-@mcp.resource("economiassist://finanzas/resumen")
-def obtener_info_financiera() -> dict:
-    """
-    Proporciona un resumen financiero básico.
-    Returns:
-        Un diccionario con información financiera de ejemplo.
-    """
-    # En una implementación real, esto obtendría datos de Google Sheets.
-    # data, mime_type = await ctx.read_resource("file:///path/to/financial_summary.json") # Ejemplo si usaras ctx
-    print("Obteniendo resumen financiero (simulado)")
+    if tipo not in ["ingreso", "gasto"]:
+        return {"error": "Tipo debe ser 'ingreso' o 'gasto'"}
+    
+    if monto <= 0:
+        return {"error": "El monto debe ser positivo"}
+    
+    transaccion = {
+        "id": len(transacciones) + 1,
+        "tipo": tipo,
+        "monto": monto,
+        "descripcion": descripcion,
+        "categoria": categoria,
+        "fecha": "2025-05-23"  # Fecha fija para el ejemplo
+    }
+    
+    transacciones.append(transaccion)
+    
     return {
-        "saldo_actual": 1250.75,
-        "total_ingresos_mes": 500.00,
-        "total_egresos_mes": 250.25,
-        "proxima_fecha_pago": "2025-06-01"
+        "status": "exitoso",
+        "mensaje": f"Transacción registrada: {tipo} de ${monto} - {descripcion}",
+        "transaccion": transaccion
     }
 
+@mcp.tool()
+def obtener_saldo() -> dict:
+    """Obtiene el saldo actual calculado desde las transacciones"""
+    total_ingresos = sum(t["monto"] for t in transacciones if t["tipo"] == "ingreso")
+    total_gastos = sum(t["monto"] for t in transacciones if t["tipo"] == "gasto")
+    saldo_actual = saldo_inicial + total_ingresos - total_gastos
+    
+    return {
+        "saldo_inicial": saldo_inicial,
+        "total_ingresos": total_ingresos,
+        "total_gastos": total_gastos,
+        "saldo_actual": saldo_actual,
+        "numero_transacciones": len(transacciones)
+    }
+
+@mcp.tool()
+def obtener_transacciones() -> dict:
+    """Obtiene la lista de todas las transacciones"""
+    return {
+        "transacciones": transacciones,
+        "total": len(transacciones)
+    }
+
+@mcp.resource("economiassist://resumen")
+def resumen_financiero() -> str:
+    """Proporciona un resumen completo del estado financiero"""
+    saldo_info = obtener_saldo()
+    resumen = f"""
+RESUMEN FINANCIERO PERSONAL
+===========================
+Saldo inicial: ${saldo_info['saldo_inicial']}
+Total ingresos: ${saldo_info['total_ingresos']}
+Total gastos: ${saldo_info['total_gastos']}
+SALDO ACTUAL: ${saldo_info['saldo_actual']}
+
+Transacciones registradas: {saldo_info['numero_transacciones']}
+"""
+    
+    if transacciones:
+        resumen += "\nÚltimas transacciones:\n"
+        for t in transacciones[-3:]:  # Últimas 3 transacciones
+            resumen += f"- {t['tipo'].upper()}: ${t['monto']} - {t['descripcion']} ({t['categoria']})\n"
+    
+    return resumen
+
 if __name__ == "__main__":
-    # To run in development mode with MCP Inspector:
-    # mcp dev /home/agustin/Documentos/4to/nlp/EconomIAssist/src/mcp_server/server.py
-    #
-    # To run directly (e.g., for custom deployments):
+    # Ejecutar el servidor
+    print("🚀 Iniciando servidor MCP EconomIAssist...")
+    print("💡 Herramientas disponibles:")
+    print("   - echo: Prueba de conectividad")
+    print("   - registrar_transaccion: Registra ingresos y gastos")
+    print("   - obtener_saldo: Consulta saldo actual")
+    print("   - obtener_transacciones: Lista todas las transacciones")
+    print("📊 Recursos disponibles:")
+    print("   - economiassist://resumen: Resumen financiero completo")
+    print("")
     mcp.run()

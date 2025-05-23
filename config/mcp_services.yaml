@@ -1,0 +1,60 @@
+mcp_services:
+  # Google Sheets MCP Server
+  google_sheets:
+    server_path: "npx"
+    args: ["-y", "@modelcontextprotocol/server-google-sheets"]
+    env:
+      GOOGLE_SHEETS_CREDENTIALS_FILE: "${GOOGLE_SHEETS_CREDENTIALS_FILE}"
+    capabilities:
+      - "sheets_read"
+      - "sheets_write" 
+      - "sheets_create"
+    description: "Gestión de hojas de cálculo de Google para datos financieros"
+    
+  # Time MCP Server
+  time:
+    server_path: "npx"
+    args: ["-y", "@modelcontextprotocol/server-time"]
+    capabilities:
+      - "current_time"
+      - "timezone_conversion"
+      - "date_formatting"
+    description: "Manejo de fechas y tiempo para transacciones"
+    
+  # Filesystem MCP Server (para logs locales)
+  filesystem:
+    server_path: "npx"
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "/home/agustin/Documentos/4to/nlp/EconomIAssist/data"]
+    capabilities:
+      - "read_file"
+      - "write_file"
+      - "list_directory"
+    description: "Acceso al sistema de archivos para logs y datos locales"
+    
+  # Brave Search MCP Server (para información financiera)
+  brave_search:
+    server_path: "npx"
+    args: ["-y", "@modelcontextprotocol/server-brave-search"]
+    env:
+      BRAVE_API_KEY: "${BRAVE_API_KEY}"
+    capabilities:
+      - "web_search"
+      - "news_search"
+    description: "Búsqueda web para información financiera actualizada"
+    
+  # SQLite MCP Server (para base de datos local)
+  sqlite:
+    server_path: "npx"
+    args: ["-y", "@modelcontextprotocol/server-sqlite", "/home/agustin/Documentos/4to/nlp/EconomIAssist/data/transactions.db"]
+    capabilities:
+      - "execute_query"
+      - "list_tables"
+      - "describe_table"
+    description: "Base de datos SQLite para almacenamiento persistente"
+
+# Configuración del cliente MCP
+client_config:
+  max_connections: 5
+  timeout: 30
+  retry_attempts: 3
+  log_level: "INFO"

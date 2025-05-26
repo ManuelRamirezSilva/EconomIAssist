@@ -98,3 +98,4 @@ In the context of:
    python -c "from src.agent.openai_agent import run_agent; print(run_agent('¿Cuál es mi saldo actual?'))"
    ```
 4. Integra este flujo en tu orquestador de WhatsApp o UI.
+=======

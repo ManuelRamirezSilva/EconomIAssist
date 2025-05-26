@@ -33,7 +33,7 @@ from agents.models.openai_chatcompletions import OpenAIChatCompletionsModel
 from openai import AsyncAzureOpenAI
 
 # Importar cliente MCP real
-from .mcp_client import MCPManager
+from mcp_client import MCPManager
 
 # Configurar logging estructurado
 logger = structlog.get_logger()

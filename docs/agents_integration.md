@@ -5,7 +5,7 @@
 
 ## 2. Uso Básico
 ```bash
-python -c "from src.agent.openai_agent import run_agent; print(run_agent('Registra un ingreso de 100 pesos en 'comida''))"
+python -c "from src.agent.openai_agent import run_agent; print(run_agent('Registra un ingreso de 100 pesos en \"comida\"'))"
 ```
 
 ## 3. Buenas prácticas

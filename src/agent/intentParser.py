@@ -17,9 +17,9 @@ class IntentParser:
         # Carga el archivo .env desde la raíz del proyecto
         load_dotenv(os.path.join(os.path.dirname(__file__), '../../.env'))
 
-        api_key = os.getenv("AZURE_OPENAI_API_KEY")
+        api_key = os.getenv("AZURE_OPENAI_API_KEY_MAXI")
         if not api_key:
-            raise ValueError("AZURE_OPENAI_API_KEY no encontrada en el archivo .env")
+            raise ValueError("AZURE_OPENAI_API_KEY_MAXI no encontrada en el archivo .env")
 
         endpoint = "https://economiassist-mini-resource.cognitiveservices.azure.com/"
         deployment = "gpt-4o-mini"

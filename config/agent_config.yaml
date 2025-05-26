@@ -1,0 +1,20 @@
+# Configuración simplificada para EconomIAssist con Azure OpenAI
+agent:
+  name: "EconomIAssist"
+  model: "gpt-4o-mini"  # Modelo estándar, Azure lo mapeará automáticamente
+  instructions: "Eres un asistente financiero personal inteligente que ayuda a los usuarios a gestionar sus finanzas de forma conversacional."
+
+# Servidores MCP - simplificado sin servidores externos por ahora
+mcp_servers: []
+
+# Configuración adicional
+features:
+  streaming: true
+  context_memory: true
+  financial_categories:
+    - "ingresos"
+    - "gastos_fijos"
+    - "gastos_variables"
+    - "ahorros"
+    - "inversiones"
+    - "deudas"

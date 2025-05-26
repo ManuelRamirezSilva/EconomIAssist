@@ -45,7 +45,7 @@ def registrar_transaccion(tipo: str, monto: float, descripcion: str, categoria: 
         "monto": monto,
         "descripcion": descripcion,
         "categoria": categoria,
-        "fecha": "2025-05-23"  # Fecha fija para el ejemplo
+        "fecha": datetime.now().strftime("%Y-%m-%d")  # Fecha dinámica
     }
     
     transacciones.append(transaccion)

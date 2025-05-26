@@ -19,7 +19,6 @@ pyyaml
 
 # Para logging y observabilidad
 structlog
-=======
 langchain
 openai
 fastapi

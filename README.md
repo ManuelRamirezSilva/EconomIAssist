@@ -98,4 +98,28 @@ In the context of:
    python -c "from src.agent.openai_agent import run_agent; print(run_agent('¿Cuál es mi saldo actual?'))"
    ```
 4. Integra este flujo en tu orquestador de WhatsApp o UI.
-=======
+
+---
+
+## 🚀 Instalación rápida (Linux/Mac)
+
+1. **Clona el repositorio y entra a la carpeta del proyecto:**
+   ```bash
+   git clone <repo-url>
+   cd EconomIAssist
+   ```
+2. **Ejecuta el script de setup automático:**
+   ```bash
+   bash setup.sh
+   ```
+   Esto instalará:
+   - Todas las dependencias Python (`requirements.txt`)
+   - El paquete Node.js `tavily-mcp` (usado para web search vía MCP)
+
+3. **Configura tus variables de entorno en `.env`** (ejemplo: `TAVILY_API_KEY`, claves de Azure, etc).
+
+4. **¡Listo! Ya puedes ejecutar el agente conversacional o los tests.**
+
+---
+
+> Si no tienes Node.js, instálalo desde https://nodejs.org/ (versión 18+ recomendada). Si usas Mac, puedes instalarlo con Homebrew: `brew install node`.

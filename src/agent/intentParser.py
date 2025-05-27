@@ -14,21 +14,21 @@ class MultiIntentResponse(pydantic.BaseModel):
 
 class IntentParser:
     def __init__(self):
-        # Carga el archivo .env desde la raíz del proyecto
+        # Carga variables de entorno desde .env
         load_dotenv(os.path.join(os.path.dirname(__file__), '../../.env'))
-
-        api_key = os.getenv("AZURE_OPENAI_API_KEY")
-        if not api_key:
-            raise ValueError("AZURE_OPENAI_API_KEY no encontrada en el archivo .env")
-
-        endpoint = "https://economiassist-mini-resource.cognitiveservices.azure.com/"
-        deployment = "gpt-4o-mini"
-        api_version = "2024-12-01-preview"
-
+        # Leer credenciales Azure OpenAI desde .env
+        self.endpoint = os.getenv("AZURE_OPENAI_API_BASE")
+        self.api_key = os.getenv("AZURE_OPENAI_API_KEY")
+        self.api_version = os.getenv("AZURE_OPENAI_API_VERSION")
+        self.deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+        # Verificar credenciales
+        if not all([self.endpoint, self.api_key, self.api_version, self.deployment]):
+            raise ValueError("Faltan credenciales de Azure OpenAI en el archivo .env")
+        # Instanciar cliente
         self.client = AzureOpenAI(
-            api_version=api_version,
-            azure_endpoint=endpoint,
-            api_key=api_key,
+            api_version=self.api_version,
+            azure_endpoint=self.endpoint,
+            api_key=self.api_key,
         )
 
         self.count_intents_prompt = (
@@ -132,7 +132,7 @@ class IntentParser:
             max_tokens=10,
             temperature=0.0,
             top_p=1.0,
-            model="gpt-4o-mini"
+            model=self.deployment
         )
         try:
             num_intents = int(count_response.choices[0].message.content.strip())
@@ -154,7 +154,7 @@ class IntentParser:
                 max_tokens=256,
                 temperature=0.0,
                 top_p=1.0,
-                model="gpt-4o-mini"
+                model=self.deployment
             )
             try:
                 intent_texts = json.loads(split_response.choices[0].message.content)
@@ -173,7 +173,7 @@ class IntentParser:
                 max_tokens=4096,
                 temperature=1.0,
                 top_p=1.0,
-                model="gpt-4o-mini"
+                model=self.deployment
             )
             model_output = classify_response.choices[0].message.content
             try:
@@ -187,11 +187,11 @@ class IntentParser:
         return intent_results
 
 # --- MAIN ---
-if __name__ == "__main__":
-    examples = [
-        "Gane la loteria y me dieron 3 palos verdes. Me conviene pasarlos a pesos o invertir en bitcoin?", 
-        "Un amigo me debe 300 pesos, por donde le pido que me lo pase?"
-    ]
-    parser = IntentParser()
-    for example in examples:
-        parser.receive_message(example)
+# if __name__ == "__main__":
+#     examples = [
+#         "Gane la loteria y me dieron 3 palos verdes. Me conviene pasarlos a pesos o invertir en bitcoin?", 
+#         "Un amigo me debe 300 pesos, por donde le pido que me lo pase?"
+#     ]
+#     parser = IntentParser()
+#     for example in examples:
+#         parser.receive_message(example)

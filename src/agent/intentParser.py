@@ -25,6 +25,7 @@ class IntentParser:
         if not all([self.endpoint, self.api_key, self.api_version, self.deployment]):
             raise ValueError("Faltan credenciales de Azure OpenAI en el archivo .env")
         # Instanciar cliente
+
         self.client = AzureOpenAI(
             api_version=self.api_version,
             azure_endpoint=self.endpoint,

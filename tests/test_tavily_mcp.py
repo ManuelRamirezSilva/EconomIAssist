@@ -8,6 +8,9 @@ from dotenv import load_dotenv
 from openai import AzureOpenAI
 import json
 import inspect
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # Importa el cliente MCP real
 from src.agent.mcp_client import MCPManager

@@ -1,22 +1,30 @@
 #!/bin/bash
-# setup.sh - Instalación automática de dependencias Python y Node.js para EconomIAssist
-set -e
 
-# Instalar dependencias Python
-if [ -f requirements.txt ]; then
-    echo "📦 Instalando dependencias Python..."
-    pip install -r requirements.txt
-else
-    echo "⚠️ No se encontró requirements.txt"
+# EconomIAssist - Setup Script Simplificado
+echo "🚀 Configurando EconomIAssist..."
+
+# Crear entorno virtual si no existe
+if [ ! -d ".venv" ]; then
+    echo "📦 Creando entorno virtual..."
+    python3 -m venv .venv
 fi
 
-# Instalar dependencias Node.js (tavily-mcp)
-if command -v npm >/dev/null 2>&1; then
-    echo "📦 Instalando tavily-mcp (Node.js)..."
-    npm install -g tavily-mcp
+# Activar entorno virtual
+echo "🔧 Activando entorno virtual..."
+source .venv/bin/activate
+
+# Instalar dependencias
+echo "📥 Instalando dependencias..."
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Verificar archivo .env
+if [ ! -f ".env" ]; then
+    echo "⚠️ Archivo .env no encontrado. Crea uno basado en el ejemplo."
+    echo "Necesitas configurar las API keys de Azure OpenAI y Tavily."
 else
-    echo "❌ npm no está instalado. Por favor instala Node.js (https://nodejs.org/) y vuelve a ejecutar este script."
-    exit 1
+    echo "✅ Archivo .env encontrado"
 fi
 
-echo "✅ Setup completo."
+echo "🎉 ¡EconomIAssist configurado exitosamente!"
+echo "Para usar el agente, ejecuta: python -m tests.run_all_tests"

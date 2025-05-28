@@ -12,6 +12,10 @@ openai
 # OpenAI Agents con soporte MCP nativo - VERSIÓN SIMPLIFICADA
 openai-agents-mcp
 
+# Para el nuevo sistema de registro MCP
+PyYAML
+structlog
+
 # Para desarrollo y testing
 pytest
 httpx

@@ -26,8 +26,13 @@ load_dotenv(env_path, override=True)
 from openai import AsyncAzureOpenAI
 
 # Importar cliente MCP real
-from mcp_client import MCPManager
-from intentParser import IntentParser, IntentResponse  # import local de intentParser.py
+try:
+    from .mcp_client import MCPManager
+    from .intentParser import IntentParser, IntentResponse  # import local de intentParser.py
+except ImportError:
+    # Cuando se ejecuta directamente, usar importación absoluta
+    from mcp_client import MCPManager
+    from intentParser import IntentParser, IntentResponse  # import local de intentParser.py
 
 # Configurar logging estructurado
 logger = structlog.get_logger()
@@ -58,6 +63,7 @@ class AzureOpenAIConfig:
         print(f"   📍 Endpoint: {self.api_base}")
         print(f"   🤖 Deployment: {self.deployment_name}")
         print(f"   🔑 API Version: {self.api_version}")
+    
     def create_client(self) -> AsyncAzureOpenAI:
         """Crea un cliente de Azure OpenAI"""
         return AsyncAzureOpenAI(
@@ -71,7 +77,8 @@ class MemoryManager:
     def __init__(self):
         self.conversation_history = []
         self.context_cache = {}
-        self.max_history = 10
+        self.max_history = 5  # Máximo de interacciones a mantener en memoria
+    
     def add_interaction(self, user_input: str, agent_response: str, metadata: Dict[str, Any]):
         """Añade una interacción a la memoria"""
         interaction = {
@@ -84,6 +91,7 @@ class MemoryManager:
         # Mantener solo las últimas N interacciones
         if len(self.conversation_history) > self.max_history:
             self.conversation_history = self.conversation_history[-self.max_history:]
+    
     def get_context_summary(self) -> str:
         """Genera un resumen del contexto conversacional"""
         if not self.conversation_history:
@@ -95,6 +103,7 @@ class MemoryManager:
             summary += f"   Respuesta: {interaction['agent_response'][:100]}...\n"
         return summary
 
+
 class ConversationalAgent:
     """Agente conversacional con capacidades MCP reales"""
     def __init__(self):
@@ -105,6 +114,8 @@ class ConversationalAgent:
         # Integración de parser de intenciones y memoria conversacional
         self.intent_parser = IntentParser()
         self.memory_manager = MemoryManager()
+
+
     async def initialize(self):
         """Inicializa el agente y las conexiones MCP"""
         try:
@@ -116,11 +127,13 @@ class ConversationalAgent:
             await self._connect_mcp_servers()
             # Configurar herramientas MCP
             await self._setup_mcp_tools()
-            logger.info("✅ Agente conversacional inicializado con MCP real")
+            logger.info("✅ Agente conversacional inicializado con MCP")
             return True
         except Exception as e:
             logger.error(f"❌ Error inicializando agente: {e}")
             return False
+    
+    
     def _build_system_instructions(self, available_tools: Dict[str, List[str]]) -> str:
         """Crea instrucciones de sistema describiendo el agente y sus herramientas MCP"""
         date_str = datetime.now().strftime("%d de %B de %Y")
@@ -133,13 +146,26 @@ class ConversationalAgent:
             instr.append(f"- Servidor '{srv}': herramientas {', '.join(tools)}.")
         instr.append("Cuando recibas una llamada de función, invoca la herramienta adecuada con los parámetros proporcionados.")
         return "\n".join(instr)
+    
+    
     async def _connect_mcp_servers(self):
-        """Conecta a todos los servidores MCP disponibles"""
-        tavily_connected = await self.mcp_manager.connect_tavily_server()
-        if tavily_connected:
-            logger.info("🌐 Servidor Tavily MCP conectado")
+        """Conecta a todos los servidores MCP disponibles usando auto-discovery"""
+        # Usar el nuevo sistema de auto-conexión
+        connection_results = await self.mcp_manager.auto_connect_servers()
+        
+        connected_count = sum(1 for success in connection_results.values() if success)
+        total_count = len(connection_results)
+        
+        if connected_count > 0:
+            logger.info(f"🌐 {connected_count}/{total_count} servidores MCP conectados")
+            
+            # Mostrar estadísticas detalladas
+            stats = self.mcp_manager.get_connection_stats()
+            logger.info(f"📊 Capacidades disponibles: {list(stats['servers_by_capability'].keys())}")
         else:
-            logger.warning("⚠️ No se pudo conectar al servidor Tavily MCP")
+            logger.warning("⚠️ No se pudieron conectar servidores MCP")
+    
+    
     async def _setup_mcp_tools(self):
         """Configura las herramientas MCP disponibles"""
         available_tools = await self.mcp_manager.get_available_tools()
@@ -152,6 +178,8 @@ class ConversationalAgent:
                     "description": tool.description,
                     "parameters": tool.input_schema
                 })
+    
+    
     async def _setup_azure_openai(self):
         """Configura Azure OpenAI"""
         try:
@@ -162,34 +190,58 @@ class ConversationalAgent:
         except Exception as e:
             logger.error(f"❌ Error configurando Azure OpenAI: {e}")
             raise
+    
+    
     async def _call_openai_with_mcp(self, user_input: str) -> str:
-        """Invoca Azure OpenAI incluyendo las funciones MCP y maneja llamadas de función"""
+        """Invoca Azure OpenAI incluyendo la ventana de contexto conversacional, las funciones MCP y maneja llamadas de función"""
+        # Obtener resumen de contexto conversacional
+        context_summary = self.memory_manager.get_context_summary()
+        
+        # Construir mensajes con instrucciones del sistema, contexto y entrada del usuario
         messages = [
             {"role": "system", "content": self.system_instructions},
+            {"role": "system", "content": context_summary},
             {"role": "user", "content": user_input}
         ]
-        resp = await self.azure_client.chat.completions.create(
-            model=self.openai_model,
-            messages=messages,
-            functions=self.mcp_functions,
-            function_call="auto"
-        )
-        msg = resp.choices[0].message
-        if msg.function_call:
-            fname = msg.function_call.name
-            params = json.loads(msg.function_call.arguments)
-            srv, tname = fname.split("_", 1)
-            result = await self.mcp_manager.connections[srv].call_tool(tname, params)
-            messages.append({"role": "assistant", "content": None, "function_call": msg.function_call.to_dict()})
-            messages.append({"role": "function", "name": fname, "content": json.dumps(result)})
-            follow = await self.azure_client.chat.completions.create(
+        
+        # Solo incluir funciones si hay herramientas MCP disponibles
+        if self.mcp_functions:
+            resp = await self.azure_client.chat.completions.create(
                 model=self.openai_model,
-                messages=messages
+                messages=messages,
+                functions=self.mcp_functions,
+                function_call="auto"
             )
-            return follow.choices[0].message.content
-        return msg.content
+            
+            msg = resp.choices[0].message
+            if msg.function_call:
+                fname = msg.function_call.name
+                params = json.loads(msg.function_call.arguments)
+                srv, tname = fname.split("_", 1)
+                result = await self.mcp_manager.connections[srv].call_tool(tname, params)
+                messages.append({"role": "assistant", "content": None, "function_call": msg.function_call.to_dict()})
+                messages.append({"role": "function", "name": fname, "content": json.dumps(result)})
+                follow = await self.azure_client.chat.completions.create(
+                    model=self.openai_model,
+                    messages=messages
+                )
+                return follow.choices[0].message.content
+            return msg.content
+        else:
+            # Sin herramientas MCP, usar conversación normal
+            resp = await self.azure_client.chat.completions.create(
+                model=self.openai_model,
+                messages=messages,
+                max_tokens=1000,
+                temperature=0.7
+            )
+            return resp.choices[0].message.content
+    
+    
     async def process_query(self, user_input: str) -> str:
         return await self.process_user_input(user_input)
+
+
     async def process_user_input(self, user_input: str) -> str:
         parsed_intents = self.intent_parser.receive_message(user_input)
         logger.info(f"🔍 Intenciones detectadas: {parsed_intents}")
@@ -203,10 +255,25 @@ class ConversationalAgent:
             error_msg = f"Error al procesar la consulta: {str(e)}"
             print(f"❌ {error_msg}")
             return f"Lo siento, ocurrió un error al procesar tu consulta: {str(e)}"
+    
+
     async def cleanup(self):
         if self.mcp_manager:
             await self.mcp_manager.disconnect_all()
         logger.info("🧹 Recursos del agente limpiados")
+    
+
+    def get_short_term_memory(self) -> str:
+        """Devuelve el resumen de la memoria de corto plazo (short term memory) de la conversación."""
+        return self.memory_manager.get_context_summary()
+    
+
+    def add_to_short_term_memory(self, user_input: str, agent_response: str, metadata: Dict[str, Any] = None):
+        """Agrega una interacción a la memoria de corto plazo."""
+        if metadata is None:
+            metadata = {}
+        self.memory_manager.add_interaction(user_input, agent_response, metadata)
+
 
 async def main():
     print("🧠 EconomIAssist - Agente Conversacional Modular")

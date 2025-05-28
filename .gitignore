@@ -34,12 +34,6 @@ htmlcov/
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
-# Node.js
-node_modules/
-npm-debug.log
-yarn-debug.log
-yarn-error.log
-
 # macOS
 .DS_Store
 
@@ -76,75 +70,3 @@ dist/
 
 # Project specific
 resumeProyect.txt
-test_project.sh
-=======
-# Compiled source code
-*.o
-*.so
-*.exe
-*.out
-*.dll
-*.class
-
-# Logs and databases
-*.log
-*.sql
-*.sqlite
-
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-.env
-.venv/
-venv/
-ENV/
-
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints/
-
-# Node.js
-node_modules/
-npm-debug.log
-yarn-debug.log
-yarn-error.log
-
-# macOS
-.DS_Store
-
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# VS Code
-.vscode/
-
-# JetBrains IDEs
-.idea/
-
-# Environment and secrets
-.env
-*.key
-*.pem
-
-# Build artifacts
-build/
-dist/
-*.egg-info/
-
-# Coverage
-.coverage
-*.cover
-coverage.xml
-htmlcov/
-
-# Git
-*.orig
-*.patch
-
-# Others
-*.bak
-*.swp
-*.tmp

@@ -6,7 +6,7 @@ servers:
   tavily:
     name: "tavily"
     description: "Servidor MCP para búsqueda web usando Tavily API"
-    command: ["npx", "-y", "@modelcontextprotocol/server-tavily"]
+    command: ["npx", "tavily-mcp"]
     auto_connect: true
     priority: 1
     capabilities:
@@ -20,62 +20,40 @@ servers:
       - news_search
     resources: []
     
-  # Servidor Simple Finance - Datos Financieros Locales
-  simple_finance:
-    name: "simple_finance"
-    description: "Servidor MCP local para datos financieros y transacciones"
-    command: ["python", "src/mcp_servers/simple_finance.py"]
+  # Servidor KnowledgeBase - Memoria del Usuario (MCP Puro)
+  knowledge_base:
+    name: "knowledge_base"
+    description: "Servidor MCP para memoria conversacional usando KnowledgeBase Server"
+    command: ["docker", "run", "--interactive", "--rm", "--volume", "knowledgebase:/db", "mbcrawfo/knowledge-base-server"]
     auto_connect: true
     priority: 2
     capabilities:
-      - "finance_data"
-      - "transactions"
-      - "currency_exchange"
-    environment: {}
-    tools:
-      - get_exchange_rate
-      - add_transaction
-      - get_transactions
-      - get_balance
-    resources:
-      - "file:///transactions.json"
-      - "file:///accounts.json"
-
-  # Servidor Weather (opcional)
-  weather:
-    name: "weather"
-    description: "Servidor MCP para información meteorológica"
-    command: ["npx", "-y", "@modelcontextprotocol/server-weather"]
-    auto_connect: false
-    priority: 3
-    capabilities:
-      - "weather_data"
-      - "forecasts"
+      - "user_memory"
+      - "conversation_history"
+      - "context_storage"
+      - "memory_search"
     environment:
-      WEATHER_API_KEY: "${WEATHER_API_KEY}"
-    tools:
-      - get_weather
-      - get_forecast
+      DATABASE_NAME: "user_memory.sqlite"
+    tools: []  # Se auto-descubren dinámicamente
     resources: []
 
-  # Servidor Calendar (futuro)
-  calendar:
-    name: "calendar"
-    description: "Servidor MCP para gestión de calendario y eventos"
-    command: ["python", "src/mcp_servers/calendar_server.py"]
-    auto_connect: false
-    priority: 4
-    capabilities:
-      - "calendar_management"
-      - "event_scheduling"
-    environment: {}
-    tools:
-      - add_event
-      - get_events
-      - update_event
-      - delete_event
-    resources:
-      - "file:///calendar.json"
+  # # Servidor Weather (opcional)
+  # weather:
+  #   name: "weather"
+  #   description: "Servidor MCP para información meteorológica"
+  #   command: ["npx", "-y", "@modelcontextprotocol/server-weather"]
+  #   auto_connect: false
+  #   priority: 4
+  #   capabilities:
+  #     - "weather_data"
+  #     - "forecasts"
+  #   environment:
+  #     WEATHER_API_KEY: "${WEATHER_API_KEY}"
+  #   tools:
+  #     - get_weather
+  #     - get_forecast
+  #   resources: []
+
 
 # Configuración global de MCP
 settings:
@@ -87,6 +65,7 @@ settings:
   retry_attempts: 3
   log_level: "INFO"
 
+
 # Mapeo de capacidades a casos de uso
 capability_mapping:
   web_search:
@@ -96,22 +75,30 @@ capability_mapping:
       - "información económica en tiempo real"
     preferred_server: "tavily"
     
-  finance_data:
+  user_memory:
     use_cases:
-      - "gestión de transacciones personales"
-      - "cálculo de balances"
-      - "conversiones de moneda"
-    preferred_server: "simple_finance"
+      - "recordar preferencias del usuario"
+      - "almacenar contexto conversacional"
+      - "recuperar interacciones pasadas"
+      - "personalizar respuestas financieras"
+    preferred_server: "knowledge_base"
     
-  weather_data:
-    use_cases:
-      - "pronóstico del tiempo"
-      - "condiciones climáticas"
-    preferred_server: "weather"
+  # finance_data:
+  #   use_cases:
+  #     - "gestión de transacciones personales"
+  #     - "cálculo de balances"
+  #     - "conversiones de moneda"
+  #   preferred_server: "simple_finance"
     
-  calendar_management:
-    use_cases:
-      - "agendar eventos"
-      - "consultar calendario"
-      - "recordatorios"
-    preferred_server: "calendar"
+  # weather_data:
+  #   use_cases:
+  #     - "pronóstico del tiempo"
+  #     - "condiciones climáticas"
+  #   preferred_server: "weather"
+    
+  # calendar_management:
+  #   use_cases:
+  #     - "agendar eventos"
+  #     - "consultar calendario"
+  #     - "recordatorios"
+  #   preferred_server: "calendar"

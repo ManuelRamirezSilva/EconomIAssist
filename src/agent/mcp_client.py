@@ -59,6 +59,10 @@ class MCPServerConnection:
             logger.debug(f"   Comando: {' '.join(self.spec.command)}")
             logger.debug(f"   Env vars: {list(runtime_env.keys())}")
             
+            # Si es un contenedor Docker con --detach, manejarlo especialmente
+            if "docker" in self.spec.command and "--detach" in self.spec.command:
+                await self._handle_detached_container()
+            
             # Iniciar proceso del servidor
             self.process = await asyncio.create_subprocess_exec(
                 *self.spec.command,
@@ -372,6 +376,15 @@ class MCPManager:
         logger.error(f"❌ Herramienta {tool_name} no encontrada en servidores con capacidad {capability}")
         return None
     
+    async def call_tool_by_function_name(self, function_name: str, params: dict) -> Any:
+        """Llama una herramienta basándose en el nombre completo de la función (agnóstico)"""
+        for server_name, connection in self.connections.items():
+            if function_name.startswith(f"{server_name}_"):
+                tool_name = function_name[len(server_name) + 1:]
+                return await connection.call_tool(tool_name, params)
+        
+        raise ValueError(f"No se encontró servidor para la función: {function_name}")
+    
     def get_connection_stats(self) -> Dict[str, Any]:
         """Obtiene estadísticas de conexiones MCP"""
         stats = {
@@ -403,26 +416,43 @@ class MCPManager:
         self.connection_stats.clear()
         logger.info("🔌 Desconectado de todos los servidores MCP")
 
-    # Métodos de compatibilidad con tu código existente
-    async def connect_tavily_server(self) -> bool:
-        """Método de compatibilidad: conecta al servidor Tavily"""
-        return await self.connect_server_by_name("tavily")
+    async def _handle_detached_container(self):
+        """Maneja la conexión de contenedores Docker que se inician en modo detach"""
+        try:
+            # Aquí asumimos que el contenedor se está ejecutando en el mismo host
+            container_id = self.spec.command[-1]  # Suponiendo que el ID del contenedor es el último argumento
+            logger.info(f"🐳 Esperando a que el contenedor {container_id} esté listo...")
+            
+            # Esperar a que el contenedor esté en estado 'running'
+            await asyncio.sleep(5)  # Espera inicial
+            
+            while True:
+                # Comprobar el estado del contenedor
+                result = await asyncio.create_subprocess_exec(
+                    "docker", "inspect", "-f", "{{.State.Status}}", container_id,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                
+                stdout, stderr = await result.communicate()
+                status = stdout.decode().strip()
+                
+                if status == "running":
+                    logger.info(f"✅ Contenedor {container_id} está en ejecución")
+                    break
+                
+                logger.info(f"⏳ Contenedor {container_id} estado: {status}, esperando...")
+                await asyncio.sleep(5)  # Volver a comprobar después de un tiempo
+                
+            # Una vez que el contenedor está en ejecución, proceder a conectar
+            logger.info(f"🔌 Conectando a contenedor {container_id}...")
+            self.is_connected = True
+            
+        except Exception as e:
+            logger.error(f"Error manejando contenedor detach {self.spec.name}: {e}")
+            self.is_connected = False
     
-    async def search_web(self, query: str, max_results: int = 5) -> Optional[str]:
-        """Método de compatibilidad: búsqueda web usando Tavily"""
-        result = await self.call_tool_smart("web_search", "search", {
-            "query": query,
-            "max_results": max_results
-        })
-        
-        if result:
-            # Formatear resultados para el LLM
-            content = result.get("content", [])
-            if isinstance(content, list) and content:
-                return content[0].get("text", str(result))
-            return str(result)
-        
-        return None
+
 
 # Función de prueba mejorada
 async def test_mcp_manager():

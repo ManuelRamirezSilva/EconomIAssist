@@ -38,12 +38,19 @@ class MCPServerSpec:
         """Obtiene variables de entorno en tiempo de ejecución"""
         runtime_env = {}
         for key, value in self.env_vars.items():
-            if value.startswith("$"):
-                # Variable de entorno dinámica
-                env_key = value[1:]  # Remover $
-                runtime_env[key] = os.getenv(env_key, "")
+            if isinstance(value, str):
+                if value.startswith("${") and value.endswith("}"):
+                    # Formato ${VARIABLE_NAME}
+                    env_key = value[2:-1]
+                    runtime_env[key] = os.getenv(env_key, "")
+                elif value.startswith("$"):
+                    # Formato $VARIABLE_NAME
+                    env_key = value[1:]
+                    runtime_env[key] = os.getenv(env_key, "")
+                else:
+                    runtime_env[key] = value
             else:
-                runtime_env[key] = value
+                runtime_env[key] = str(value)
         return runtime_env
 
 class MCPServerRegistry:
@@ -52,78 +59,14 @@ class MCPServerRegistry:
     def __init__(self, config_path: Optional[str] = None):
         self.servers: Dict[str, MCPServerSpec] = {}
         self.config_path = config_path or self._get_default_config_path()
-        self._load_builtin_servers()
+        # Eliminar _load_builtin_servers() - solo cargar desde YAML
         self._load_config_file()
     
     def _get_default_config_path(self) -> str:
         """Obtiene la ruta por defecto del archivo de configuración"""
         return os.path.join(os.path.dirname(__file__), "..", "..", "config", "mcp_servers.yaml")
     
-    def _load_builtin_servers(self):
-        """Carga servidores MCP integrados"""
-        
-        # 🌐 Tavily Web Search
-        self.register_server(MCPServerSpec(
-            name="tavily",
-            description="Búsqueda web inteligente con Tavily AI",
-            command=["npx", "tavily-mcp"],
-            env_vars={"TAVILY_API_KEY": "$TAVILY_API_KEY"},
-            required_env_keys=["TAVILY_API_KEY"],
-            capabilities=["web_search", "real_time_data"],
-            priority=10
-        ))
-        
-        # 💰 Servidor Financiero (Google Sheets)
-        self.register_server(MCPServerSpec(
-            name="financial",
-            description="Gestión financiera con Google Sheets",
-            command=["python", "-m", "mcp_servers.financial"],
-            env_vars={
-                "GOOGLE_SHEETS_API_KEY": "$GOOGLE_SHEETS_API_KEY",
-                "SPREADSHEET_ID": "$FINANCIAL_SPREADSHEET_ID"
-            },
-            required_env_keys=["GOOGLE_SHEETS_API_KEY", "FINANCIAL_SPREADSHEET_ID"],
-            capabilities=["financial_data", "expense_tracking", "income_logging"],
-            priority=20
-        ))
-        
-        # 📅 Google Calendar
-        self.register_server(MCPServerSpec(
-            name="calendar",
-            description="Gestión de eventos y recordatorios",
-            command=["python", "-m", "mcp_servers.calendar"],
-            env_vars={
-                "GOOGLE_CALENDAR_API_KEY": "$GOOGLE_CALENDAR_API_KEY",
-                "CALENDAR_ID": "$GOOGLE_CALENDAR_ID"
-            },
-            required_env_keys=["GOOGLE_CALENDAR_API_KEY"],
-            capabilities=["calendar_events", "reminders", "scheduling"],
-            priority=15
-        ))
-        
-        # 🏦 BCRA (Banco Central República Argentina)
-        self.register_server(MCPServerSpec(
-            name="bcra",
-            description="Datos macroeconómicos del BCRA",
-            command=["npx", "bcra-mcp"],
-            env_vars={},  # API pública del BCRA
-            required_env_keys=[],
-            capabilities=["macroeconomic_data", "exchange_rates", "inflation"],
-            priority=5,
-            auto_connect=False  # Conectar solo cuando se necesite
-        ))
-        
-        # 📊 Análisis de Mercados
-        self.register_server(MCPServerSpec(
-            name="markets",
-            description="Análisis de mercados financieros",
-            command=["python", "-m", "mcp_servers.markets"],
-            env_vars={"ALPHA_VANTAGE_KEY": "$ALPHA_VANTAGE_API_KEY"},
-            required_env_keys=["ALPHA_VANTAGE_API_KEY"],
-            capabilities=["stock_data", "crypto_prices", "market_analysis"],
-            priority=8,
-            auto_connect=False
-        ))
+    # Eliminar completamente _load_builtin_servers()
     
     def _load_config_file(self):
         """Carga servidores desde archivo de configuración YAML"""
@@ -137,14 +80,15 @@ class MCPServerRegistry:
             with open(config_file, 'r', encoding='utf-8') as f:
                 config = yaml.safe_load(f)
             
-            servers_config = config.get('mcp_servers', {})
+            # Leer desde 'servers' en lugar de 'mcp_servers'
+            servers_config = config.get('servers', {})
             for name, spec in servers_config.items():
                 server_spec = MCPServerSpec(
                     name=name,
                     description=spec.get('description', ''),
                     command=spec.get('command', []),
-                    env_vars=spec.get('env_vars', {}),
-                    required_env_keys=spec.get('required_env_keys', []),
+                    env_vars=spec.get('environment', {}),  # Cambiar de 'env_vars' a 'environment'
+                    required_env_keys=self._extract_required_env_keys(spec.get('environment', {})),
                     capabilities=spec.get('capabilities', []),
                     priority=spec.get('priority', 1),
                     auto_connect=spec.get('auto_connect', True)
@@ -156,21 +100,60 @@ class MCPServerRegistry:
         except Exception as e:
             logger.error(f"❌ Error cargando configuración: {e}")
     
+    def _extract_required_env_keys(self, env_vars: Dict[str, str]) -> List[str]:
+        """Extrae las claves de entorno requeridas desde las variables de entorno"""
+        required_keys = []
+        for key, value in env_vars.items():
+            if isinstance(value, str):
+                if value.startswith("${") and value.endswith("}"):
+                    # Formato ${VARIABLE_NAME}
+                    env_key = value[2:-1]
+                    required_keys.append(env_key)
+                elif value.startswith("$"):
+                    # Formato $VARIABLE_NAME  
+                    env_key = value[1:]
+                    required_keys.append(env_key)
+        return required_keys
+    
     def _create_default_config(self):
         """Crea un archivo de configuración por defecto"""
         config_dir = Path(self.config_path).parent
         config_dir.mkdir(parents=True, exist_ok=True)
         
         default_config = {
-            'mcp_servers': {
-                'custom_server_example': {
-                    'description': 'Ejemplo de servidor personalizado',
-                    'command': ['python', '-m', 'my_custom_mcp_server'],
-                    'env_vars': {'API_KEY': '$MY_API_KEY'},
-                    'required_env_keys': ['MY_API_KEY'],
-                    'capabilities': ['custom_capability'],
+            'servers': {
+                'tavily': {
+                    'name': 'tavily',
+                    'description': 'Servidor MCP para búsqueda web usando Tavily API',
+                    'command': ['npx', '-y', '@modelcontextprotocol/server-tavily'],
+                    'auto_connect': True,
                     'priority': 1,
-                    'auto_connect': False
+                    'capabilities': ['web_search', 'news_search', 'real_time_data'],
+                    'environment': {
+                        'TAVILY_API_KEY': '${TAVILY_API_KEY}'
+                    },
+                    'tools': ['search', 'news_search'],
+                    'resources': []
+                }
+            },
+            'settings': {
+                'protocol_version': '2024-11-05',
+                'client_info': {
+                    'name': 'EconomIAssist',
+                    'version': '1.0.0'
+                },
+                'connection_timeout': 30,
+                'retry_attempts': 3,
+                'log_level': 'INFO'
+            },
+            'capability_mapping': {
+                'web_search': {
+                    'use_cases': [
+                        'búsqueda de tasas de cambio actuales',
+                        'noticias financieras',
+                        'información económica en tiempo real'
+                    ],
+                    'preferred_server': 'tavily'
                 }
             }
         }
@@ -231,19 +214,17 @@ class MCPServerRegistry:
     
     def export_config(self, path: str):
         """Exporta la configuración actual a un archivo YAML"""
-        config = {'mcp_servers': {}}
+        config = {'servers': {}}
         
         for name, spec in self.servers.items():
-            if name not in ['tavily', 'financial', 'calendar', 'bcra', 'markets']:  # Excluir builtin
-                config['mcp_servers'][name] = {
-                    'description': spec.description,
-                    'command': spec.command,
-                    'env_vars': spec.env_vars,
-                    'required_env_keys': spec.required_env_keys,
-                    'capabilities': spec.capabilities,
-                    'priority': spec.priority,
-                    'auto_connect': spec.auto_connect
-                }
+            config['servers'][name] = {
+                'description': spec.description,
+                'command': spec.command,
+                'environment': spec.env_vars,
+                'capabilities': spec.capabilities,
+                'priority': spec.priority,
+                'auto_connect': spec.auto_connect
+            }
         
         with open(path, 'w', encoding='utf-8') as f:
             yaml.dump(config, f, default_flow_style=False, allow_unicode=True)

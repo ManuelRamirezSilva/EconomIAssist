@@ -72,38 +72,6 @@ class AzureOpenAIConfig:
             api_version=self.api_version
         )
 
-class MemoryManager:
-    """Manejo de memoria semántica y contexto conversacional"""
-    def __init__(self):
-        self.conversation_history = []
-        self.context_cache = {}
-        self.max_history = 5  # Máximo de interacciones a mantener en memoria
-    
-    def add_interaction(self, user_input: str, agent_response: str, metadata: Dict[str, Any]):
-        """Añade una interacción a la memoria"""
-        interaction = {
-            'timestamp': asyncio.get_event_loop().time(),
-            'user_input': user_input,
-            'agent_response': agent_response,
-            'metadata': metadata
-        }
-        self.conversation_history.append(interaction)
-        # Mantener solo las últimas N interacciones
-        if len(self.conversation_history) > self.max_history:
-            self.conversation_history = self.conversation_history[-self.max_history:]
-    
-    def get_context_summary(self) -> str:
-        """Genera un resumen del contexto conversacional"""
-        if not self.conversation_history:
-            return "Primera interacción del usuario."
-        recent_interactions = self.conversation_history[-3:]  # Últimas 3 interacciones
-        summary = "Contexto reciente:\n"
-        for i, interaction in enumerate(recent_interactions, 1):
-            summary += f"{i}. Usuario: {interaction['user_input'][:100]}...\n"
-            summary += f"   Respuesta: {interaction['agent_response'][:100]}...\n"
-        return summary
-
-
 class ConversationalAgent:
     """Agente conversacional con capacidades MCP reales"""
     def __init__(self):
@@ -111,9 +79,8 @@ class ConversationalAgent:
         self.openai_model = None
         self.mcp_manager = None
         self.session_memory = []
-        # Integración de parser de intenciones y memoria conversacional
+        # Solo parser de intenciones - sin MemoryManager
         self.intent_parser = IntentParser()
-        self.memory_manager = MemoryManager()
 
 
     async def initialize(self):
@@ -173,11 +140,19 @@ class ConversationalAgent:
         self.mcp_functions = []
         for srv, conn in self.mcp_manager.connections.items():
             for tool in conn.tools.values():
-                self.mcp_functions.append({
+                function_def = {
                     "name": f"{srv}_{tool.name}",
                     "description": tool.description,
                     "parameters": tool.input_schema
-                })
+                }
+                self.mcp_functions.append(function_def)
+                # DEBUG: Mostrar qué funciones se están registrando
+                logger.info(f"📝 Función MCP registrada: {function_def['name']} - {function_def['description'][:50]}...")
+        
+        logger.info(f"🔧 Total funciones MCP disponibles: {len(self.mcp_functions)}")
+        
+        # DEBUG: Mostrar las instrucciones del sistema
+        logger.debug(f"📋 Instrucciones del sistema:\n{self.system_instructions}")
     
     
     async def _setup_azure_openai(self):
@@ -193,16 +168,17 @@ class ConversationalAgent:
     
     
     async def _call_openai_with_mcp(self, user_input: str) -> str:
-        """Invoca Azure OpenAI incluyendo la ventana de contexto conversacional, las funciones MCP y maneja llamadas de función"""
-        # Obtener resumen de contexto conversacional
-        context_summary = self.memory_manager.get_context_summary()
-        
-        # Construir mensajes con instrucciones del sistema, contexto y entrada del usuario
+        """Invoca Azure OpenAI incluyendo las funciones MCP y maneja llamadas de función"""
+        # Construir mensajes con instrucciones del sistema y entrada del usuario
         messages = [
             {"role": "system", "content": self.system_instructions},
-            {"role": "system", "content": context_summary},
             {"role": "user", "content": user_input}
         ]
+        
+        # Agregar memoria de sesión temporal (solo para esta conversación)
+        for memory in self.session_memory[-5:]:  # Últimas 5 interacciones
+            messages.insert(-1, {"role": "user", "content": memory["user"]})
+            messages.insert(-1, {"role": "assistant", "content": memory["assistant"]})
         
         # Solo incluir funciones si hay herramientas MCP disponibles
         if self.mcp_functions:
@@ -217,16 +193,30 @@ class ConversationalAgent:
             if msg.function_call:
                 fname = msg.function_call.name
                 params = json.loads(msg.function_call.arguments)
-                srv, tname = fname.split("_", 1)
-                result = await self.mcp_manager.connections[srv].call_tool(tname, params)
+                
+                # DEBUG: Mostrar qué función se está intentando llamar
+                logger.info(f"🔧 Intentando llamar función MCP: {fname}")
+                logger.debug(f"   Parámetros: {params}")
+                
+                try:
+                    # Usar método agnóstico del MCPManager
+                    result = await self.mcp_manager.call_tool_by_function_name(fname, params)
+                    logger.info(f"✅ Función MCP exitosa: {fname}")
+                    logger.debug(f"   Resultado: {result}")
+                except Exception as e:
+                    logger.error(f"❌ Error en función MCP {fname}: {e}")
+                    # Continuar con el flujo normal en caso de error
+                    return f"Lo siento, hubo un problema al procesar tu solicitud: {str(e)}"
+                
                 messages.append({"role": "assistant", "content": None, "function_call": msg.function_call.to_dict()})
                 messages.append({"role": "function", "name": fname, "content": json.dumps(result)})
                 follow = await self.azure_client.chat.completions.create(
                     model=self.openai_model,
                     messages=messages
                 )
-                return follow.choices[0].message.content
-            return msg.content
+                response = follow.choices[0].message.content
+            else:
+                response = msg.content
         else:
             # Sin herramientas MCP, usar conversación normal
             resp = await self.azure_client.chat.completions.create(
@@ -235,7 +225,15 @@ class ConversationalAgent:
                 max_tokens=1000,
                 temperature=0.7
             )
-            return resp.choices[0].message.content
+            response = resp.choices[0].message.content
+        
+        # Guardar interacción en memoria de sesión
+        self.session_memory.append({
+            "user": user_input,
+            "assistant": response
+        })
+        
+        return response
     
     
     async def process_query(self, user_input: str) -> str:
@@ -248,7 +246,6 @@ class ConversationalAgent:
         try:
             print(f"🤖 Procesando consulta: {user_input}")
             response = await self._call_openai_with_mcp(user_input)
-            self.memory_manager.add_interaction(user_input, response, {"intents": parsed_intents})
             print(f"✅ Respuesta generada ({len(response)} caracteres)")
             return response
         except Exception as e:
@@ -262,18 +259,6 @@ class ConversationalAgent:
             await self.mcp_manager.disconnect_all()
         logger.info("🧹 Recursos del agente limpiados")
     
-
-    def get_short_term_memory(self) -> str:
-        """Devuelve el resumen de la memoria de corto plazo (short term memory) de la conversación."""
-        return self.memory_manager.get_context_summary()
-    
-
-    def add_to_short_term_memory(self, user_input: str, agent_response: str, metadata: Dict[str, Any] = None):
-        """Agrega una interacción a la memoria de corto plazo."""
-        if metadata is None:
-            metadata = {}
-        self.memory_manager.add_interaction(user_input, agent_response, metadata)
-
 
 async def main():
     print("🧠 EconomIAssist - Agente Conversacional Modular")

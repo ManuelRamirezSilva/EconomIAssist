@@ -62,7 +62,7 @@ servers:
   calendar:
     name: "calendar"
     description: "Servidor MCP para gestión de calendario y eventos"
-    command: ["python", "src/mcp_servers/calendar_server.py"]
+    command: ["python", ""]
     auto_connect: false
     priority: 4
     capabilities:

@@ -403,26 +403,6 @@ class MCPManager:
         self.connection_stats.clear()
         logger.info("🔌 Desconectado de todos los servidores MCP")
 
-    # Métodos de compatibilidad con tu código existente
-    async def connect_tavily_server(self) -> bool:
-        """Método de compatibilidad: conecta al servidor Tavily"""
-        return await self.connect_server_by_name("tavily")
-    
-    async def search_web(self, query: str, max_results: int = 5) -> Optional[str]:
-        """Método de compatibilidad: búsqueda web usando Tavily"""
-        result = await self.call_tool_smart("web_search", "search", {
-            "query": query,
-            "max_results": max_results
-        })
-        
-        if result:
-            # Formatear resultados para el LLM
-            content = result.get("content", [])
-            if isinstance(content, list) and content:
-                return content[0].get("text", str(result))
-            return str(result)
-        
-        return None
 
 # Función de prueba mejorada
 async def test_mcp_manager():

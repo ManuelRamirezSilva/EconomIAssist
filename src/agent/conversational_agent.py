@@ -116,7 +116,7 @@ class ConversationalAgent:
             await self._connect_mcp_servers()
             # Configurar herramientas MCP
             await self._setup_mcp_tools()
-            logger.info("✅ Agente conversacional inicializado con MCP real")
+            logger.info("✅ Agente conversacional inicializado con MCP")
             return True
         except Exception as e:
             logger.error(f"❌ Error inicializando agente: {e}")

@@ -1,0 +1,15 @@
+mcp_servers:
+  custom_server_example:
+    auto_connect: false
+    capabilities:
+    - custom_capability
+    command:
+    - python
+    - -m
+    - my_custom_mcp_server
+    description: Ejemplo de servidor personalizado
+    env_vars:
+      API_KEY: $MY_API_KEY
+    priority: 1
+    required_env_keys:
+    - MY_API_KEY

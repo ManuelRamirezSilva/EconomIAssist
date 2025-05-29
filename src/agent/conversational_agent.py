@@ -101,19 +101,63 @@ class ConversationalAgent:
             return False
     
     
-    def _build_system_instructions(self, available_tools: Dict[str, List[str]]) -> str:
-        """Crea instrucciones de sistema describiendo el agente y sus herramientas MCP"""
-        date_str = datetime.now().strftime("%d de %B de %Y")
-        instr = [
-            f"Hoy es {date_str}.",
-            "Eres EconomIAssist, un asistente financiero personal.",
-            "Dispones de las siguientes herramientas MCP para tareas especializadas:"
-        ]
-        for srv, tools in available_tools.items():
-            instr.append(f"- Servidor '{srv}': herramientas {', '.join(tools)}.")
-        instr.append("Cuando recibas una llamada de función, invoca la herramienta adecuada con los parámetros proporcionados.")
+    def _load_system_instructions(self) -> str:
+        """Carga las instrucciones del sistema desde archivo externo"""
+        instructions_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'system_instructions.txt')
         
-        return "\n".join(instr)
+        try:
+            with open(instructions_path, 'r', encoding='utf-8') as f:
+                instructions_template = f.read()
+            return instructions_template
+        except FileNotFoundError:
+            logger.warning(f"⚠️ Archivo de instrucciones no encontrado: {instructions_path}")
+            # Fallback a instrucciones básicas
+            return "Eres EconomIAssist, un asistente financiero personal. {tools_description}"
+        except Exception as e:
+            logger.error(f"❌ Error cargando instrucciones: {e}")
+            return "Eres EconomIAssist, un asistente financiero personal. {tools_description}"
+    
+    def _build_system_instructions(self, available_tools: Dict[str, List[str]]) -> str:
+        """Crea instrucciones de sistema usando template externo y herramientas MCP"""
+        date_str = datetime.now().strftime("%d de %B de %Y")
+        
+        # Cargar template de instrucciones
+        instructions_template = self._load_system_instructions()
+        
+        # Construir descripción de herramientas de forma genérica
+        tools_description = []
+        
+        for srv, tools in available_tools.items():
+            tools_description.append(f"- Servidor '{srv}': {', '.join(tools)}")
+        
+        tools_text = "\n".join(tools_description)
+        
+        # Reemplazar placeholders en el template
+        final_instructions = instructions_template.format(
+            tools_description=tools_text
+        )
+        
+        # Agregar fecha al inicio
+        return f"Hoy es {date_str}.\n\n{final_instructions}"
+    
+    
+    async def _connect_mcp_servers(self):
+        """Conecta a todos los servidores MCP disponibles usando auto-discovery"""
+        # Usar el nuevo sistema de auto-conexión
+        connection_results = await self.mcp_manager.auto_connect_servers()
+        
+        connected_count = sum(1 for success in connection_results.values() if success)
+        total_count = len(connection_results)
+        
+        if connected_count > 0:
+            logger.info(f"🌐 {connected_count}/{total_count} servidores MCP conectados")
+            
+            # Mostrar estadísticas detalladas
+            stats = self.mcp_manager.get_connection_stats()
+            logger.info(f"📊 Capacidades disponibles: {list(stats['servers_by_capability'].keys())}")
+        else:
+            logger.warning("⚠️ No se pudieron conectar servidores MCP")
+    
     
     async def _setup_mcp_tools(self):
         """Configura las herramientas MCP disponibles"""
@@ -134,26 +178,38 @@ class ConversationalAgent:
         logger.info(f"🔧 Total funciones MCP disponibles: {len(self.mcp_functions)}")
         logger.debug(f"📋 Instrucciones del sistema:\n{self.system_instructions}")
     
+    async def _setup_azure_openai(self):
+        """Configura Azure OpenAI"""
+        try:
+            azure_config = AzureOpenAIConfig()
+            self.azure_client = azure_config.create_client()
+            self.openai_model = azure_config.deployment_name
+            logger.info("✅ Azure OpenAI configurado correctamente")
+        except Exception as e:
+            logger.error(f"❌ Error configurando Azure OpenAI: {e}")
+            raise
+    
+    
     async def _call_openai_with_mcp(self, user_input: str) -> str:
         """Invoca Azure OpenAI incluyendo las funciones MCP y maneja llamadas de función"""
+        # Construir mensajes con instrucciones del sistema y entrada del usuario
         messages = [
             {"role": "system", "content": self.system_instructions},
             {"role": "user", "content": user_input}
         ]
         
-        # Agregar memoria de sesión temporal
-        for memory in self.session_memory[-5:]:
+        # Agregar memoria de sesión temporal (solo para esta conversación)
+        for memory in self.session_memory[-5:]:  # Últimas 5 interacciones
             messages.insert(-1, {"role": "user", "content": memory["user"]})
             messages.insert(-1, {"role": "assistant", "content": memory["assistant"]})
         
+        # Solo incluir funciones si hay herramientas MCP disponibles
         if self.mcp_functions:
             resp = await self.azure_client.chat.completions.create(
                 model=self.openai_model,
                 messages=messages,
                 functions=self.mcp_functions,
-                function_call="auto",
-                temperature=0.1,
-                max_tokens=1500
+                function_call="auto"
             )
             
             msg = resp.choices[0].message
@@ -161,28 +217,31 @@ class ConversationalAgent:
                 fname = msg.function_call.name
                 params = json.loads(msg.function_call.arguments)
                 
-                logger.info(f"🔧 Intentando llamar función MCP: {fname}")
-                logger.debug(f"   Parámetros: {params}")
+                # DEBUG: Mostrar qué función se está intentando llamar
+                print(f"🔧 Intentando llamar función MCP: {fname}")
+                print(f"   Parámetros: {params}")
                 
                 try:
+                    # Usar método agnóstico del MCPManager
                     result = await self.mcp_manager.call_tool_by_function_name(fname, params)
-                    logger.info(f"✅ Función MCP exitosa: {fname}")
-                    logger.debug(f"   Resultado: {result}")
+                    print(f"✅ Función MCP exitosa: {fname}")
+                    print(f"   Resultado: {result}")
                 except Exception as e:
-                    logger.error(f"❌ Error en función MCP {fname}: {e}")
+                    print(f"❌ Error en función MCP {fname}: {e}")
+                    # Continuar con el flujo normal en caso de error
                     return f"Lo siento, hubo un problema al procesar tu solicitud: {str(e)}"
                 
                 messages.append({"role": "assistant", "content": None, "function_call": msg.function_call.to_dict()})
                 messages.append({"role": "function", "name": fname, "content": json.dumps(result)})
                 follow = await self.azure_client.chat.completions.create(
                     model=self.openai_model,
-                    messages=messages,
-                    temperature=0.7
+                    messages=messages
                 )
                 response = follow.choices[0].message.content
             else:
                 response = msg.content
         else:
+            # Sin herramientas MCP, usar conversación normal
             resp = await self.azure_client.chat.completions.create(
                 model=self.openai_model,
                 messages=messages,
@@ -191,6 +250,7 @@ class ConversationalAgent:
             )
             response = resp.choices[0].message.content
         
+        # Guardar interacción en memoria de sesión
         self.session_memory.append({
             "user": user_input,
             "assistant": response

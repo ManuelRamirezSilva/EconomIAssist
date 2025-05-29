@@ -26,6 +26,8 @@ class MCPServerSpec:
     priority: int = 1
     auto_connect: bool = True
     health_check: Optional[Callable] = None
+    docker_config: Optional[Dict[str, Any]] = None
+    usage_instructions: Optional[str] = None
     
     def is_available(self) -> bool:
         """Verifica si el servidor puede conectarse (todas las env vars están disponibles)"""
@@ -93,6 +95,15 @@ class MCPServerRegistry:
                     priority=spec.get('priority', 1),
                     auto_connect=spec.get('auto_connect', True)
                 )
+                
+                # Agregar configuración adicional de Docker si existe
+                if 'docker_config' in spec:
+                    server_spec.docker_config = spec['docker_config']
+                
+                # Agregar instrucciones de uso si existen
+                if 'usage_instructions' in spec:
+                    server_spec.usage_instructions = spec['usage_instructions']
+                
                 self.register_server(server_spec)
                 
             logger.info(f"📄 Configuración cargada desde: {config_file}")

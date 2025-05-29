@@ -2,95 +2,70 @@
 # Este archivo define los servidores MCP disponibles y su configuración
 
 servers:
-  # Servidor Tavily - Búsqueda Web
   tavily:
-    name: "tavily"
-    description: "Servidor MCP para búsqueda web usando Tavily API"
+    name: tavily
+    description: Servidor MCP para búsqueda web usando Tavily API
     command: ["npx", "tavily-mcp"]
     auto_connect: true
     priority: 1
     capabilities:
-      - "web_search"
-      - "news_search"
-      - "real_time_data"
+      - web_search
+      - news_search
+      - real_time_data
     environment:
       TAVILY_API_KEY: "${TAVILY_API_KEY}"
-    tools:
-      - search
-      - news_search
+    tools: []
     resources: []
     
-  # Servidor KnowledgeBase - Memoria del Usuario (MCP Puro)
   knowledge_base:
-    name: "knowledge_base"
-    description: "Servidor MCP para memoria conversacional usando KnowledgeBase Server"
+    name: knowledge_base
+    description: Servidor MCP para memoria conversacional usando KnowledgeBase Server
     command: ["docker", "run", "--interactive", "--detach", "--name", "economyassist-kb", "--volume", "knowledgebase:/db", "mbcrawfo/knowledge-base-server"]
     auto_connect: true
     priority: 2
     capabilities:
-      - "user_memory"
-      - "conversation_history"
-      - "context_storage"
-      - "memory_search"
-      - "accounting_records"
-      - "financial_tracking"
+      - user_memory
+      - conversation_history
+      - context_storage
+      - memory_search
+      - accounting_records
+      - financial_tracking
     environment:
-      DATABASE_NAME: "user_financial_records.sqlite"
-    tools: []  # Se auto-descubren dinámicamente
+      DATABASE_NAME: user_financial_records.sqlite
+    tools: []
     resources: []
-    # Instrucciones específicas para el modelo sobre cómo usar estas herramientas
-    usage_instructions:
-      CreateMemory: |
-        IMPORTANTE: Para parámetros opcionales que terminan en 'Id' (como sourceMemoryNodeId), usa SIEMPRE null, no string vacío.
-        Ejemplo correcto: {"topic": "Perfil Personal", "memory": "Nombre: Juan", "importance": 0.8, "sourceMemoryNodeId": null}
-        Ejemplo incorrecto: {"topic": "Perfil Personal", "memory": "Nombre: Juan", "importance": 0.8, "sourceMemoryNodeId": ""}
-      general: |
-        - Para datos de perfil personal usa importance: 0.8
-        - Para gastos/ingresos usa importance: 0.7
-        - Para topics usa categorías claras: "Perfil Personal", "Finanzas", "Sueldo"
-        - Para context proporciona descripción breve del contenido
-
-
+    docker_config:
+      detached_mode: true
+      interactive_restart_command: ["docker", "run", "-i", "--name", "economyassist-kb", "--volume", "knowledgebase:/db", "mbcrawfo/knowledge-base-server"]
+      container_name: economyassist-kb
+      restart_on_connect: true
 
 # Configuración global de MCP
 settings:
   protocol_version: "2024-11-05"
   client_info:
-    name: "EconomIAssist"
+    name: EconomIAssist
     version: "1.0.0"
   connection_timeout: 30
   retry_attempts: 3
-  log_level: "INFO"
-  
-  # Instrucciones globales para el modelo sobre uso de herramientas MCP
-  global_function_calling_instructions: |
-    REGLAS IMPORTANTES para llamadas de función:
-    1. Para parámetros opcionales que terminan en 'Id', usa SIEMPRE null (no string vacío "")
-    2. Para CreateMemory específicamente:
-       - sourceMemoryNodeId: null (nunca usar "")
-       - importance: 0.7-0.8 para datos importantes
-       - topic: usar categorías descriptivas
-       - context: descripción clara del contenido
-    3. Temperatura baja (0.1) para función calling, normal (0.7) para respuestas
-    4. Si una función falla una vez, NO cambiar los parámetros automáticamente
-
+  log_level: INFO
 
 # Mapeo de capacidades a casos de uso
 capability_mapping:
   web_search:
     use_cases:
-      - "búsqueda de tasas de cambio actuales"
-      - "noticias financieras"
-      - "información económica en tiempo real"
-    preferred_server: "tavily"
+      - búsqueda de tasas de cambio actuales
+      - noticias financieras
+      - información económica en tiempo real
+    preferred_server: tavily
     
   user_memory:
     use_cases:
-      - "recordar preferencias del usuario"
-      - "almacenar contexto conversacional"
-      - "recuperar interacciones pasadas"
-      - "personalizar respuestas financieras"
-      - "guardar información de perfil"
-      - "registrar gastos e ingresos"
-    preferred_server: "knowledge_base"
+      - recordar preferencias del usuario
+      - almacenar contexto conversacional
+      - recuperar interacciones pasadas
+      - personalizar respuestas financieras
+      - guardar información de perfil
+      - registrar gastos e ingresos
+    preferred_server: knowledge_base
 

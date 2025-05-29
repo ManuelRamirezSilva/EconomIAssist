@@ -291,52 +291,44 @@ class MCPServerConnection:
                 logger.info(f"🐳 Contenedor Docker ya existe: {container_name}")
     
     async def _connect_to_existing_container(self) -> bool:
-        """Conecta a un contenedor Docker existente para comunicación MCP"""
-        container_name = None
+        """Conecta a un contenedor Docker existente usando configuración del YAML"""
+        # Obtener configuración de Docker desde la especificación
+        docker_config = getattr(self.spec, 'docker_config', {})
         
-        # Extraer nombre del contenedor
-        if "--name" in self.spec.command:
-            name_index = self.spec.command.index("--name") + 1
-            if name_index < len(self.spec.command):
-                container_name = self.spec.command[name_index]
-        
-        if not container_name:
-            logger.error("No se pudo extraer el nombre del contenedor")
+        if not docker_config:
+            logger.error("No hay configuración Docker disponible para este servidor")
             return False
         
-        # Para knowledge_base, necesitamos conectar directamente al proceso principal
-        # que está ejecutando dotnet KnowledgeBaseServer.dll y escuchando stdin/stdout
+        container_name = docker_config.get('container_name')
+        interactive_restart_command = docker_config.get('interactive_restart_command')
+        restart_on_connect = docker_config.get('restart_on_connect', False)
+        
+        if not container_name or not interactive_restart_command:
+            logger.error("Configuración Docker incompleta")
+            return False
+        
         try:
-            # Método correcto: ejecutar el servidor MCP directamente sin docker exec
-            # El contenedor ya está ejecutando el servidor, necesitamos una nueva instancia
-            # O mejor aún, reiniciar el contenedor en modo interactivo
+            if restart_on_connect:
+                # Primero, parar el contenedor existente
+                logger.info(f"🔄 Reiniciando contenedor {container_name} en modo interactivo...")
+                
+                stop_process = await asyncio.create_subprocess_exec(
+                    "docker", "stop", container_name,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                await stop_process.wait()
+                
+                remove_process = await asyncio.create_subprocess_exec(
+                    "docker", "rm", container_name,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                await remove_process.wait()
             
-            # Primero, parar el contenedor existente
-            logger.info(f"🔄 Reiniciando contenedor {container_name} en modo interactivo...")
-            
-            stop_process = await asyncio.create_subprocess_exec(
-                "docker", "stop", container_name,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
-            await stop_process.wait()
-            
-            remove_process = await asyncio.create_subprocess_exec(
-                "docker", "rm", container_name,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
-            await remove_process.wait()
-            
-            # Ahora crear un nuevo contenedor en modo interactivo
-            interactive_cmd = [
-                "docker", "run", "-i", "--name", container_name, 
-                "--volume", "knowledgebase:/db", 
-                "mbcrawfo/knowledge-base-server"
-            ]
-            
+            # Crear nuevo contenedor usando comando del YAML
             self.process = await asyncio.create_subprocess_exec(
-                *interactive_cmd,
+                *interactive_restart_command,
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE

@@ -40,6 +40,21 @@ servers:
       container_name: economyassist-kb
       restart_on_connect: true
 
+  calculator:
+    name: calculator
+    description: Servidor MCP para realizar cálculos matemáticos precisos y confiables
+    command: ["python", "-m", "mcp_server_calculator"]
+    auto_connect: true
+    priority: 3
+    capabilities:
+      - mathematical_calculations
+      - arithmetic_operations
+      - expression_evaluation
+      - financial_calculations
+    environment: {}
+    tools: []
+    resources: []
+
 # Configuración global de MCP
 settings:
   protocol_version: "2024-11-05"
@@ -68,4 +83,13 @@ capability_mapping:
       - guardar información de perfil
       - registrar gastos e ingresos
     preferred_server: knowledge_base
+
+  mathematical_calculations:
+    use_cases:
+      - cálculos de presupuesto
+      - conversiones de moneda
+      - cálculos de interés y porcentajes
+      - operaciones aritméticas complejas
+      - evaluación de expresiones matemáticas
+    preferred_server: calculator
 

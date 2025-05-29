@@ -94,10 +94,10 @@ class ConversationalAgent:
             await self._connect_mcp_servers()
             # Configurar herramientas MCP
             await self._setup_mcp_tools()
-            logger.info("✅ Agente conversacional inicializado con MCP")
+            print("✅ Agente conversacional inicializado")
             return True
         except Exception as e:
-            logger.error(f"❌ Error inicializando agente: {e}")
+            print(f"❌ Error inicializando agente: {e}")
             return False
     
     
@@ -150,13 +150,9 @@ class ConversationalAgent:
         total_count = len(connection_results)
         
         if connected_count > 0:
-            logger.info(f"🌐 {connected_count}/{total_count} servidores MCP conectados")
-            
-            # Mostrar estadísticas detalladas
-            stats = self.mcp_manager.get_connection_stats()
-            logger.info(f"📊 Capacidades disponibles: {list(stats['servers_by_capability'].keys())}")
+            print(f"🌐 {connected_count}/{total_count} servidores MCP conectados")
         else:
-            logger.warning("⚠️ No se pudieron conectar servidores MCP")
+            print("⚠️ No se pudieron conectar servidores MCP")
     
     
     async def _setup_mcp_tools(self):
@@ -165,6 +161,7 @@ class ConversationalAgent:
         self.system_instructions = self._build_system_instructions(available_tools)
         self.mcp_functions = []
         
+        tool_count = 0
         for srv, conn in self.mcp_manager.connections.items():
             for tool in conn.tools.values():
                 function_def = {
@@ -173,10 +170,9 @@ class ConversationalAgent:
                     "parameters": tool.input_schema or {"type": "object", "properties": {}}
                 }
                 self.mcp_functions.append(function_def)
-                logger.info(f"📝 Función MCP registrada: {function_def['name']} - {function_def['description'][:50]}...")
+                tool_count += 1
         
-        logger.info(f"🔧 Total funciones MCP disponibles: {len(self.mcp_functions)}")
-        logger.debug(f"📋 Instrucciones del sistema:\n{self.system_instructions}")
+        print(f"🔧 {tool_count} herramientas MCP disponibles")
     
     async def _setup_azure_openai(self):
         """Configura Azure OpenAI"""
@@ -184,9 +180,8 @@ class ConversationalAgent:
             azure_config = AzureOpenAIConfig()
             self.azure_client = azure_config.create_client()
             self.openai_model = azure_config.deployment_name
-            logger.info("✅ Azure OpenAI configurado correctamente")
         except Exception as e:
-            logger.error(f"❌ Error configurando Azure OpenAI: {e}")
+            print(f"❌ Error configurando Azure OpenAI: {e}")
             raise
     
     

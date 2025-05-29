@@ -97,9 +97,20 @@ class MCPServerConnection:
             
             if response and "result" in response:
                 logger.info(f"✅ Conectado al servidor MCP: {self.spec.name}")
+                
+                # Enviar mensaje de initialized para completar handshake
+                initialized_notification = {
+                    "jsonrpc": "2.0",
+                    "method": "notifications/initialized"
+                }
+                await self._send_request(initialized_notification)
+                
+                # Esperar un poco para que el servidor procese el handshake
+                await asyncio.sleep(0.1)
+                
                 self.is_connected = True
                 
-                # Descubrir herramientas disponibles
+                # Descubrir herramientas disponibles (después del handshake completo)
                 await self._discover_tools()
                 await self._discover_resources()
                 
@@ -127,15 +138,21 @@ class MCPServerConnection:
             return None
             
         try:
-            line = await self.process.stdout.readline()
+            line = await asyncio.wait_for(self.process.stdout.readline(), timeout=10.0)
             if line:
-                return json.loads(line.decode().strip())
+                line_str = line.decode().strip()
+                return json.loads(line_str)
+            else:
+                return None
+        except asyncio.TimeoutError:
+            logger.error("Timeout leyendo respuesta del servidor")
+            return None
         except json.JSONDecodeError as e:
             logger.error(f"Error decodificando respuesta JSON: {e}")
+            return None
         except Exception as e:
             logger.error(f"Error leyendo respuesta: {e}")
-            
-        return None
+            return None
     
     async def _discover_tools(self):
         """Descubre herramientas disponibles en el servidor"""
@@ -158,7 +175,7 @@ class MCPServerConnection:
                         input_schema=tool.get("inputSchema", {})
                     )
                     self.tools[tool["name"]] = mcp_tool
-                    logger.info(f"🔧 Herramienta descubierta: {tool['name']}")
+                    # Eliminar log individual por herramienta - muy verboso
                     
         except Exception as e:
             logger.error(f"Error descubriendo herramientas: {e}")
@@ -185,7 +202,7 @@ class MCPServerConnection:
                         mime_type=resource.get("mimeType", "text/plain")
                     )
                     self.resources[resource["uri"]] = mcp_resource
-                    logger.info(f"📄 Recurso descubierto: {resource['uri']}")
+                    # Eliminar log individual por recurso - muy verboso
                     
         except Exception as e:
             logger.error(f"Error descubriendo recursos: {e}")
@@ -360,9 +377,20 @@ class MCPServerConnection:
             
             if response and "result" in response:
                 logger.info(f"✅ Conectado al servidor MCP: {self.spec.name}")
+                
+                # Enviar mensaje de initialized para completar handshake
+                initialized_notification = {
+                    "jsonrpc": "2.0",
+                    "method": "notifications/initialized"
+                }
+                await self._send_request(initialized_notification)
+                
+                # Esperar un poco para que el servidor procese el handshake
+                await asyncio.sleep(0.1)
+                
                 self.is_connected = True
                 
-                # Descubrir herramientas disponibles
+                # Descubrir herramientas disponibles (después del handshake completo)
                 await self._discover_tools()
                 await self._discover_resources()
                 
@@ -389,8 +417,6 @@ class MCPManager:
         auto_connect_specs = self.registry.get_auto_connect_servers()
         connection_results = {}
         
-        logger.info(f"🚀 Iniciando auto-conexión de {len(auto_connect_specs)} servidores MCP...")
-        
         # Conectar en orden de prioridad
         priority_order = self.registry.get_server_priorities()
         
@@ -401,12 +427,10 @@ class MCPManager:
                 connection_results[server_name] = success
                 
                 if success:
-                    logger.info(f"✅ {server_name}: Conectado ({len(self.connections[server_name].tools)} herramientas)")
+                    tool_count = len(self.connections[server_name].tools)
+                    print(f"✅ {server_name}: Conectado ({tool_count} herramientas)")
                 else:
-                    logger.warning(f"⚠️ {server_name}: Error de conexión")
-        
-        total_connected = sum(1 for success in connection_results.values() if success)
-        logger.info(f"📊 Resumen: {total_connected}/{len(auto_connect_specs)} servidores conectados")
+                    print(f"❌ {server_name}: Error de conexión")
         
         return connection_results
     

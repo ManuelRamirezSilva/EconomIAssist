@@ -188,10 +188,6 @@ class MCPServerRegistry:
         for name, spec in self.servers.items():
             if spec.is_available():
                 available[name] = spec
-                logger.info(f"✅ Servidor disponible: {name} - {spec.description}")
-            else:
-                missing_keys = [key for key in spec.required_env_keys if not os.getenv(key)]
-                logger.warning(f"⚠️ Servidor no disponible: {name} (faltan: {missing_keys})")
         
         return available
     

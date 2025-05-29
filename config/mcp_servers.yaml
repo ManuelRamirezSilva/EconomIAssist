@@ -58,24 +58,31 @@ servers:
       - get_forecast
     resources: []
 
-  # Servidor Calendar (futuro)
-  calendar:
-    name: "calendar"
-    description: "Servidor MCP para gestión de calendario y eventos"
-    command: ["python", ""]
-    auto_connect: false
+  # Servidor Google Calendar
+  google_calendar:
+    name: "google_calendar"
+    description: "Servidor MCP para Google Calendar API - gestión completa de calendarios con OAuth Web Flow"
+    command: ["node", "src/mcp_servers/google_calendar_web.js"]
+    auto_connect: true
     priority: 4
     capabilities:
       - "calendar_management"
       - "event_scheduling"
-    environment: {}
+      - "calendar_integration"
+      - "meeting_management"
+    environment:
+      GOOGLE_OAUTH_PORT: "3000"
+      GOOGLE_REDIRECT_URI: "http://localhost:3000/oauth2callback"
     tools:
-      - add_event
-      - get_events
+      - list_calendars
+      - list_events
+      - create_event
       - update_event
       - delete_event
-    resources:
-      - "file:///calendar.json"
+      - get_event
+      - find_available_slots
+      - get_upcoming_events
+    resources: []
 
 # Configuración global de MCP
 settings:
@@ -114,4 +121,7 @@ capability_mapping:
       - "agendar eventos"
       - "consultar calendario"
       - "recordatorios"
-    preferred_server: "calendar"
+      - "gestión de reuniones"
+      - "encontrar horarios disponibles"
+      - "programar citas"
+    preferred_server: "google_calendar"

@@ -173,11 +173,17 @@ class ConversationalAgent:
         self.mcp_functions = []
         for srv, conn in self.mcp_manager.connections.items():
             for tool in conn.tools.values():
+                function_name = f"{srv}_{tool.name}"
                 self.mcp_functions.append({
-                    "name": f"{srv}_{tool.name}",
+                    "name": function_name,
                     "description": tool.description,
                     "parameters": tool.input_schema
                 })
+                logger.debug(f"🔧 Función MCP registrada: {function_name}")
+        
+        logger.info(f"📋 Total funciones MCP disponibles: {len(self.mcp_functions)}")
+        if self.mcp_functions:
+            logger.debug(f"🎯 Funciones: {[f['name'] for f in self.mcp_functions]}")
     
     
     async def _setup_azure_openai(self):
@@ -217,7 +223,27 @@ class ConversationalAgent:
             if msg.function_call:
                 fname = msg.function_call.name
                 params = json.loads(msg.function_call.arguments)
-                srv, tname = fname.split("_", 1)
+                
+                # Better function name parsing to handle multiple underscores
+                # Find the server by checking which server name is a prefix of the function name
+                srv = None
+                tname = None
+                
+                for server_name in self.mcp_manager.connections.keys():
+                    if fname.startswith(f"{server_name}_"):
+                        srv = server_name
+                        tname = fname[len(server_name) + 1:]  # Remove "server_name_" prefix
+                        break
+                
+                if srv is None:
+                    # Fallback to original split logic
+                    srv, tname = fname.split("_", 1)
+                
+                logger.info(f"🔧 Llamando función: {fname} -> servidor: {srv}, herramienta: {tname}")
+                
+                if srv not in self.mcp_manager.connections:
+                    raise ValueError(f"Servidor MCP '{srv}' no encontrado. Disponibles: {list(self.mcp_manager.connections.keys())}")
+                
                 result = await self.mcp_manager.connections[srv].call_tool(tname, params)
                 messages.append({"role": "assistant", "content": None, "function_call": msg.function_call.to_dict()})
                 messages.append({"role": "function", "name": fname, "content": json.dumps(result)})

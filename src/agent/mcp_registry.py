@@ -87,18 +87,19 @@ class MCPServerRegistry:
             priority=20
         ))
         
-        # 📅 Google Calendar
+        # 📅 Google Calendar (Web OAuth)
         self.register_server(MCPServerSpec(
-            name="calendar",
-            description="Gestión de eventos y recordatorios",
-            command=["python", "-m", "mcp_servers.calendar"],
+            name="google_calendar",
+            description="Gestión completa de Google Calendar con OAuth Web Flow",
+            command=["node", "src/mcp_servers/google_calendar_web.js"],
             env_vars={
-                "GOOGLE_CALENDAR_API_KEY": "$GOOGLE_CALENDAR_API_KEY",
-                "CALENDAR_ID": "$GOOGLE_CALENDAR_ID"
+                "GOOGLE_OAUTH_PORT": "3000",
+                "GOOGLE_REDIRECT_URI": "http://localhost:3000/oauth2callback"
             },
-            required_env_keys=["GOOGLE_CALENDAR_API_KEY"],
-            capabilities=["calendar_events", "reminders", "scheduling"],
-            priority=15
+            required_env_keys=[],
+            capabilities=["calendar_management", "event_scheduling", "meeting_management", "calendar_integration"],
+            priority=15,
+            auto_connect=True
         ))
         
         # 🏦 BCRA (Banco Central República Argentina)

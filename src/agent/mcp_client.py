@@ -59,11 +59,13 @@ class MCPServerConnection:
             logger.debug(f"   Comando: {' '.join(self.spec.command)}")
             logger.debug(f"   Env vars: {list(runtime_env.keys())}")
             
-            # Si es un contenedor Docker con --detach, manejarlo especialmente
+            # Manejar contenedores Docker con --detach especialmente
             if "docker" in self.spec.command and "--detach" in self.spec.command:
-                await self._handle_detached_container()
+                await self._handle_detached_container(full_env)
+                # Para contenedores detached, conectar al proceso existente
+                return await self._connect_to_existing_container()
             
-            # Iniciar proceso del servidor
+            # Iniciar proceso del servidor normalmente
             self.process = await asyncio.create_subprocess_exec(
                 *self.spec.command,
                 stdin=asyncio.subprocess.PIPE,
@@ -260,6 +262,128 @@ class MCPServerConnection:
             self.is_connected = False
             logger.info(f"🔌 Desconectado del servidor: {self.spec.name}")
 
+    async def _handle_detached_container(self, env):
+        """Maneja contenedores Docker que usan --detach"""
+        container_name = None
+        
+        # Extraer nombre del contenedor del comando
+        if "--name" in self.spec.command:
+            name_index = self.spec.command.index("--name") + 1
+            if name_index < len(self.spec.command):
+                container_name = self.spec.command[name_index]
+        
+        if container_name:
+            # Verificar si el contenedor ya existe
+            check_cmd = ["docker", "ps", "-q", "--filter", f"name={container_name}"]
+            result = await asyncio.create_subprocess_exec(
+                *check_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            )
+            stdout, _ = await result.communicate()
+            
+            if not stdout.strip():
+                # El contenedor no existe, crearlo
+                logger.info(f"🐳 Creando contenedor Docker: {container_name}")
+                create_process = await asyncio.create_subprocess_exec(
+                    *self.spec.command, env=env
+                )
+                await create_process.wait()
+            else:
+                logger.info(f"🐳 Contenedor Docker ya existe: {container_name}")
+    
+    async def _connect_to_existing_container(self) -> bool:
+        """Conecta a un contenedor Docker existente para comunicación MCP"""
+        container_name = None
+        
+        # Extraer nombre del contenedor
+        if "--name" in self.spec.command:
+            name_index = self.spec.command.index("--name") + 1
+            if name_index < len(self.spec.command):
+                container_name = self.spec.command[name_index]
+        
+        if not container_name:
+            logger.error("No se pudo extraer el nombre del contenedor")
+            return False
+        
+        # Para knowledge_base, necesitamos conectar directamente al proceso principal
+        # que está ejecutando dotnet KnowledgeBaseServer.dll y escuchando stdin/stdout
+        try:
+            # Método correcto: ejecutar el servidor MCP directamente sin docker exec
+            # El contenedor ya está ejecutando el servidor, necesitamos una nueva instancia
+            # O mejor aún, reiniciar el contenedor en modo interactivo
+            
+            # Primero, parar el contenedor existente
+            logger.info(f"🔄 Reiniciando contenedor {container_name} en modo interactivo...")
+            
+            stop_process = await asyncio.create_subprocess_exec(
+                "docker", "stop", container_name,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            await stop_process.wait()
+            
+            remove_process = await asyncio.create_subprocess_exec(
+                "docker", "rm", container_name,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            await remove_process.wait()
+            
+            # Ahora crear un nuevo contenedor en modo interactivo
+            interactive_cmd = [
+                "docker", "run", "-i", "--name", container_name, 
+                "--volume", "knowledgebase:/db", 
+                "mbcrawfo/knowledge-base-server"
+            ]
+            
+            self.process = await asyncio.create_subprocess_exec(
+                *interactive_cmd,
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            
+            # Esperar un poco para que el servidor se inicie
+            await asyncio.sleep(2)
+            
+            # Enviar mensaje de inicialización MCP
+            init_request = {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {
+                        "tools": {},
+                        "resources": {}
+                    },
+                    "clientInfo": {
+                        "name": "EconomIAssist",
+                        "version": "1.0.0"
+                    }
+                }
+            }
+            
+            await self._send_request(init_request)
+            response = await self._read_response()
+            
+            if response and "result" in response:
+                logger.info(f"✅ Conectado al servidor MCP: {self.spec.name}")
+                self.is_connected = True
+                
+                # Descubrir herramientas disponibles
+                await self._discover_tools()
+                await self._discover_resources()
+                
+                return True
+            else:
+                logger.error(f"❌ Error inicializando {self.spec.name}: {response}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"❌ Error conectando al contenedor {container_name}: {e}")
+            return False
+    
+
 class MCPManager:
     """Gestor automatizado de múltiples conexiones MCP con descubrimiento dinámico"""
     
@@ -415,43 +539,6 @@ class MCPManager:
         self.connections.clear()
         self.connection_stats.clear()
         logger.info("🔌 Desconectado de todos los servidores MCP")
-
-    async def _handle_detached_container(self):
-        """Maneja la conexión de contenedores Docker que se inician en modo detach"""
-        try:
-            # Aquí asumimos que el contenedor se está ejecutando en el mismo host
-            container_id = self.spec.command[-1]  # Suponiendo que el ID del contenedor es el último argumento
-            logger.info(f"🐳 Esperando a que el contenedor {container_id} esté listo...")
-            
-            # Esperar a que el contenedor esté en estado 'running'
-            await asyncio.sleep(5)  # Espera inicial
-            
-            while True:
-                # Comprobar el estado del contenedor
-                result = await asyncio.create_subprocess_exec(
-                    "docker", "inspect", "-f", "{{.State.Status}}", container_id,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE
-                )
-                
-                stdout, stderr = await result.communicate()
-                status = stdout.decode().strip()
-                
-                if status == "running":
-                    logger.info(f"✅ Contenedor {container_id} está en ejecución")
-                    break
-                
-                logger.info(f"⏳ Contenedor {container_id} estado: {status}, esperando...")
-                await asyncio.sleep(5)  # Volver a comprobar después de un tiempo
-                
-            # Una vez que el contenedor está en ejecución, proceder a conectar
-            logger.info(f"🔌 Conectando a contenedor {container_id}...")
-            self.is_connected = True
-            
-        except Exception as e:
-            logger.error(f"Error manejando contenedor detach {self.spec.name}: {e}")
-            self.is_connected = False
-    
 
 
 # Función de prueba mejorada

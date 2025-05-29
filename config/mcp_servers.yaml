@@ -24,7 +24,7 @@ servers:
   knowledge_base:
     name: "knowledge_base"
     description: "Servidor MCP para memoria conversacional usando KnowledgeBase Server"
-    command: ["docker", "run", "--interactive", "--rm", "--volume", "knowledgebase:/db", "mbcrawfo/knowledge-base-server"]
+    command: ["docker", "run", "--interactive", "--detach", "--name", "economyassist-kb", "--volume", "knowledgebase:/db", "mbcrawfo/knowledge-base-server"]
     auto_connect: true
     priority: 2
     capabilities:
@@ -32,27 +32,24 @@ servers:
       - "conversation_history"
       - "context_storage"
       - "memory_search"
+      - "accounting_records"
+      - "financial_tracking"
     environment:
-      DATABASE_NAME: "user_memory.sqlite"
+      DATABASE_NAME: "user_financial_records.sqlite"
     tools: []  # Se auto-descubren dinámicamente
     resources: []
+    # Instrucciones específicas para el modelo sobre cómo usar estas herramientas
+    usage_instructions:
+      CreateMemory: |
+        IMPORTANTE: Para parámetros opcionales que terminan en 'Id' (como sourceMemoryNodeId), usa SIEMPRE null, no string vacío.
+        Ejemplo correcto: {"topic": "Perfil Personal", "memory": "Nombre: Juan", "importance": 0.8, "sourceMemoryNodeId": null}
+        Ejemplo incorrecto: {"topic": "Perfil Personal", "memory": "Nombre: Juan", "importance": 0.8, "sourceMemoryNodeId": ""}
+      general: |
+        - Para datos de perfil personal usa importance: 0.8
+        - Para gastos/ingresos usa importance: 0.7
+        - Para topics usa categorías claras: "Perfil Personal", "Finanzas", "Sueldo"
+        - Para context proporciona descripción breve del contenido
 
-  # # Servidor Weather (opcional)
-  # weather:
-  #   name: "weather"
-  #   description: "Servidor MCP para información meteorológica"
-  #   command: ["npx", "-y", "@modelcontextprotocol/server-weather"]
-  #   auto_connect: false
-  #   priority: 4
-  #   capabilities:
-  #     - "weather_data"
-  #     - "forecasts"
-  #   environment:
-  #     WEATHER_API_KEY: "${WEATHER_API_KEY}"
-  #   tools:
-  #     - get_weather
-  #     - get_forecast
-  #   resources: []
 
 
 # Configuración global de MCP
@@ -64,6 +61,18 @@ settings:
   connection_timeout: 30
   retry_attempts: 3
   log_level: "INFO"
+  
+  # Instrucciones globales para el modelo sobre uso de herramientas MCP
+  global_function_calling_instructions: |
+    REGLAS IMPORTANTES para llamadas de función:
+    1. Para parámetros opcionales que terminan en 'Id', usa SIEMPRE null (no string vacío "")
+    2. Para CreateMemory específicamente:
+       - sourceMemoryNodeId: null (nunca usar "")
+       - importance: 0.7-0.8 para datos importantes
+       - topic: usar categorías descriptivas
+       - context: descripción clara del contenido
+    3. Temperatura baja (0.1) para función calling, normal (0.7) para respuestas
+    4. Si una función falla una vez, NO cambiar los parámetros automáticamente
 
 
 # Mapeo de capacidades a casos de uso
@@ -81,24 +90,7 @@ capability_mapping:
       - "almacenar contexto conversacional"
       - "recuperar interacciones pasadas"
       - "personalizar respuestas financieras"
+      - "guardar información de perfil"
+      - "registrar gastos e ingresos"
     preferred_server: "knowledge_base"
-    
-  # finance_data:
-  #   use_cases:
-  #     - "gestión de transacciones personales"
-  #     - "cálculo de balances"
-  #     - "conversiones de moneda"
-  #   preferred_server: "simple_finance"
-    
-  # weather_data:
-  #   use_cases:
-  #     - "pronóstico del tiempo"
-  #     - "condiciones climáticas"
-  #   preferred_server: "weather"
-    
-  # calendar_management:
-  #   use_cases:
-  #     - "agendar eventos"
-  #     - "consultar calendario"
-  #     - "recordatorios"
-  #   preferred_server: "calendar"
+

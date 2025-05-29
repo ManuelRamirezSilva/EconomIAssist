@@ -112,81 +112,48 @@ class ConversationalAgent:
         for srv, tools in available_tools.items():
             instr.append(f"- Servidor '{srv}': herramientas {', '.join(tools)}.")
         instr.append("Cuando recibas una llamada de función, invoca la herramienta adecuada con los parámetros proporcionados.")
+        
         return "\n".join(instr)
-    
-    
-    async def _connect_mcp_servers(self):
-        """Conecta a todos los servidores MCP disponibles usando auto-discovery"""
-        # Usar el nuevo sistema de auto-conexión
-        connection_results = await self.mcp_manager.auto_connect_servers()
-        
-        connected_count = sum(1 for success in connection_results.values() if success)
-        total_count = len(connection_results)
-        
-        if connected_count > 0:
-            logger.info(f"🌐 {connected_count}/{total_count} servidores MCP conectados")
-            
-            # Mostrar estadísticas detalladas
-            stats = self.mcp_manager.get_connection_stats()
-            logger.info(f"📊 Capacidades disponibles: {list(stats['servers_by_capability'].keys())}")
-        else:
-            logger.warning("⚠️ No se pudieron conectar servidores MCP")
-    
     
     async def _setup_mcp_tools(self):
         """Configura las herramientas MCP disponibles"""
         available_tools = await self.mcp_manager.get_available_tools()
         self.system_instructions = self._build_system_instructions(available_tools)
         self.mcp_functions = []
+        
         for srv, conn in self.mcp_manager.connections.items():
             for tool in conn.tools.values():
                 function_def = {
                     "name": f"{srv}_{tool.name}",
                     "description": tool.description,
-                    "parameters": tool.input_schema
+                    "parameters": tool.input_schema or {"type": "object", "properties": {}}
                 }
                 self.mcp_functions.append(function_def)
-                # DEBUG: Mostrar qué funciones se están registrando
                 logger.info(f"📝 Función MCP registrada: {function_def['name']} - {function_def['description'][:50]}...")
         
         logger.info(f"🔧 Total funciones MCP disponibles: {len(self.mcp_functions)}")
-        
-        # DEBUG: Mostrar las instrucciones del sistema
         logger.debug(f"📋 Instrucciones del sistema:\n{self.system_instructions}")
-    
-    
-    async def _setup_azure_openai(self):
-        """Configura Azure OpenAI"""
-        try:
-            azure_config = AzureOpenAIConfig()
-            self.azure_client = azure_config.create_client()
-            self.openai_model = azure_config.deployment_name
-            logger.info("✅ Azure OpenAI configurado correctamente")
-        except Exception as e:
-            logger.error(f"❌ Error configurando Azure OpenAI: {e}")
-            raise
-    
     
     async def _call_openai_with_mcp(self, user_input: str) -> str:
         """Invoca Azure OpenAI incluyendo las funciones MCP y maneja llamadas de función"""
-        # Construir mensajes con instrucciones del sistema y entrada del usuario
         messages = [
             {"role": "system", "content": self.system_instructions},
             {"role": "user", "content": user_input}
         ]
         
-        # Agregar memoria de sesión temporal (solo para esta conversación)
-        for memory in self.session_memory[-5:]:  # Últimas 5 interacciones
+        # Agregar memoria de sesión temporal
+        for memory in self.session_memory[-5:]:
             messages.insert(-1, {"role": "user", "content": memory["user"]})
             messages.insert(-1, {"role": "assistant", "content": memory["assistant"]})
         
-        # Solo incluir funciones si hay herramientas MCP disponibles
         if self.mcp_functions:
             resp = await self.azure_client.chat.completions.create(
                 model=self.openai_model,
                 messages=messages,
                 functions=self.mcp_functions,
-                function_call="auto"
+                function_call="auto",
+                temperature=0.1,
+                max_tokens=1500
             )
             
             msg = resp.choices[0].message
@@ -194,31 +161,28 @@ class ConversationalAgent:
                 fname = msg.function_call.name
                 params = json.loads(msg.function_call.arguments)
                 
-                # DEBUG: Mostrar qué función se está intentando llamar
                 logger.info(f"🔧 Intentando llamar función MCP: {fname}")
                 logger.debug(f"   Parámetros: {params}")
                 
                 try:
-                    # Usar método agnóstico del MCPManager
                     result = await self.mcp_manager.call_tool_by_function_name(fname, params)
                     logger.info(f"✅ Función MCP exitosa: {fname}")
                     logger.debug(f"   Resultado: {result}")
                 except Exception as e:
                     logger.error(f"❌ Error en función MCP {fname}: {e}")
-                    # Continuar con el flujo normal en caso de error
                     return f"Lo siento, hubo un problema al procesar tu solicitud: {str(e)}"
                 
                 messages.append({"role": "assistant", "content": None, "function_call": msg.function_call.to_dict()})
                 messages.append({"role": "function", "name": fname, "content": json.dumps(result)})
                 follow = await self.azure_client.chat.completions.create(
                     model=self.openai_model,
-                    messages=messages
+                    messages=messages,
+                    temperature=0.7
                 )
                 response = follow.choices[0].message.content
             else:
                 response = msg.content
         else:
-            # Sin herramientas MCP, usar conversación normal
             resp = await self.azure_client.chat.completions.create(
                 model=self.openai_model,
                 messages=messages,
@@ -227,7 +191,6 @@ class ConversationalAgent:
             )
             response = resp.choices[0].message.content
         
-        # Guardar interacción en memoria de sesión
         self.session_memory.append({
             "user": user_input,
             "assistant": response

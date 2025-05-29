@@ -2,126 +2,197 @@
 # Este archivo define los servidores MCP disponibles y su configuración
 
 servers:
-  # Servidor Tavily - Búsqueda Web
   tavily:
-    name: "tavily"
-    description: "Servidor MCP para búsqueda web usando Tavily API"
-    command: ["npx", "-y", "@modelcontextprotocol/server-tavily"]
+    name: tavily
+    description: Servidor MCP para búsqueda web usando Tavily API
+    command: ["npx", "tavily-mcp"]
     auto_connect: true
     priority: 1
     capabilities:
-      - "web_search"
-      - "news_search"
-      - "real_time_data"
+      - web_search
+      - news_search
+      - real_time_data
     environment:
       TAVILY_API_KEY: "${TAVILY_API_KEY}"
-    tools:
-      - search
-      - news_search
+    tools: []
     resources: []
     
-  # Servidor Simple Finance - Datos Financieros Locales
-  simple_finance:
-    name: "simple_finance"
-    description: "Servidor MCP local para datos financieros y transacciones"
-    command: ["python", "src/mcp_servers/simple_finance.py"]
+  knowledge_base:
+    name: knowledge_base
+    description: Servidor MCP para memoria conversacional usando KnowledgeBase Server
+    command: ["docker", "run", "--interactive", "--detach", "--name", "economyassist-kb", "--volume", "knowledgebase:/db", "mbcrawfo/knowledge-base-server"]
     auto_connect: true
     priority: 2
     capabilities:
-      - "finance_data"
-      - "transactions"
-      - "currency_exchange"
-    environment: {}
-    tools:
-      - get_exchange_rate
-      - add_transaction
-      - get_transactions
-      - get_balance
-    resources:
-      - "file:///transactions.json"
-      - "file:///accounts.json"
+      - user_memory
+      - conversation_history
+      - context_storage
+      - memory_search
+      - accounting_records
+      - financial_tracking
+    environment:
+      DATABASE_NAME: user_financial_records.sqlite
+    tools: []
+    resources: []
+    docker_config:
+      detached_mode: true
+      interactive_restart_command: ["docker", "run", "-i", "--name", "economyassist-kb", "--volume", "knowledgebase:/db", "mbcrawfo/knowledge-base-server"]
+      container_name: economyassist-kb
+      restart_on_connect: true
 
-  # Servidor Weather (opcional)
-  weather:
-    name: "weather"
-    description: "Servidor MCP para información meteorológica"
-    command: ["npx", "-y", "@modelcontextprotocol/server-weather"]
-    auto_connect: false
+  calculator:
+    name: calculator
+    description: Servidor MCP para realizar cálculos matemáticos precisos y confiables
+    command: ["python", "-m", "mcp_server_calculator"]
+    auto_connect: true
     priority: 3
     capabilities:
-      - "weather_data"
-      - "forecasts"
-    environment:
-      WEATHER_API_KEY: "${WEATHER_API_KEY}"
-    tools:
-      - get_weather
-      - get_forecast
+      - mathematical_calculations
+      - arithmetic_operations
+      - expression_evaluation
+      - financial_calculations
+    environment: {}
+    tools: []
     resources: []
 
-  # Servidor Google Calendar
   google_calendar:
-    name: "google_calendar"
-    description: "Servidor MCP para Google Calendar API - gestión completa de calendarios con OAuth Web Flow"
+    name: google_calendar
+    description: Gestión completa de Google Calendar con OAuth Web Flow
     command: ["node", "src/mcp_servers/google_calendar_web.js"]
     auto_connect: true
     priority: 4
     capabilities:
-      - "calendar_management"
-      - "event_scheduling"
-      - "calendar_integration"
-      - "meeting_management"
+      - calendar_management
+      - event_scheduling
+      - meeting_management
+      - calendar_integration
     environment:
       GOOGLE_OAUTH_PORT: "3000"
       GOOGLE_REDIRECT_URI: "http://localhost:3000/oauth2callback"
-    tools:
-      - list_calendars
-      - list_events
-      - create_event
-      - update_event
-      - delete_event
-      - get_event
-      - find_available_slots
-      - get_upcoming_events
+    tools: []
+    resources: []
+
+  financial:
+    name: financial
+    description: Gestión financiera con Google Sheets
+    command: ["python", "-m", "mcp_servers.financial"]
+    auto_connect: false
+    priority: 5
+    capabilities:
+      - financial_data
+      - expense_tracking
+      - income_logging
+    environment:
+      GOOGLE_SHEETS_API_KEY: "${GOOGLE_SHEETS_API_KEY}"
+      SPREADSHEET_ID: "${FINANCIAL_SPREADSHEET_ID}"
+    tools: []
+    resources: []
+
+  bcra:
+    name: bcra
+    description: Datos macroeconómicos del BCRA
+    command: ["npx", "bcra-mcp"]
+    auto_connect: false
+    priority: 6
+    capabilities:
+      - macroeconomic_data
+      - exchange_rates
+      - inflation
+    environment: {}
+    tools: []
+    resources: []
+
+  markets:
+    name: markets
+    description: Análisis de mercados financieros
+    command: ["python", "-m", "mcp_servers.markets"]
+    auto_connect: false
+    priority: 7
+    capabilities:
+      - stock_data
+      - crypto_prices
+      - market_analysis
+    environment:
+      ALPHA_VANTAGE_API_KEY: "${ALPHA_VANTAGE_API_KEY}"
+    tools: []
     resources: []
 
 # Configuración global de MCP
 settings:
   protocol_version: "2024-11-05"
   client_info:
-    name: "EconomIAssist"
+    name: EconomIAssist
     version: "1.0.0"
   connection_timeout: 30
   retry_attempts: 3
-  log_level: "INFO"
+  log_level: INFO
 
 # Mapeo de capacidades a casos de uso
 capability_mapping:
   web_search:
     use_cases:
-      - "búsqueda de tasas de cambio actuales"
-      - "noticias financieras"
-      - "información económica en tiempo real"
-    preferred_server: "tavily"
+      - búsqueda de tasas de cambio actuales
+      - noticias financieras
+      - información económica en tiempo real
+    preferred_server: tavily
     
-  finance_data:
+  user_memory:
     use_cases:
-      - "gestión de transacciones personales"
-      - "cálculo de balances"
-      - "conversiones de moneda"
-    preferred_server: "simple_finance"
-    
-  weather_data:
+      - recordar preferencias del usuario
+      - almacenar contexto conversacional
+      - recuperar interacciones pasadas
+      - personalizar respuestas financieras
+      - guardar información de perfil
+      - registrar gastos e ingresos
+    preferred_server: knowledge_base
+
+  mathematical_calculations:
     use_cases:
-      - "pronóstico del tiempo"
-      - "condiciones climáticas"
-    preferred_server: "weather"
-    
+      - cálculos de presupuesto
+      - conversiones de moneda
+      - cálculos de interés y porcentajes
+      - operaciones aritméticas complejas
+      - evaluación de expresiones matemáticas
+    preferred_server: calculator
+
   calendar_management:
     use_cases:
-      - "agendar eventos"
-      - "consultar calendario"
-      - "recordatorios"
-      - "gestión de reuniones"
-      - "encontrar horarios disponibles"
-      - "programar citas"
-    preferred_server: "google_calendar"
+      - crear eventos en el calendario
+      - consultar eventos próximos
+      - gestionar citas y reuniones
+      - programar recordatorios
+      - sincronización con Google Calendar
+    preferred_server: google_calendar
+    
+  event_scheduling:
+    use_cases:
+      - agendar reuniones
+      - crear recordatorios
+      - programar citas
+      - gestionar agenda personal
+    preferred_server: google_calendar
+
+  financial_data:
+    use_cases:
+      - registrar gastos e ingresos
+      - gestión de presupuesto personal
+      - seguimiento financiero
+      - análisis de gastos
+    preferred_server: financial
+
+  macroeconomic_data:
+    use_cases:
+      - consultar tipo de cambio
+      - datos de inflación
+      - indicadores económicos argentinos
+      - estadísticas del BCRA
+    preferred_server: bcra
+
+  market_analysis:
+    use_cases:
+      - precios de acciones
+      - análisis de mercados
+      - datos de criptomonedas
+      - tendencias financieras
+    preferred_server: markets
+

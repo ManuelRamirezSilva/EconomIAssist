@@ -59,7 +59,13 @@ class MCPServerConnection:
             logger.debug(f"   Comando: {' '.join(self.spec.command)}")
             logger.debug(f"   Env vars: {list(runtime_env.keys())}")
             
-            # Iniciar proceso del servidor
+            # Manejar contenedores Docker con --detach especialmente
+            if "docker" in self.spec.command and "--detach" in self.spec.command:
+                await self._handle_detached_container(full_env)
+                # Para contenedores detached, conectar al proceso existente
+                return await self._connect_to_existing_container()
+            
+            # Iniciar proceso del servidor normalmente
             self.process = await asyncio.create_subprocess_exec(
                 *self.spec.command,
                 stdin=asyncio.subprocess.PIPE,
@@ -91,9 +97,20 @@ class MCPServerConnection:
             
             if response and "result" in response:
                 logger.info(f"✅ Conectado al servidor MCP: {self.spec.name}")
+                
+                # Enviar mensaje de initialized para completar handshake
+                initialized_notification = {
+                    "jsonrpc": "2.0",
+                    "method": "notifications/initialized"
+                }
+                await self._send_request(initialized_notification)
+                
+                # Esperar un poco para que el servidor procese el handshake
+                await asyncio.sleep(0.1)
+                
                 self.is_connected = True
                 
-                # Descubrir herramientas disponibles
+                # Descubrir herramientas disponibles (después del handshake completo)
                 await self._discover_tools()
                 await self._discover_resources()
                 
@@ -121,15 +138,21 @@ class MCPServerConnection:
             return None
             
         try:
-            line = await self.process.stdout.readline()
+            line = await asyncio.wait_for(self.process.stdout.readline(), timeout=10.0)
             if line:
-                return json.loads(line.decode().strip())
+                line_str = line.decode().strip()
+                return json.loads(line_str)
+            else:
+                return None
+        except asyncio.TimeoutError:
+            logger.error("Timeout leyendo respuesta del servidor")
+            return None
         except json.JSONDecodeError as e:
             logger.error(f"Error decodificando respuesta JSON: {e}")
+            return None
         except Exception as e:
             logger.error(f"Error leyendo respuesta: {e}")
-            
-        return None
+            return None
     
     async def _discover_tools(self):
         """Descubre herramientas disponibles en el servidor"""
@@ -152,7 +175,7 @@ class MCPServerConnection:
                         input_schema=tool.get("inputSchema", {})
                     )
                     self.tools[tool["name"]] = mcp_tool
-                    logger.info(f"🔧 Herramienta descubierta: {tool['name']}")
+                    # Eliminar log individual por herramienta - muy verboso
                     
         except Exception as e:
             logger.error(f"Error descubriendo herramientas: {e}")
@@ -179,7 +202,7 @@ class MCPServerConnection:
                         mime_type=resource.get("mimeType", "text/plain")
                     )
                     self.resources[resource["uri"]] = mcp_resource
-                    logger.info(f"📄 Recurso descubierto: {resource['uri']}")
+                    # Eliminar log individual por recurso - muy verboso
                     
         except Exception as e:
             logger.error(f"Error descubriendo recursos: {e}")
@@ -256,6 +279,131 @@ class MCPServerConnection:
             self.is_connected = False
             logger.info(f"🔌 Desconectado del servidor: {self.spec.name}")
 
+    async def _handle_detached_container(self, env):
+        """Maneja contenedores Docker que usan --detach"""
+        container_name = None
+        
+        # Extraer nombre del contenedor del comando
+        if "--name" in self.spec.command:
+            name_index = self.spec.command.index("--name") + 1
+            if name_index < len(self.spec.command):
+                container_name = self.spec.command[name_index]
+        
+        if container_name:
+            # Verificar si el contenedor ya existe
+            check_cmd = ["docker", "ps", "-q", "--filter", f"name={container_name}"]
+            result = await asyncio.create_subprocess_exec(
+                *check_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            )
+            stdout, _ = await result.communicate()
+            
+            if not stdout.strip():
+                # El contenedor no existe, crearlo
+                logger.info(f"🐳 Creando contenedor Docker: {container_name}")
+                create_process = await asyncio.create_subprocess_exec(
+                    *self.spec.command, env=env
+                )
+                await create_process.wait()
+            else:
+                logger.info(f"🐳 Contenedor Docker ya existe: {container_name}")
+    
+    async def _connect_to_existing_container(self) -> bool:
+        """Conecta a un contenedor Docker existente usando configuración del YAML"""
+        # Obtener configuración de Docker desde la especificación
+        docker_config = getattr(self.spec, 'docker_config', {})
+        
+        if not docker_config:
+            logger.error("No hay configuración Docker disponible para este servidor")
+            return False
+        
+        container_name = docker_config.get('container_name')
+        interactive_restart_command = docker_config.get('interactive_restart_command')
+        restart_on_connect = docker_config.get('restart_on_connect', False)
+        
+        if not container_name or not interactive_restart_command:
+            logger.error("Configuración Docker incompleta")
+            return False
+        
+        try:
+            if restart_on_connect:
+                # Primero, parar el contenedor existente
+                logger.info(f"🔄 Reiniciando contenedor {container_name} en modo interactivo...")
+                
+                stop_process = await asyncio.create_subprocess_exec(
+                    "docker", "stop", container_name,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                await stop_process.wait()
+                
+                remove_process = await asyncio.create_subprocess_exec(
+                    "docker", "rm", container_name,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                await remove_process.wait()
+            
+            # Crear nuevo contenedor usando comando del YAML
+            self.process = await asyncio.create_subprocess_exec(
+                *interactive_restart_command,
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            
+            # Esperar un poco para que el servidor se inicie
+            await asyncio.sleep(2)
+            
+            # Enviar mensaje de inicialización MCP
+            init_request = {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {
+                        "tools": {},
+                        "resources": {}
+                    },
+                    "clientInfo": {
+                        "name": "EconomIAssist",
+                        "version": "1.0.0"
+                    }
+                }
+            }
+            
+            await self._send_request(init_request)
+            response = await self._read_response()
+            
+            if response and "result" in response:
+                logger.info(f"✅ Conectado al servidor MCP: {self.spec.name}")
+                
+                # Enviar mensaje de initialized para completar handshake
+                initialized_notification = {
+                    "jsonrpc": "2.0",
+                    "method": "notifications/initialized"
+                }
+                await self._send_request(initialized_notification)
+                
+                # Esperar un poco para que el servidor procese el handshake
+                await asyncio.sleep(0.1)
+                
+                self.is_connected = True
+                
+                # Descubrir herramientas disponibles (después del handshake completo)
+                await self._discover_tools()
+                await self._discover_resources()
+                
+                return True
+            else:
+                logger.error(f"❌ Error inicializando {self.spec.name}: {response}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"❌ Error conectando al contenedor {container_name}: {e}")
+            return False
+    
+
 class MCPManager:
     """Gestor automatizado de múltiples conexiones MCP con descubrimiento dinámico"""
     
@@ -269,8 +417,6 @@ class MCPManager:
         auto_connect_specs = self.registry.get_auto_connect_servers()
         connection_results = {}
         
-        logger.info(f"🚀 Iniciando auto-conexión de {len(auto_connect_specs)} servidores MCP...")
-        
         # Conectar en orden de prioridad
         priority_order = self.registry.get_server_priorities()
         
@@ -281,12 +427,10 @@ class MCPManager:
                 connection_results[server_name] = success
                 
                 if success:
-                    logger.info(f"✅ {server_name}: Conectado ({len(self.connections[server_name].tools)} herramientas)")
+                    tool_count = len(self.connections[server_name].tools)
+                    print(f"✅ {server_name}: Conectado ({tool_count} herramientas)")
                 else:
-                    logger.warning(f"⚠️ {server_name}: Error de conexión")
-        
-        total_connected = sum(1 for success in connection_results.values() if success)
-        logger.info(f"📊 Resumen: {total_connected}/{len(auto_connect_specs)} servidores conectados")
+                    print(f"❌ {server_name}: Error de conexión")
         
         return connection_results
     
@@ -371,6 +515,15 @@ class MCPManager:
         
         logger.error(f"❌ Herramienta {tool_name} no encontrada en servidores con capacidad {capability}")
         return None
+    
+    async def call_tool_by_function_name(self, function_name: str, params: dict) -> Any:
+        """Llama una herramienta basándose en el nombre completo de la función (agnóstico)"""
+        for server_name, connection in self.connections.items():
+            if function_name.startswith(f"{server_name}_"):
+                tool_name = function_name[len(server_name) + 1:]
+                return await connection.call_tool(tool_name, params)
+        
+        raise ValueError(f"No se encontró servidor para la función: {function_name}")
     
     def get_connection_stats(self) -> Dict[str, Any]:
         """Obtiene estadísticas de conexiones MCP"""

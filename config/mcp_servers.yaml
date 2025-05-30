@@ -31,7 +31,7 @@ servers:
       - accounting_records
       - financial_tracking
     environment:
-      DATABASE_NAME: user_financial_records.sqlite
+      DATABASE_NAME: "${DATABASE_NAME}"
     tools: []
     resources: []
     docker_config:
@@ -52,6 +52,25 @@ servers:
       - expression_evaluation
       - financial_calculations
     environment: {}
+    tools: []
+    resources: []
+
+  google_calendar:
+    name: google_calendar
+    description: Servidor MCP para integración con Google Calendar usando Service Account
+    command: ["npx", "-y", "@cablate/mcp-google-calendar"]
+    auto_connect: true
+    priority: 4
+    capabilities:
+      - calendar_management
+      - event_creation
+      - event_listing
+      - schedule_checking
+      - availability_search
+    environment:
+      GOOGLE_CREDENTIALS_PATH: "${GOOGLE_CREDENTIALS_PATH}"
+      GOOGLE_CALENDAR_ID: "${GOOGLE_CALENDAR_ID}"
+      GOOGLE_TIME_ZONE: "${GOOGLE_TIME_ZONE}"
     tools: []
     resources: []
 
@@ -92,4 +111,13 @@ capability_mapping:
       - operaciones aritméticas complejas
       - evaluación de expresiones matemáticas
     preferred_server: calculator
+
+  calendar_management:
+    use_cases:
+      - gestión de eventos en calendario
+      - creación de eventos
+      - listado de eventos
+      - verificación de horarios
+      - búsqueda de disponibilidad
+    preferred_server: google_calendar
 

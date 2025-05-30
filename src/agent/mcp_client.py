@@ -12,6 +12,11 @@ import sys
 from typing import Dict, List, Any, Optional
 import structlog
 from dataclasses import dataclass
+from dotenv import load_dotenv
+
+# Cargar variables de entorno desde .env
+env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
+load_dotenv(env_path, override=True)
 
 try:
     from .mcp_registry import get_mcp_registry, MCPServerSpec
@@ -55,23 +60,29 @@ class MCPServerConnection:
             runtime_env = self.spec.get_runtime_env()
             full_env.update(runtime_env)
             
+            # Establecer directorio de trabajo como la raíz del proyecto
+            project_root = os.path.join(os.path.dirname(__file__), '..', '..')
+            project_root = os.path.abspath(project_root)
+            
             logger.info(f"🔌 Conectando a servidor MCP: {self.spec.name}")
             logger.debug(f"   Comando: {' '.join(self.spec.command)}")
             logger.debug(f"   Env vars: {list(runtime_env.keys())}")
+            logger.debug(f"   Directorio de trabajo: {project_root}")
             
             # Manejar contenedores Docker con --detach especialmente
             if "docker" in self.spec.command and "--detach" in self.spec.command:
-                await self._handle_detached_container(full_env)
+                await self._handle_detached_container(full_env, project_root)
                 # Para contenedores detached, conectar al proceso existente
                 return await self._connect_to_existing_container()
             
-            # Iniciar proceso del servidor normalmente
+            # Iniciar proceso del servidor normalmente con directorio de trabajo correcto
             self.process = await asyncio.create_subprocess_exec(
                 *self.spec.command,
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                env=full_env
+                env=full_env,
+                cwd=project_root  # Establecer directorio de trabajo
             )
             
             # Enviar mensaje de inicialización
@@ -138,12 +149,40 @@ class MCPServerConnection:
             return None
             
         try:
-            line = await asyncio.wait_for(self.process.stdout.readline(), timeout=10.0)
-            if line:
-                line_str = line.decode().strip()
-                return json.loads(line_str)
-            else:
-                return None
+            # Intentar leer múltiples líneas hasta encontrar JSON válido
+            max_attempts = 5
+            for attempt in range(max_attempts):
+                line = await asyncio.wait_for(self.process.stdout.readline(), timeout=10.0)
+                if line:
+                    line_str = line.decode().strip()
+                    
+                    # Ignorar líneas vacías
+                    if not line_str:
+                        continue
+                    
+                    # Ignorar mensajes que claramente no son JSON-RPC
+                    if (line_str.startswith("MCP") or 
+                        line_str.startswith("Server") or 
+                        line_str.startswith("Authentication") or
+                        line_str.startswith("Calendar") or
+                        "started" in line_str.lower()):
+                        logger.debug(f"Ignorando mensaje de estado del servidor: {line_str}")
+                        continue
+                    
+                    # Intentar parsear como JSON
+                    try:
+                        return json.loads(line_str)
+                    except json.JSONDecodeError:
+                        # Si no es JSON válido, continuar leyendo
+                        logger.debug(f"Línea no es JSON válido, continuando: {line_str}")
+                        continue
+                else:
+                    return None
+            
+            # Si llegamos aquí, no pudimos encontrar JSON válido
+            logger.warning("No se pudo encontrar respuesta JSON válida después de múltiples intentos")
+            return None
+            
         except asyncio.TimeoutError:
             logger.error("Timeout leyendo respuesta del servidor")
             return None
@@ -279,7 +318,7 @@ class MCPServerConnection:
             self.is_connected = False
             logger.info(f"🔌 Desconectado del servidor: {self.spec.name}")
 
-    async def _handle_detached_container(self, env):
+    async def _handle_detached_container(self, env, project_root):
         """Maneja contenedores Docker que usan --detach"""
         container_name = None
         
@@ -293,7 +332,8 @@ class MCPServerConnection:
             # Verificar si el contenedor ya existe
             check_cmd = ["docker", "ps", "-q", "--filter", f"name={container_name}"]
             result = await asyncio.create_subprocess_exec(
-                *check_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+                *check_cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+                cwd=project_root  # Usar directorio de trabajo correcto
             )
             stdout, _ = await result.communicate()
             
@@ -301,7 +341,7 @@ class MCPServerConnection:
                 # El contenedor no existe, crearlo
                 logger.info(f"🐳 Creando contenedor Docker: {container_name}")
                 create_process = await asyncio.create_subprocess_exec(
-                    *self.spec.command, env=env
+                    *self.spec.command, env=env, cwd=project_root  # Usar directorio de trabajo correcto
                 )
                 await create_process.wait()
             else:

@@ -1,7 +1,13 @@
 #!/bin/bash
 
-# EconomIAssist - Setup Script Completo
-echo "🚀 Configurando EconomIAssist..."
+# ================================================================
+# EconomIAssist - Script de Configuración Completa
+# ================================================================
+# Configura automáticamente todas las dependencias del proyecto
+# Incluye: Python, Docker, Node.js, Google Calendar, MCP servers
+
+echo "🚀 Configurando EconomIAssist - Agente Conversacional Económico..."
+echo "================================================================"
 
 # Función para verificar si Docker está instalado
 check_docker() {
@@ -106,7 +112,7 @@ setup_docker() {
     return 0
 }
 
-# Verificar Node.js para Tavily MCP
+# Verificar Node.js para MCP servers (Tavily, Google Calendar)
 check_nodejs() {
     if command -v node &> /dev/null; then
         NODE_VERSION=$(node --version)
@@ -116,17 +122,97 @@ check_nodejs() {
         NODE_MAJOR=$(echo $NODE_VERSION | cut -d'.' -f1 | sed 's/v//')
         if [ "$NODE_MAJOR" -ge 18 ]; then
             echo "✅ Versión de Node.js es compatible (18+)"
+            return 0
         else
             echo "⚠️ Se recomienda Node.js 18+. Versión actual: $NODE_VERSION"
+            return 1
         fi
     else
         echo "❌ Node.js no está instalado"
-        echo "📦 Para búsqueda web, instala Node.js:"
-        echo "   🔗 https://nodejs.org/"
-        echo "   📋 O usa un gestor de versiones como nvm:"
-        echo "      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash"
-        echo "      source ~/.bashrc"
-        echo "      nvm install 18"
+        echo "📦 Node.js es NECESARIO para Google Calendar y Tavily"
+        echo "🔗 Instalando Node.js automáticamente..."
+        install_nodejs
+        return $?
+    fi
+}
+
+# Instalar Node.js automáticamente
+install_nodejs() {
+    echo "📦 Instalando Node.js..."
+    
+    # Instalar nvm (Node Version Manager)
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+    
+    # Recargar perfil para usar nvm
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+    
+    # Instalar Node.js LTS
+    nvm install --lts
+    nvm use --lts
+    nvm alias default node
+    
+    echo "✅ Node.js instalado exitosamente"
+    return 0
+}
+
+# Instalar dependencias MCP vía npm
+install_mcp_servers() {
+    echo ""
+    echo "📦 Instalando servidores MCP..."
+    
+    # Verificar npm
+    if ! command -v npm &> /dev/null; then
+        echo "❌ npm no está disponible"
+        return 1
+    fi
+    
+    # Instalar MCP servers globalmente
+    echo "🔧 Instalando Google Calendar MCP..."
+    npm install -g @cablate/mcp-google-calendar
+    
+    echo "🔧 Instalando Tavily MCP..."
+    npm install -g tavily-mcp
+    
+    # Instalar calculadora MCP vía pip
+    echo "🔧 Instalando Calculator MCP..."
+    pip install mcp-server-calculator
+    
+    echo "✅ Servidores MCP instalados"
+    return 0
+}
+
+# Verificar credenciales de Google
+check_google_credentials() {
+    echo ""
+    echo "🔑 Verificando credenciales de Google Calendar..."
+    
+    if [ -f "config/gcp-service-account.json" ]; then
+        echo "✅ Archivo de credenciales encontrado: config/gcp-service-account.json"
+        
+        # Verificar estructura básica del archivo JSON
+        if python3 -c "import json; json.load(open('config/gcp-service-account.json'))" 2>/dev/null; then
+            echo "✅ Formato JSON válido"
+            
+            # Verificar que sea una cuenta de servicio
+            SERVICE_TYPE=$(python3 -c "import json; print(json.load(open('config/gcp-service-account.json')).get('type', ''))" 2>/dev/null)
+            if [ "$SERVICE_TYPE" = "service_account" ]; then
+                echo "✅ Cuenta de servicio válida"
+            else
+                echo "⚠️ El archivo no parece ser una cuenta de servicio"
+            fi
+        else
+            echo "❌ Archivo JSON inválido"
+        fi
+    else
+        echo "⚠️ No se encontró config/gcp-service-account.json"
+        echo "📝 Para Google Calendar, necesitas:"
+        echo "   1. Crear un proyecto en Google Cloud Console"
+        echo "   2. Habilitar Google Calendar API"
+        echo "   3. Crear una cuenta de servicio"
+        echo "   4. Descargar las credenciales como gcp-service-account.json"
+        echo "   📚 Guía completa: docs/google_calendar_setup.md"
     fi
 }
 
@@ -147,8 +233,9 @@ fi
 setup_docker
 DOCKER_AVAILABLE=$?
 
-# 3. Verificar Node.js
+# 3. Verificar y configurar Node.js
 check_nodejs
+NODEJS_AVAILABLE=$?
 
 echo ""
 echo "🐍 Configurando entorno Python..."
@@ -201,24 +288,35 @@ if [ $DOCKER_AVAILABLE -eq 0 ]; then
     docker pull mbcrawfo/knowledge-base-server
 fi
 
+# Instalar servidores MCP
+if [ $NODEJS_AVAILABLE -eq 0 ]; then
+    install_mcp_servers
+else
+    echo "⚠️ Node.js no disponible - algunos servidores MCP no se instalarán"
+fi
+
+# Verificar credenciales de Google
+check_google_credentials
+
 echo ""
 echo "🎉 ¡EconomIAssist configurado exitosamente!"
 echo ""
 echo "📋 Resumen de configuración:"
 echo "   🐍 Python: ✅"
 echo "   🐳 Docker: $([ $DOCKER_AVAILABLE -eq 0 ] && echo "✅" || echo "❌")"
-echo "   🌐 Node.js: $(command -v node &> /dev/null && echo "✅" || echo "❌")"
+echo "   🌐 Node.js: $([ $NODEJS_AVAILABLE -eq 0 ] && echo "✅" || echo "❌")"
 echo "   🔑 Configuración: $([ -f ".env" ] && echo "✅" || echo "⚠️")"
+echo "   📅 Google Calendar: $([ -f "config/gcp-service-account.json" ] && echo "✅" || echo "⚠️")"
 echo ""
 echo "🚀 Para probar el agente:"
-echo "   python tests/run_all_tests.py"
-echo ""
-echo "🎯 Para usar el agente directamente:"
+echo "   source .venv/bin/activate"
 echo "   python src/agent/conversational_agent.py"
+echo ""
+echo "🧪 Para ejecutar tests:"
+echo "   python tests/run_all_tests.py"
 
-if [ $DOCKER_AVAILABLE -ne 0 ]; then
+if [ $NODEJS_AVAILABLE -ne 0 ]; then
     echo ""
-    echo "💡 Nota: Sin Docker, el agente funcionará con funcionalidad limitada"
-    echo "   (sin memoria persistente). Para funcionalidad completa,"
-    echo "   instala Docker y ejecuta este script nuevamente."
+    echo "💡 Nota: Sin Node.js, Google Calendar y Tavily no funcionarán"
+    echo "   Instala Node.js 18+ y ejecuta este script nuevamente."
 fi

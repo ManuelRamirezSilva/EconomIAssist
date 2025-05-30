@@ -55,6 +55,68 @@ servers:
     tools: []
     resources: []
 
+  google_calendar:
+    name: google_calendar
+    description: Gestión completa de Google Calendar con OAuth Web Flow
+    command: ["node", "src/mcp_servers/google_calendar_web.js"]
+    auto_connect: true
+    priority: 4
+    capabilities:
+      - calendar_management
+      - event_scheduling
+      - meeting_management
+      - calendar_integration
+    environment:
+      GOOGLE_OAUTH_PORT: "3000"
+      GOOGLE_REDIRECT_URI: "http://localhost:3000/oauth2callback"
+    tools: []
+    resources: []
+
+  financial:
+    name: financial
+    description: Gestión financiera con Google Sheets
+    command: ["python", "-m", "mcp_servers.financial"]
+    auto_connect: false
+    priority: 5
+    capabilities:
+      - financial_data
+      - expense_tracking
+      - income_logging
+    environment:
+      GOOGLE_SHEETS_API_KEY: "${GOOGLE_SHEETS_API_KEY}"
+      SPREADSHEET_ID: "${FINANCIAL_SPREADSHEET_ID}"
+    tools: []
+    resources: []
+
+  bcra:
+    name: bcra
+    description: Datos macroeconómicos del BCRA
+    command: ["npx", "bcra-mcp"]
+    auto_connect: false
+    priority: 6
+    capabilities:
+      - macroeconomic_data
+      - exchange_rates
+      - inflation
+    environment: {}
+    tools: []
+    resources: []
+
+  markets:
+    name: markets
+    description: Análisis de mercados financieros
+    command: ["python", "-m", "mcp_servers.markets"]
+    auto_connect: false
+    priority: 7
+    capabilities:
+      - stock_data
+      - crypto_prices
+      - market_analysis
+    environment:
+      ALPHA_VANTAGE_API_KEY: "${ALPHA_VANTAGE_API_KEY}"
+    tools: []
+    resources: []
+
 # Configuración global de MCP
 settings:
   protocol_version: "2024-11-05"
@@ -92,4 +154,45 @@ capability_mapping:
       - operaciones aritméticas complejas
       - evaluación de expresiones matemáticas
     preferred_server: calculator
+
+  calendar_management:
+    use_cases:
+      - crear eventos en el calendario
+      - consultar eventos próximos
+      - gestionar citas y reuniones
+      - programar recordatorios
+      - sincronización con Google Calendar
+    preferred_server: google_calendar
+    
+  event_scheduling:
+    use_cases:
+      - agendar reuniones
+      - crear recordatorios
+      - programar citas
+      - gestionar agenda personal
+    preferred_server: google_calendar
+
+  financial_data:
+    use_cases:
+      - registrar gastos e ingresos
+      - gestión de presupuesto personal
+      - seguimiento financiero
+      - análisis de gastos
+    preferred_server: financial
+
+  macroeconomic_data:
+    use_cases:
+      - consultar tipo de cambio
+      - datos de inflación
+      - indicadores económicos argentinos
+      - estadísticas del BCRA
+    preferred_server: bcra
+
+  market_analysis:
+    use_cases:
+      - precios de acciones
+      - análisis de mercados
+      - datos de criptomonedas
+      - tendencias financieras
+    preferred_server: markets
 

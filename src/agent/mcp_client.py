@@ -13,6 +13,7 @@ from typing import Dict, List, Any, Optional
 import structlog
 from dataclasses import dataclass
 from dotenv import load_dotenv
+import time
 
 # Cargar variables de entorno desde .env
 env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
@@ -273,9 +274,31 @@ class MCPServerConnection:
             if response and "result" in response:
                 return response["result"]
             else:
+                if response and "error" in response:
+                    # Log JSON-RPC error
+                    try:
+                        from ..utils.mcp_logger import MCPLogger
+                        mcp_logger = MCPLogger(server_id=self.name)
+                    except ImportError:
+                        import sys
+                        import os
+                        sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+                        from utils.mcp_logger import MCPLogger
+                        mcp_logger = MCPLogger(server_id=self.name)
+                    
+                    error_code = response["error"].get("code", -1)
+                    error_message = response["error"].get("message", "Unknown error")
+                    
+                    mcp_logger.log_json_rpc_error(
+                        server_name=self.name,
+                        method=tool_name,
+                        error_code=error_code,
+                        error_message=error_message
+                    )
+                
                 logger.error(f"Error llamando herramienta {tool_name}: {response}")
                 return None
-                
+            
         except Exception as e:
             logger.error(f"Error llamando herramienta {tool_name}: {e}")
             return None
@@ -451,6 +474,19 @@ class MCPManager:
         self.connections: Dict[str, MCPServerConnection] = {}
         self.registry = get_mcp_registry()
         self.connection_stats = {}
+        
+        # Initialize MCP logger
+        try:
+            from ..utils.mcp_logger import MCPLogger
+            self.mcp_logger = MCPLogger(server_id="mcp_manager")
+        except ImportError:
+            import sys
+            import os
+            sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+            from utils.mcp_logger import MCPLogger
+            self.mcp_logger = MCPLogger(server_id="mcp_manager")
+        
+        self.mcp_logger.info("MCP manager instance created")
     
     async def auto_connect_servers(self) -> Dict[str, bool]:
         """Conecta automáticamente a todos los servidores disponibles configurados para auto-connect"""
@@ -471,17 +507,36 @@ class MCPManager:
                     print(f"✅ {server_name}: Conectado ({tool_count} herramientas)")
                 else:
                     print(f"❌ {server_name}: Error de conexión")
+    
+        # Log auto-connect results
+        connected_count = sum(1 for success in connection_results.values() if success)
+        self.mcp_logger.log_auto_connect(
+            servers_attempted=len(connection_results),
+            servers_connected=connected_count,
+            server_results=connection_results
+        )
         
         return connection_results
     
     async def connect_server(self, spec: MCPServerSpec) -> bool:
         """Conecta a un servidor específico usando su especificación"""
+        start_time = time.time()
+        
         if spec.name in self.connections:
+            self.mcp_logger.warning(f"Server already connected", server_name=spec.name)
             logger.warning(f"⚠️ Servidor {spec.name} ya está conectado")
             return True
         
         connection = MCPServerConnection(spec)
         success = await connection.connect()
+        
+        # Log connection result
+        connection_time = time.time() - start_time
+        self.mcp_logger.log_server_connection(
+            server_name=spec.name,
+            success=success,
+            connection_time=connection_time
+        )
         
         if success:
             self.connections[spec.name] = connection
@@ -525,7 +580,19 @@ class MCPManager:
         
         for server_name, connection in self.connections.items():
             if connection.is_connected:
-                tools_by_server[server_name] = list(connection.tools.keys())
+                tools_list = list(connection.tools.keys())
+                tools_by_server[server_name] = tools_list
+                
+                # Log tools discovery
+                self.mcp_logger.log_tool_discovery(
+                    server_name=server_name,
+                    tools_count=len(tools_list),
+                    tools=tools_list
+                )
+
+                # Log connection stats
+                stats = self.get_connection_stats()
+                self.mcp_logger.log_connection_stats(stats)
         
         return tools_by_server
     
@@ -537,33 +604,103 @@ class MCPManager:
             if connection.is_connected and capability in connection.spec.capabilities:
                 connected_with_capability.append(server_name)
         
+        # Log capability request
+        self.mcp_logger.log_capability_request(
+            capability=capability,
+            servers_available=connected_with_capability
+        )
+        
         if not connected_with_capability:
             logger.info(f"🔍 No hay servidores conectados con capacidad '{capability}', conectando...")
             await self.connect_servers_with_capability(capability)
             
             # Actualizar lista
+            connected_with_capability = []
             for server_name, connection in self.connections.items():
                 if connection.is_connected and capability in connection.spec.capabilities:
                     connected_with_capability.append(server_name)
+            
+            # Log updated capability servers
+            self.mcp_logger.log_capability_request(
+                capability=capability,
+                servers_available=connected_with_capability
+            )
         
         # Intentar llamar la herramienta en los servidores apropiados
         for server_name in connected_with_capability:
             connection = self.connections[server_name]
             if tool_name in connection.tools:
                 logger.info(f"🔧 Llamando {tool_name} en servidor {server_name}")
-                return await connection.call_tool(tool_name, arguments)
+                
+                # Log selected server for capability
+                self.mcp_logger.log_capability_request(
+                    capability=capability,
+                    servers_available=connected_with_capability,
+                    server_selected=server_name
+                )
+                
+                start_time = time.time()
+                result = await connection.call_tool(tool_name, arguments)
+                
+                # Log tool call
+                execution_time = time.time() - start_time
+                success = result is not None
+                response_size = len(str(result)) if result else 0
+                
+                self.mcp_logger.log_tool_call(
+                    server_name=server_name,
+                    tool_name=tool_name,
+                    arguments=arguments,
+                    success=success,
+                    response_size=response_size,
+                    execution_time=execution_time
+                )
+                
+                return result
+        
+        # Log failure to find tool
+        self.mcp_logger.error(f"Tool not found for capability", 
+                             capability=capability, 
+                             tool_name=tool_name)
         
         logger.error(f"❌ Herramienta {tool_name} no encontrada en servidores con capacidad {capability}")
         return None
     
     async def call_tool_by_function_name(self, function_name: str, params: dict) -> Any:
         """Llama una herramienta basándose en el nombre completo de la función (agnóstico)"""
+        start_time = time.time()
+        
         for server_name, connection in self.connections.items():
             if function_name.startswith(f"{server_name}_"):
                 tool_name = function_name[len(server_name) + 1:]
-                return await connection.call_tool(tool_name, params)
+                
+                result = await connection.call_tool(tool_name, params)
+                
+                # Log tool call
+                execution_time = time.time() - start_time
+                response_size = len(str(result)) if result else 0
+                success = result is not None
+                
+                self.mcp_logger.log_tool_call(
+                    server_name=server_name,
+                    tool_name=tool_name,
+                    arguments=params,
+                    success=success,
+                    response_size=response_size,
+                    execution_time=execution_time
+                )
+                
+                if not success:
+                    self.mcp_logger.error(f"Tool call failed", 
+                                         server_name=server_name, 
+                                         tool_name=tool_name)
+                
+                return result
         
-        raise ValueError(f"No se encontró servidor para la función: {function_name}")
+        error_msg = f"No se encontró servidor para la función: {function_name}"
+        self.mcp_logger.error(error_msg)
+        
+        raise ValueError(error_msg)
     
     def get_connection_stats(self) -> Dict[str, Any]:
         """Obtiene estadísticas de conexiones MCP"""
@@ -589,11 +726,25 @@ class MCPManager:
         """Desconecta de todos los servidores"""
         logger.info(f"🔌 Desconectando {len(self.connections)} servidores MCP...")
         
-        for connection in self.connections.values():
+        for server_name, connection in self.connections.items():
+            # Log server disconnection
+            self.mcp_logger.log_server_disconnection(
+                server_name=server_name,
+                success=True
+            )
+            
             await connection.disconnect()
+        
+        # Log connection stats before clearing
+        if self.connections:
+            self.mcp_logger.log_connection_stats(self.get_connection_stats())
         
         self.connections.clear()
         self.connection_stats.clear()
+        
+        # Log disconnection complete
+        self.mcp_logger.info("Disconnected from all MCP servers")
+        
         logger.info("🔌 Desconectado de todos los servidores MCP")
 
 

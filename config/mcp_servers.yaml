@@ -77,6 +77,29 @@ servers:
     tools: []
     resources: []
 
+  google_sheets:
+    name: google_sheets
+    description: Servidor MCP para integración con Google Drive y Google Sheets usando Service Account
+    command: ["uvx", "mcp-google-sheets@latest"]
+    auto_connect: true
+    priority: 5
+    capabilities:
+      - spreadsheet_management
+      - sheet_data_reading
+      - sheet_data_writing
+      - sheet_creation
+      - batch_operations
+      - formula_reading
+      - spreadsheet_sharing
+      - drive_integration
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: "${GOOGLE_CREDENTIALS_PATH}"
+      DRIVE_FOLDER_ID: "${GOOGLE_DRIVE_FOLDER_ID}"
+    tools: []
+    resources: []
+
+    
+
 # Configuración global de MCP
 settings:
   protocol_version: "2024-11-05"
@@ -123,4 +146,27 @@ capability_mapping:
       - verificación de horarios
       - búsqueda de disponibilidad
     preferred_server: google_calendar
+    
+  spreadsheet_management:
+    use_cases:
+      - creación y gestión de hojas de cálculo
+      - lectura de datos de hojas
+      - escritura y actualización de celdas
+      - operaciones por lotes en múltiples rangos
+      - compartir hojas de cálculo
+      - gestión de permisos
+      - acceso a archivos de Google Drive
+      - análisis de datos financieros en hojas de cálculo
+      - creación de nuevas pestañas
+      - lectura de fórmulas
+    preferred_server: google_sheets
+    
+  file_search:
+    use_cases:
+      - búsqueda de archivos por nombre en Google Drive
+      - exploración de carpetas compartidas
+      - acceso a documentos específicos
+      - recuperación de archivos de la carpeta configurada
+      - listado de hojas de cálculo disponibles
+    preferred_server: google_sheets
 

@@ -11,6 +11,13 @@ REGLA CRÍTICA DE MEMORIA:
 - Si el usuario te saluda o pregunta si lo recuerdas, busca su perfil inmediatamente
 - Usa palabras clave relevantes de la consulta para buscar en memoria
 
+ESTRATEGIAS DE BÚSQUEDA MEJORADAS:
+- Para ubicación/domicilio: usa phrases como ["vivo", "ubicación", "dirección", "Buenos Aires", "Merlo", "lugar"]
+- Para información personal: usa phrases como ["nombre", "edad", "perfil", "datos", "información"]
+- Para finanzas: usa phrases como ["gasto", "ingreso", "dinero", "pago", "compra", "sueldo"]
+- Siempre incluye topics relevantes: ['Perfil Personal', 'Finanzas', 'Gastos', 'Ingresos', 'Ubicación']
+- Si una búsqueda no encuentra resultados, prueba con phrases más amplias
+
 DEBES usar las herramientas disponibles cuando el usuario:
 - Te pide guardar información personal (nombre, edad, perfil)
 - Registra gastos o ingresos (money_input, money_output)
@@ -33,14 +40,16 @@ REGLAS CRÍTICAS para llamadas de función:
    - Usa phrases relevantes de la consulta del usuario
    - Incluye topics apropiados como ['Perfil Personal', 'Finanzas', 'Gastos', 'Ingresos']
    - Siempre busca ANTES de decir que no tienes información
+   - Si no encuentras con búsqueda específica, prueba con términos más generales
 
 EJEMPLOS CORRECTOS para funciones de almacenamiento:
 - Guardar perfil: {{"topic": "Perfil Personal", "memory": "Nombre: Juan, 23 años", "importance": 0.8, "sourceMemoryNodeId": null}}
 - Guardar gasto: {{"topic": "Finanzas", "memory": "Gasté 500 USD en comida", "importance": 0.7, "sourceMemoryNodeId": null}}
 
 EJEMPLOS CORRECTOS para búsquedas:
-- Usuario pregunta su nombre: SearchMemory con phrases: ["nombre"], topics: ["Perfil Personal"]
-- Usuario pregunta por gastos: SearchMemory con phrases: ["gasto", "compra"], topics: ["Finanzas", "Gastos"]
+- Usuario pregunta su nombre: SearchMemory con phrases: ["nombre", "perfil", "datos"], topics: ["Perfil Personal"]
+- Usuario pregunta dónde vive: SearchMemory con phrases: ["vivo", "ubicación", "Buenos Aires", "Merlo"], topics: ["Perfil Personal"]
+- Usuario pregunta por gastos: SearchMemory con phrases: ["gasto", "compra", "dinero"], topics: ["Finanzas", "Gastos"]
 - Usuario te saluda: SearchMemory con phrases: ["nombre", "perfil"], topics: ["Perfil Personal"]
 
 EJEMPLOS CORRECTOS para cálculos:

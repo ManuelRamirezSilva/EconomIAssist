@@ -1,38 +1,34 @@
 # 🏗️ Architecture Overview – EconomIAssist
-EconomIAssist is a conversational financial assistant that helps users manage their personal finances by interacting through WhatsApp. It leverages NLP to understand user input, stores financial data in Google Sheets, creates reminders in Google Calendar, and operates using a modular message-passing architecture known as MCP (Message Communication Protocol).
+EconomIAssist es un asistente financiero personal conversacional que utiliza IA para gestionar finanzas personales. Aprovecha NLP para entender entrada del usuario, almacena datos financieros usando servidores MCP especializados, y opera usando una arquitectura modular basada en MCP (Model Context Protocol).
 
 ---
 ## 🧱 System Components
 ```
-User → WhatsApp → Agent (NLP) → MCP → Actions:
-    - Google Sheets
-    - Google Calendar
-    - Response Message
+Usuario → Agente Conversacional → MCP Manager → Servidores MCP:
+    - Knowledge Base (Memoria)
+    - Google Sheets (Datos financieros)
+    - Google Calendar (Recordatorios)
+    - Tavily (Búsqueda web)
+    - Calculator (Cálculos)
 ```
 ---
 
 ## 🔁 Response Process Flow
 
 1.  **Receive**:
-
-    * The user sends a message via WhatsApp, such as:
-
-        * ```“Gasto $2000 en comida hoy”```
-        * ```“Me pagaron el sueldo de $120.000”```
+    * El usuario envía un mensaje, como:
+        * ```"Gasté $2000 en comida hoy"```
+        * ```"Me pagaron el sueldo de $120.000"```
 
 2. **Understand**:
-
-    * The NLP agent processes the input to detect intent and extract entities.
+    * El agente NLP procesa la entrada para detectar intención y extraer entidades.
 
 3. **Generate**:
-
-    * The system determines the appropriate response or action (e.g., logging the expense or scheduling a reminder).
+    * El sistema determina la respuesta apropiada o acción usando herramientas MCP.
 
 4. **Respond**:
-
-    * A message is sent back to the user via WhatsApp with a confirmation or relevant information.
-
-    * The system may also update a backend (Google Sheets/Google Calendar) and notify the user.
+    * Se envía una respuesta al usuario con confirmación o información relevante.
+    * El sistema actualiza los backends (Knowledge Base, Google Sheets/Calendar).
 
 ---
 
@@ -40,12 +36,11 @@ User → WhatsApp → Agent (NLP) → MCP → Actions:
 
 Module|Description
 ---|---
-```src/agent/```| NLP pipeline: intent detection, entity recognition, query understanding
-```src/integrations/```|Interfaces with external services (Google Sheets, Google Calendar, WhatsApp via Twilio)
-```src/mcp/```|	Defines and handles message formats, routing, and communication across modules
-```src/workflows/```|	Orchestrates business logic such as logging expenses and generating reports
-```src/utils/```|	Shared utility functions for formatting, validation, etc.
-
+```src/agent/```| Pipeline NLP: detección de intención, reconocimiento de entidades, comprensión de consultas
+```src/mcp_servers/```|Servidores MCP personalizados (ej: BCRA server)
+```src/utils/```|Sistema de logging estructurado para agente, intenciones y MCP
+```config/```|Configuración de servidores MCP e instrucciones del sistema
+```tests/```|Suite completa de pruebas para todos los componentes
 
 ---
 
@@ -53,39 +48,10 @@ Module|Description
 
 Integration|	Role
 ---|---
-**WhatsApp (Twilio)**	|Main user interface for messaging
-**Google Sheets**	|Backend storage for income and expense logs
-**Google Calendar**	|Manages reminders and scheduled events
-**Internet Access**	|Allows real-time retrieval or verification of financial info
-**Graphical Tools**	|Generate statistical graphs and reports for visual insight
-
----
-## 📈 General Infrastructure
-
-```mermaid
----
-config:
-  theme: redux
----
-flowchart TD
-    A["Message"] --> B(["MCP Client"])
-    B <--> D(["MCP Server"])
-    B --> C["Response"]
-    D <--> E(["RAG"]) & F(["User DB"]) & G(["Internet"]) & H(["Google Calendar"])
-     A:::Aqua
-     A:::Class_01
-     A:::Class_01
-     C:::Pine
-     C:::Class_01
-     E:::Class_03
-     F:::Pine
-     H:::Class_02
-    classDef Aqua stroke-width:1px, stroke-dasharray:none, stroke:#46EDC8, fill:#DEFFF8, color:#378E7A
-    classDef Class_01 stroke:#00C853, color:#FFFFFF, stroke-width:4px, stroke-dasharray: 0, fill:#15e46b
-    classDef Class_02 stroke:#2962FF, fill:#5581f9, color:#FFFFFF
-    classDef Pine stroke-width:1px, stroke-dasharray:none, stroke:#254336, fill:#27654A, color:#FFFFFF
-    classDef Class_03 stroke:#AA00FF, fill:#c250fb
-    style E color:#FFFFFF
-
-```
+**Azure OpenAI**	|Motor de IA principal para procesamiento de lenguaje natural
+**Knowledge Base Server**	|Almacenamiento persistente de memoria conversacional
+**Google Sheets**	|Almacenamiento de datos financieros estructurados
+**Google Calendar**	|Gestión de recordatorios y eventos programados
+**Tavily Search**	|Acceso a información financiera en tiempo real
+**Calculator Server**	|Cálculos matemáticos precisos y confiables
 

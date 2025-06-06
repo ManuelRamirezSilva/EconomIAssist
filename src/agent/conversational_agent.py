@@ -90,8 +90,8 @@ class ConversationalAgent:
         self.azure_client = None
         self.openai_model = None
         self.mcp_manager = None
-        self.session_memory = []
-        # Solo parser de intenciones - sin MemoryManager
+        # Eliminar session_memory - usar solo knowledge_base MCP server
+        # Solo parser de intenciones
         self.intent_parser = IntentParser()
         
         # Add agent logger
@@ -291,11 +291,6 @@ class ConversationalAgent:
             {"role": "user", "content": user_input}
         ]
         
-        # Agregar memoria de sesión temporal (solo para esta conversación)
-        for memory in self.session_memory[-5:]:  # Últimas 5 interacciones
-            messages.insert(-1, {"role": "user", "content": memory["user"]})
-            messages.insert(-1, {"role": "assistant", "content": memory["assistant"]})
-        
         # Solo incluir funciones si hay herramientas MCP disponibles
         if self.mcp_functions:
             # Log OpenAI API call
@@ -389,12 +384,6 @@ class ConversationalAgent:
         self.agent_logger.info("Response generated successfully", 
                               total_processing_time=total_time,
                               response_length=len(response))
-        
-        # Guardar interacción en memoria de sesión
-        self.session_memory.append({
-            "user": user_input,
-            "assistant": response
-        })
         
         return response
     

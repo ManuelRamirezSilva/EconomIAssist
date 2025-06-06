@@ -68,15 +68,26 @@ EconomIAssist/
 │   ├── agent/
 │   │   ├── conversational_agent.py    # Agente principal
 │   │   ├── intentParser.py           # Parser de intenciones
-│   │   └── mcp_client.py            # Cliente MCP
-│   └── mcp_servers/
-│       └── simple_finance.py        # Servidor financiero
+│   │   ├── mcp_client.py            # Cliente MCP
+│   │   └── mcp_registry.py          # Registro de servidores MCP
+│   ├── mcp_servers/
+│   │   └── bcra_server.py           # Servidor BCRA
+│   └── utils/
+│       ├── agent_logger.py          # Logger del agente
+│       ├── intent_logger.py         # Logger de intenciones
+│       └── mcp_logger.py           # Logger MCP
 ├── tests/
 │   ├── run_all_tests.py            # Suite de pruebas
 │   ├── test_azure_connection.py    # Prueba Azure OpenAI
-│   ├── test_openai_agents_sdk.py   # Prueba SDK
-│   └── test_tavily_mcp.py         # Prueba MCP+Tavily
+│   ├── test_knowledgebase_mcp_pure.py # Prueba Knowledge Base
+│   ├── test_tavily_mcp.py         # Prueba MCP+Tavily
+│   └── test_final_integration.py  # Prueba integración completa
+├── config/
+│   ├── mcp_servers.yaml           # Configuración servidores MCP
+│   ├── system_instructions.txt    # Instrucciones del sistema
+│   └── gcp-service-account.json   # Credenciales Google Cloud
 ├── docs/                          # Documentación
+├── logs/                          # Archivos de log
 ├── .env                          # Variables de entorno
 ├── requirements.txt              # Dependencias Python
 └── setup.sh                     # Script de configuración

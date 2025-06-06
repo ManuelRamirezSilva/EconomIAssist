@@ -8,11 +8,12 @@ import asyncio
 import os
 import json
 import warnings
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 import structlog
 from dotenv import load_dotenv
 from datetime import datetime  # Para incluir fecha actual
+import time  # Para medir tiempos de ejecución
 
 # Suprimir warnings de tracing del OpenAI SDK
 warnings.filterwarnings("ignore")
@@ -29,10 +30,21 @@ from openai import AsyncAzureOpenAI
 try:
     from .mcp_client import MCPManager
     from .intentParser import IntentParser, IntentResponse  # import local de intentParser.py
+    # Importar loggers
+    from ..utils.agent_logger import AgentLogger
+    from ..utils.mcp_logger import MCPLogger
+    from ..utils.intent_logger import IntentLogger
 except ImportError:
     # Cuando se ejecuta directamente, usar importación absoluta
     from mcp_client import MCPManager
-    from intentParser import IntentParser, IntentResponse  # import local de intentParser.py
+    from intentParser import IntentParser, IntentResponse
+    
+    # Importar loggers con ruta absoluta cuando se ejecuta directamente
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    from utils.agent_logger import AgentLogger
+    from utils.mcp_logger import MCPLogger
+    from utils.intent_logger import IntentLogger
 
 # Configurar logging estructurado
 logger = structlog.get_logger()
@@ -78,25 +90,59 @@ class ConversationalAgent:
         self.azure_client = None
         self.openai_model = None
         self.mcp_manager = None
-        self.session_memory = []
-        # Solo parser de intenciones - sin MemoryManager
+        # Eliminar session_memory - usar solo knowledge_base MCP server
+        # Solo parser de intenciones
         self.intent_parser = IntentParser()
+        
+        # Add agent logger
+        self.agent_logger = AgentLogger(agent_id="main_agent")
+        self.agent_logger.info("Agent instance created")
 
 
     async def initialize(self):
         """Inicializa el agente y las conexiones MCP"""
+        components_status = {
+            "azure_openai": False,
+            "mcp_manager": False,
+            "mcp_servers": False,
+            "mcp_tools": False
+        }
+        
+        start_time = time.time()
+        
         try:
             # Inicializar Azure OpenAI
             await self._setup_azure_openai()
+            components_status["azure_openai"] = True
+            
             # Inicializar gestor MCP
             self.mcp_manager = MCPManager()
+            components_status["mcp_manager"] = True
+            
             # Conectar a servidores MCP
             await self._connect_mcp_servers()
+            components_status["mcp_servers"] = True
+            
             # Configurar herramientas MCP
             await self._setup_mcp_tools()
+            components_status["mcp_tools"] = True
+            
             print("✅ Agente conversacional inicializado")
+            
+            # Log successful initialization
+            self.agent_logger.log_initialization(success=True, components=components_status)
+            self.agent_logger.info("Agent initialization completed", 
+                                  initialization_time=time.time() - start_time)
+            
             return True
         except Exception as e:
+            # Log initialization error
+            self.agent_logger.log_error(
+                error_message=f"Error durante inicialización: {str(e)}",
+                error_type="initialization_error",
+                details={"components_status": components_status}
+            )
+            
             print(f"❌ Error inicializando agente: {e}")
             return False
     
@@ -143,26 +189,39 @@ class ConversationalAgent:
     
     async def _connect_mcp_servers(self):
         """Conecta a todos los servidores MCP disponibles usando auto-discovery"""
+        start_time = time.time()
+        
         # Usar el nuevo sistema de auto-conexión
         connection_results = await self.mcp_manager.auto_connect_servers()
         
         connected_count = sum(1 for success in connection_results.values() if success)
         total_count = len(connection_results)
         
+        # Log MCP server connections
+        self.agent_logger.info("MCP servers connection completed", 
+                              connected=f"{connected_count}/{total_count}",
+                              connection_time=time.time() - start_time)
+        
         if connected_count > 0:
             print(f"🌐 {connected_count}/{total_count} servidores MCP conectados")
         else:
+            self.agent_logger.warning("No MCP servers could be connected")
             print("⚠️ No se pudieron conectar servidores MCP")
     
     
     async def _setup_mcp_tools(self):
         """Configura las herramientas MCP disponibles"""
+        start_time = time.time()
+        
         available_tools = await self.mcp_manager.get_available_tools()
         self.system_instructions = self._build_system_instructions(available_tools)
         self.mcp_functions = []
         
         tool_count = 0
+        servers_tools = {}
+        
         for srv, conn in self.mcp_manager.connections.items():
+            servers_tools[srv] = len(conn.tools)
             for tool in conn.tools.values():
                 function_def = {
                     "name": f"{srv}_{tool.name}",
@@ -172,34 +231,71 @@ class ConversationalAgent:
                 self.mcp_functions.append(function_def)
                 tool_count += 1
         
+        # Log MCP tools initialization
+        self.agent_logger.log_mcp_tools_initialized(
+            tool_count=tool_count,
+            servers=servers_tools
+        )
+        
+        self.agent_logger.info("MCP tools setup completed", 
+                          tool_count=tool_count,
+                          servers_count=len(servers_tools),
+                          setup_time=time.time() - start_time)
+        
         print(f"🔧 {tool_count} herramientas MCP disponibles")
     
     async def _setup_azure_openai(self):
         """Configura Azure OpenAI"""
+        start_time = time.time()
+        
         try:
             azure_config = AzureOpenAIConfig()
             self.azure_client = azure_config.create_client()
             self.openai_model = azure_config.deployment_name
+            
+            # Log successful Azure OpenAI setup
+            setup_time = time.time() - start_time
+            safe_config = {
+                "api_base": azure_config.api_base,
+                "api_version": azure_config.api_version,
+                "deployment": azure_config.deployment_name,
+                "api_key": "[REDACTED]"
+            }
+            
+            self.agent_logger.info("Azure OpenAI configured successfully", 
+                                  model=self.openai_model,
+                                  setup_time=setup_time,
+                                  config=safe_config)
+            
         except Exception as e:
+            # Log error in Azure OpenAI setup
+            self.agent_logger.error("Azure OpenAI configuration failed", 
+                                   error=str(e),
+                                   error_type=type(e).__name__,
+                                   setup_time=time.time() - start_time)
+            
             print(f"❌ Error configurando Azure OpenAI: {e}")
             raise
     
     
     async def _call_openai_with_mcp(self, user_input: str) -> str:
         """Invoca Azure OpenAI incluyendo las funciones MCP y maneja llamadas de función"""
+        start_time = time.time()
+        
+        # Log user input
+        self.agent_logger.log_user_input(user_input)
+        
         # Construir mensajes con instrucciones del sistema y entrada del usuario
         messages = [
             {"role": "system", "content": self.system_instructions},
             {"role": "user", "content": user_input}
         ]
         
-        # Agregar memoria de sesión temporal (solo para esta conversación)
-        for memory in self.session_memory[-5:]:  # Últimas 5 interacciones
-            messages.insert(-1, {"role": "user", "content": memory["user"]})
-            messages.insert(-1, {"role": "assistant", "content": memory["assistant"]})
-        
         # Solo incluir funciones si hay herramientas MCP disponibles
         if self.mcp_functions:
+            # Log OpenAI API call
+            self.agent_logger.log_openai_call(model=self.openai_model)
+            
             resp = await self.azure_client.chat.completions.create(
                 model=self.openai_model,
                 messages=messages,
@@ -216,18 +312,50 @@ class ConversationalAgent:
                 print(f"🔧 Intentando llamar función MCP: {fname}")
                 print(f"   Parámetros: {params}")
                 
+                # Log function call attempt
+                self.agent_logger.info("Function call detected", 
+                                      function=fname,
+                                      args=params)
+                
                 try:
+                    func_start_time = time.time()
+                    
                     # Usar método agnóstico del MCPManager
                     result = await self.mcp_manager.call_tool_by_function_name(fname, params)
                     print(f"✅ Función MCP exitosa: {fname}")
                     print(f"   Resultado: {result}")
+                    
+                    # Log successful function call
+                    func_execution_time = time.time() - func_start_time
+                    self.agent_logger.log_function_call(
+                        function_name=fname,
+                        success=True,
+                        execution_time=func_execution_time
+                    )
+                    
                 except Exception as e:
+                    # Log function call error
+                    self.agent_logger.log_function_call(
+                        function_name=fname,
+                        success=False,
+                        execution_time=time.time() - func_start_time
+                    )
+                    
+                    self.agent_logger.error("Function execution error", 
+                                          function=fname,
+                                          error=str(e),
+                                          error_type=type(e).__name__)
+                    
                     print(f"❌ Error en función MCP {fname}: {e}")
                     # Continuar con el flujo normal en caso de error
                     return f"Lo siento, hubo un problema al procesar tu solicitud: {str(e)}"
                 
                 messages.append({"role": "assistant", "content": None, "function_call": msg.function_call.to_dict()})
                 messages.append({"role": "function", "name": fname, "content": json.dumps(result)})
+                
+                # Log second OpenAI call
+                self.agent_logger.log_openai_call(model=self.openai_model)
+                
                 follow = await self.azure_client.chat.completions.create(
                     model=self.openai_model,
                     messages=messages
@@ -237,6 +365,9 @@ class ConversationalAgent:
                 response = msg.content
         else:
             # Sin herramientas MCP, usar conversación normal
+            # Log OpenAI API call
+            self.agent_logger.log_openai_call(model=self.openai_model)
+            
             resp = await self.azure_client.chat.completions.create(
                 model=self.openai_model,
                 messages=messages,
@@ -245,11 +376,14 @@ class ConversationalAgent:
             )
             response = resp.choices[0].message.content
         
-        # Guardar interacción en memoria de sesión
-        self.session_memory.append({
-            "user": user_input,
-            "assistant": response
-        })
+        # Log agent response
+        self.agent_logger.log_agent_response(response)
+        
+        # Log total processing time
+        total_time = time.time() - start_time
+        self.agent_logger.info("Response generated successfully", 
+                              total_processing_time=total_time,
+                              response_length=len(response))
         
         return response
     
@@ -268,6 +402,14 @@ class ConversationalAgent:
             return response
         except Exception as e:
             error_msg = f"Error al procesar la consulta: {str(e)}"
+            
+            # Log error
+            self.agent_logger.log_error(
+                error_message=error_msg,
+                error_type=type(e).__name__,
+                details={"user_input": user_input}
+            )
+            
             print(f"❌ {error_msg}")
             return f"Lo siento, ocurrió un error al procesar tu consulta: {str(e)}"
     
@@ -275,6 +417,10 @@ class ConversationalAgent:
     async def cleanup(self):
         if self.mcp_manager:
             await self.mcp_manager.disconnect_all()
+        
+        # Log cleanup
+        self.agent_logger.log_cleanup(success=True)
+        
         logger.info("🧹 Recursos del agente limpiados")
     
 

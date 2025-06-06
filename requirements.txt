@@ -1,32 +1,71 @@
-# Dependencias principales del proyecto MCP
-mcp
-python-dotenv
-fastapi
-uvicorn
-pydantic
+# ================================================================
+# DEPENDENCIAS PRINCIPALES - EconomIAssist
+# ================================================================
+# Framework MCP (Model Context Protocol)
+mcp>=1.0.0
+python-dotenv>=1.0.0
 
-# OpenAI Agents SDK - framework oficial nuevo (marzo 2025)
-openai-agents
-openai
+# OpenAI Agents SDK - framework oficial
+openai-agents>=0.0.9
+openai>=1.40.0
 
-# OpenAI Agents con soporte MCP nativo - VERSIÓN SIMPLIFICADA
-openai-agents-mcp
+# ================================================================
+# GOOGLE APIS - Calendar y servicios de Google
+# ================================================================
+google-auth>=2.23.0
+google-auth-oauthlib>=1.0.0
+google-auth-httplib2>=0.1.0
+google-api-python-client>=2.100.0
+googleapis-common-protos>=1.60.0
 
-# Para el nuevo sistema de registro MCP
-PyYAML
-structlog
+# ================================================================
+# AZURE OPENAI - Modelo principal de IA
+# ================================================================
+azure-openai>=1.0.0
 
-# Para desarrollo y testing
-pytest
-httpx
-pyyaml
+# ================================================================
+# SERVIDORES MCP Y HERRAMIENTAS
+# ================================================================
+# Para configuración YAML
+PyYAML>=6.0
+pyyaml>=6.0
 
-# Para logging y observabilidad
-structlog
-langchain
-openai
-fastapi
-uvicorn
-pydantic
-numpy
-python-dotenv
+# Para logging estructurado
+structlog>=23.0.0
+
+# Para cliente HTTP
+httpx>=0.25.0
+requests>=2.31.0
+
+# ================================================================
+# APIS EXTERNAS
+# ================================================================
+# Para búsqueda web (Tavily se instala vía npm)
+# Para BCRA API (usamos requests)
+
+# ================================================================
+# FRAMEWORK WEB Y BASE DE DATOS
+# ================================================================
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.4.0
+sqlite3  # Incluido en Python estándar
+
+# ================================================================
+# UTILIDADES Y PROCESAMIENTO
+# ================================================================
+numpy>=1.24.0
+pandas>=2.0.0  # Para análisis de datos económicos
+
+# ================================================================
+# DESARROLLO Y TESTING
+# ================================================================
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+
+# ================================================================
+# DEPENDENCIAS ADICIONALES PARA ANÁLISIS ECONÓMICO
+# ================================================================
+matplotlib>=3.7.0  # Para gráficos
+seaborn>=0.12.0    # Para visualizaciones
+plotly>=5.15.0     # Para gráficos interactivos

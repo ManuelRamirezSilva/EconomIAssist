@@ -1,8 +1,11 @@
-import os
+import os  # Keep this import at the top
+import sys
 from openai import AzureOpenAI
 from dotenv import load_dotenv
 import pydantic
 import json
+import time
+import structlog  # Add this import
 
 
 class IntentResponse(pydantic.BaseModel):
@@ -24,12 +27,40 @@ class IntentParser:
         # Verificar credenciales
         if not all([self.endpoint, self.api_key, self.api_version, self.deployment]):
             raise ValueError("Faltan credenciales de Azure OpenAI en el archivo .env")
-        # Instanciar cliente
-
+        
+        # Create the OpenAI client
         self.client = AzureOpenAI(
-            api_version=self.api_version,
             azure_endpoint=self.endpoint,
             api_key=self.api_key,
+            api_version=self.api_version
+        )
+        
+        # Initialize intent logger
+        try:
+            from ..utils.intent_logger import IntentLogger
+            self.intent_logger = IntentLogger(parser_id="main_intent_parser")
+        except ImportError:
+            # Remove the os import here since it's already imported at the top level
+            sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+            from utils.intent_logger import IntentLogger
+            self.intent_logger = IntentLogger(parser_id="main_intent_parser")
+    
+        # Set a reference to the logger for use throughout the class
+        self.logger = self.intent_logger
+    
+        self.intent_logger.info("Intent parser instance created")
+        
+        # Log initialization
+        azure_config = {
+            "api_base": self.endpoint,
+            "api_version": self.api_version,
+            "deployment": self.deployment,
+            "api_key": "[REDACTED]"  # Redacted for security
+        }
+        
+        self.intent_logger.log_parser_initialization(
+            success=True, 
+            azure_config=azure_config
         )
 
         self.count_intents_prompt = (
@@ -123,66 +154,198 @@ class IntentParser:
             "Output: [\"Add a meeting for tomorrow\", \"tell me my account balance.\"]"
         )
 
+        # Set the logger as an alias to intent_logger
+        self.logger = self.intent_logger
+    
     def receive_message(self, message: str):
+        # Start timing
+        start_time = time.time()
+        
         # First call: count intents
-        count_response = self.client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": self.count_intents_prompt},
-                {"role": "user", "content": message},
-            ],
-            max_tokens=10,
-            temperature=0.0,
-            top_p=1.0,
-            model=self.deployment
-        )
         try:
-            num_intents = int(count_response.choices[0].message.content.strip())
-            if num_intents < 1:
+            # Log model call
+            model_call_start = time.time()
+            
+            count_response = self.client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": self.count_intents_prompt},
+                    {"role": "user", "content": message},
+                ],
+                max_tokens=10,
+                temperature=0.0,
+                top_p=1.0,
+                model=self.deployment
+            )
+            
+            # Log successful model call
+            self.logger.log_model_call(
+                model=self.deployment,
+                success=True,
+                processing_time=time.time() - model_call_start
+            )
+            
+            try:
+                num_intents = int(count_response.choices[0].message.content.strip())
+                if num_intents < 1:
+                    num_intents = 1
+            except Exception:
                 num_intents = 1
-        except Exception:
-            num_intents = 1
+        except Exception as e:
+            # Log failed model call
+            self.logger.log_model_call(
+                model=self.deployment,
+                success=False,
+                processing_time=time.time() - model_call_start
+            )
+            
+            self.logger.log_parse_error(
+                user_input=message,
+                error_message=str(e),
+                error_type=type(e).__name__
+            )
+            
+            num_intents = 1  # Default to 1 on error
+
+        # If multiple intents detected, log it
+        if num_intents > 1:
+            self.logger.info("Multiple intents detected", 
+                             count=num_intents, 
+                             user_input_preview=message[:50] + "..." if len(message) > 50 else message)
 
         # If only one intent, classify the whole message
         if num_intents == 1:
             intent_texts = [message]
         else:
             # Ask the model to split the message into its distinct intents
-            split_response = self.client.chat.completions.create(
-                messages=[
-                    {"role": "system", "content": self.split_intents_prompt},
-                    {"role": "user", "content": message},
-                ],
-                max_tokens=256,
-                temperature=0.0,
-                top_p=1.0,
-                model=self.deployment
-            )
             try:
-                intent_texts = json.loads(split_response.choices[0].message.content)
-                if not isinstance(intent_texts, list) or not all(isinstance(x, str) for x in intent_texts):
+                split_model_start = time.time()
+                
+                split_response = self.client.chat.completions.create(
+                    messages=[
+                        {"role": "system", "content": self.split_intents_prompt},
+                        {"role": "user", "content": message},
+                    ],
+                    max_tokens=256,
+                    temperature=0.0,
+                    top_p=1.0,
+                    model=self.deployment
+                )
+                
+                # Log successful model call for splitting
+                self.logger.log_model_call(
+                    model=self.deployment,
+                    success=True,
+                    processing_time=time.time() - split_model_start
+                )
+                
+                try:
+                    intent_texts = json.loads(split_response.choices[0].message.content)
+                    if not isinstance(intent_texts, list) or not all(isinstance(x, str) for x in intent_texts):
+                        intent_texts = [message] * num_intents
+                    
+                    # Log multiple intents split
+                    self.logger.log_multiple_intents(
+                        user_input=message,
+                        intents_count=len(intent_texts),
+                        intents=intent_texts
+                    )
+                    
+                except Exception as e:
+                    # Log parsing error
+                    self.logger.log_parse_error(
+                        user_input=message,
+                        error_message=f"Error parsing split intents: {str(e)}",
+                        error_type="json_parse_error"
+                    )
+                    
                     intent_texts = [message] * num_intents
-            except Exception:
+                    
+            except Exception as e:
+                # Log failed model call for splitting
+                self.logger.log_model_call(
+                    model=self.deployment,
+                    success=False,
+                    processing_time=time.time() - split_model_start
+                )
+                
+                # Log error
+                self.logger.log_parse_error(
+                    user_input=message,
+                    error_message=str(e),
+                    error_type=type(e).__name__
+                )
+                
                 intent_texts = [message] * num_intents
 
         intent_results = []
         for intent_text in intent_texts:
-            classify_response = self.client.chat.completions.create(
-                messages=[
-                    {"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": intent_text},
-                ],
-                max_tokens=4096,
-                temperature=1.0,
-                top_p=1.0,
-                model=self.deployment
-            )
-            model_output = classify_response.choices[0].message.content
             try:
-                data = json.loads(model_output)
-                parsed = IntentResponse(**data)
-                intent_results.append((parsed.intent, parsed.value))
-            except Exception:
-                intent_results.append(("error", model_output.strip()))
+                classify_start = time.time()
+                
+                classify_response = self.client.chat.completions.create(
+                    messages=[
+                        {"role": "system", "content": self.system_prompt},
+                        {"role": "user", "content": intent_text},
+                    ],
+                    max_tokens=4096,
+                    temperature=1.0,
+                    top_p=1.0,
+                    model=self.deployment
+                )
+                
+                # Log successful model call for classification
+                self.logger.log_model_call(
+                    model=self.deployment,
+                    success=True,
+                    processing_time=time.time() - classify_start
+                )
+                
+                model_output = classify_response.choices[0].message.content
+                try:
+                    data = json.loads(model_output)
+                    parsed = IntentResponse(**data)
+                    
+                    # Log intent confidence
+                    self.logger.log_intent_confidence(
+                        intent=parsed.intent,
+                        confidence=0.9  # Assuming high confidence for now
+                    )
+                    
+                    intent_results.append((parsed.intent, parsed.value))
+                except Exception as e:
+                    # Log parsing error
+                    self.logger.log_parse_error(
+                        user_input=intent_text,
+                        error_message=f"Error parsing response: {str(e)}",
+                        error_type="json_parse_error"
+                    )
+                    
+                    intent_results.append(("error", model_output.strip()))
+                    
+            except Exception as e:
+                # Log failed model call for classification
+                self.logger.log_model_call(
+                    model=self.deployment,
+                    success=False,
+                    processing_time=time.time() - classify_start
+                )
+                
+                # Log error
+                self.logger.log_parse_error(
+                    user_input=intent_text,
+                    error_message=str(e),
+                    error_type=type(e).__name__
+                )
+                
+                intent_results.append(("error", str(e)))
+
+        # Log intent detection completion
+        total_processing_time = time.time() - start_time
+        self.logger.log_intent_detection(
+            user_input=message,
+            detected_intents={"intents": [{"intent": i[0], "value": i[1]} for i in intent_results]},
+            processing_time=total_processing_time
+        )
 
         print(f"User: {message}\nIntents: {len(intent_results)}\nResponse: {intent_results}\n")
         return intent_results

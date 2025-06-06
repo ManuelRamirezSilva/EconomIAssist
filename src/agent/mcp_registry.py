@@ -11,6 +11,11 @@ from typing import Dict, List, Any, Optional, Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 import structlog
+from dotenv import load_dotenv
+
+# Cargar variables de entorno desde .env
+env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
+load_dotenv(env_path, override=True)
 
 logger = structlog.get_logger()
 

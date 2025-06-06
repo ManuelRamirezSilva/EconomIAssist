@@ -31,7 +31,7 @@ servers:
       - accounting_records
       - financial_tracking
     environment:
-      DATABASE_NAME: user_financial_records.sqlite
+      DATABASE_NAME: "${DATABASE_NAME}"
     tools: []
     resources: []
     docker_config:
@@ -57,65 +57,48 @@ servers:
 
   google_calendar:
     name: google_calendar
-    description: Gestión completa de Google Calendar con OAuth Web Flow
-    command: ["node", "src/mcp_servers/google_calendar_web.js"]
+    description: Servidor MCP para integración con Google Calendar usando Service Account
+    command: ["npx", "-y", "@cablate/mcp-google-calendar"]
     auto_connect: true
     priority: 4
     capabilities:
       - calendar_management
-      - event_scheduling
-      - meeting_management
-      - calendar_integration
+      - event_creation
+      - event_listing
+      - schedule_checking
+      - availability_search
     environment:
-      GOOGLE_OAUTH_PORT: "3000"
-      GOOGLE_REDIRECT_URI: "http://localhost:3000/oauth2callback"
+      GOOGLE_CREDENTIALS_PATH: "${GOOGLE_CREDENTIALS_PATH}"
+      GOOGLE_CALENDAR_ID: "${GOOGLE_CALENDAR_ID}"
+      GOOGLE_TIME_ZONE: "${GOOGLE_TIME_ZONE}"
+      GOOGLE_CALENDAR_PUBLIC_URL: "${GOOGLE_CALENDAR_PUBLIC_URL}"
+      GOOGLE_CALENDAR_ICAL_PUBLIC: "${GOOGLE_CALENDAR_ICAL_PUBLIC}"
+      GOOGLE_CALENDAR_ICAL_SECRET: "${GOOGLE_CALENDAR_ICAL_SECRET}"
     tools: []
     resources: []
 
-  financial:
-    name: financial
-    description: Gestión financiera con Google Sheets
-    command: ["python", "-m", "mcp_servers.financial"]
-    auto_connect: false
+  google_sheets:
+    name: google_sheets
+    description: Servidor MCP para integración con Google Drive y Google Sheets usando Service Account
+    command: ["uvx", "mcp-google-sheets@latest"]
+    auto_connect: true
     priority: 5
     capabilities:
-      - financial_data
-      - expense_tracking
-      - income_logging
+      - spreadsheet_management
+      - sheet_data_reading
+      - sheet_data_writing
+      - sheet_creation
+      - batch_operations
+      - formula_reading
+      - spreadsheet_sharing
+      - drive_integration
     environment:
-      GOOGLE_SHEETS_API_KEY: "${GOOGLE_SHEETS_API_KEY}"
-      SPREADSHEET_ID: "${FINANCIAL_SPREADSHEET_ID}"
+      GOOGLE_APPLICATION_CREDENTIALS: "${GOOGLE_CREDENTIALS_PATH}"
+      DRIVE_FOLDER_ID: "${GOOGLE_DRIVE_FOLDER_ID}"
     tools: []
     resources: []
 
-  bcra:
-    name: bcra
-    description: Datos macroeconómicos del BCRA
-    command: ["npx", "bcra-mcp"]
-    auto_connect: false
-    priority: 6
-    capabilities:
-      - macroeconomic_data
-      - exchange_rates
-      - inflation
-    environment: {}
-    tools: []
-    resources: []
-
-  markets:
-    name: markets
-    description: Análisis de mercados financieros
-    command: ["python", "-m", "mcp_servers.markets"]
-    auto_connect: false
-    priority: 7
-    capabilities:
-      - stock_data
-      - crypto_prices
-      - market_analysis
-    environment:
-      ALPHA_VANTAGE_API_KEY: "${ALPHA_VANTAGE_API_KEY}"
-    tools: []
-    resources: []
+    
 
 # Configuración global de MCP
 settings:
@@ -157,42 +140,33 @@ capability_mapping:
 
   calendar_management:
     use_cases:
-      - crear eventos en el calendario
-      - consultar eventos próximos
-      - gestionar citas y reuniones
-      - programar recordatorios
-      - sincronización con Google Calendar
+      - gestión de eventos en calendario
+      - creación de eventos
+      - listado de eventos
+      - verificación de horarios
+      - búsqueda de disponibilidad
     preferred_server: google_calendar
     
-  event_scheduling:
+  spreadsheet_management:
     use_cases:
-      - agendar reuniones
-      - crear recordatorios
-      - programar citas
-      - gestionar agenda personal
-    preferred_server: google_calendar
-
-  financial_data:
+      - creación y gestión de hojas de cálculo
+      - lectura de datos de hojas
+      - escritura y actualización de celdas
+      - operaciones por lotes en múltiples rangos
+      - compartir hojas de cálculo
+      - gestión de permisos
+      - acceso a archivos de Google Drive
+      - análisis de datos financieros en hojas de cálculo
+      - creación de nuevas pestañas
+      - lectura de fórmulas
+    preferred_server: google_sheets
+    
+  file_search:
     use_cases:
-      - registrar gastos e ingresos
-      - gestión de presupuesto personal
-      - seguimiento financiero
-      - análisis de gastos
-    preferred_server: financial
-
-  macroeconomic_data:
-    use_cases:
-      - consultar tipo de cambio
-      - datos de inflación
-      - indicadores económicos argentinos
-      - estadísticas del BCRA
-    preferred_server: bcra
-
-  market_analysis:
-    use_cases:
-      - precios de acciones
-      - análisis de mercados
-      - datos de criptomonedas
-      - tendencias financieras
-    preferred_server: markets
+      - búsqueda de archivos por nombre en Google Drive
+      - exploración de carpetas compartidas
+      - acceso a documentos específicos
+      - recuperación de archivos de la carpeta configurada
+      - listado de hojas de cálculo disponibles
+    preferred_server: google_sheets
 

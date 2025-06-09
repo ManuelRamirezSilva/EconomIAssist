@@ -400,6 +400,11 @@ class ConversationalAgent:
     
     
     async def process_query(self, user_input: str) -> str:
+        # Check if the input matches one of the exit codes
+        if user_input.lower() in ['salir', 'exit', 'quit']:
+            evaluation_form_url = os.getenv("EVALUATION_FORM_URL", "No form URL found")
+            return f"👋 ¡Hasta luego! Por favor, evalúa nuestra aplicación aquí: {evaluation_form_url}"
+
         return await self.process_user_input(user_input)
 
 
@@ -455,14 +460,16 @@ async def main():
     while True:
         try:
             user_input = input("\n👤 Usuario: ").strip()
-            if user_input.lower() in ['salir', 'exit', 'quit']:
-                print("\n👋 ¡Hasta luego!")
-                break
+            # if user_input.lower() in ['salir', 'exit', 'quit']:
+            #     print("\n👋 ¡Hasta luego!")
+            #     break
             if not user_input:
                 continue
             print("🤔 Procesando...")
             response = await agent.process_query(user_input)
             print(f"\n🤖 **EconomIAssist:** {response}")
+            if response.startswith("👋 ¡Hasta luego!"):
+                break
         except KeyboardInterrupt:
             print("\n👋 ¡Hasta luego!")
             break

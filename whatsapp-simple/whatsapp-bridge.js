@@ -1,6 +1,7 @@
 const { default: makeWASocket, DisconnectReason, useMultiFileAuthState } = require('baileys')
 const qrcode = require('qrcode-terminal')
 const axios = require('axios')
+const WebSocket = require('ws')
 require('dotenv').config()
 
 // Configuración
@@ -22,9 +23,56 @@ const AUTO_RESPONSE_DISABLED = process.env.AUTO_RESPONSE_DISABLED ||
     '🤖 Hola! Soy EconomIAssist. Para activarme, usa "/eco" o menciona palabras sobre finanzas.'
 const SHOW_FILTER_LOGS = process.env.SHOW_FILTER_LOGS === 'true'
 
-console.log('🤖 Iniciando WhatsApp Bridge para EconomIAssist')
+console.log('🤖 Iniciando WhatsApp Bridge para EconomIAssist v2.0')
 console.log(`📡 Servidor objetivo: ${ECONOMÍ_ASSIST_URL}`)
 console.log(`🎯 Modo de respuesta: ${RESPONSE_MODE}`)
+
+// Variables globales
+let whatsappSocket = null
+let responseQueue = new Map() // Para manejar respuestas pendientes
+
+// Cola de respuestas para envío con delay humano
+class ResponseQueue {
+    constructor() {
+        this.queue = []
+        this.processing = false
+    }
+    
+    async add(jid, message, delay = 0) {
+        this.queue.push({ jid, message, delay })
+        if (!this.processing) {
+            this.processQueue()
+        }
+    }
+    
+    async processQueue() {
+        this.processing = true
+        
+        while (this.queue.length > 0) {
+            const { jid, message, delay } = this.queue.shift()
+            
+            try {
+                if (delay > 0) {
+                    console.log(`⏳ Esperando ${delay}ms antes de enviar respuesta...`)
+                    await new Promise(resolve => setTimeout(resolve, delay))
+                }
+                
+                if (whatsappSocket) {
+                    await whatsappSocket.sendMessage(jid, { text: message })
+                    console.log(`📤 Respuesta enviada a ${jid}: ${message.substring(0, 50)}...`)
+                } else {
+                    console.log('⚠️ Socket WhatsApp no disponible')
+                }
+            } catch (error) {
+                console.error('❌ Error enviando respuesta:', error.message)
+            }
+        }
+        
+        this.processing = false
+    }
+}
+
+const responseQueueManager = new ResponseQueue()
 
 // Función para verificar si el bot debe responder
 function shouldRespond(message, senderNumber, isGroup, groupName) {
@@ -114,6 +162,9 @@ async function startWhatsApp() {
             markOnlineOnConnect: false
         })
 
+        // Guardar referencia global
+        whatsappSocket = sock
+
         // Manejar actualizaciones de conexión
         sock.ev.on('connection.update', (update) => {
             const { connection, lastDisconnect, qr } = update
@@ -137,6 +188,10 @@ async function startWhatsApp() {
                 console.log('✅ ¡Conectado a WhatsApp exitosamente!')
                 console.log(`📱 Bot activo como: ${BOT_NAME}`)
                 console.log(`🎯 Modo de filtros: ${RESPONSE_MODE}`)
+                console.log('🧠 Conversation Manager v2.0: Activado')
+                
+                // Establecer conexión con servidor para recibir respuestas
+                setupResponseListener()
             } else if (connection === 'connecting') {
                 console.log('🔄 Conectando a WhatsApp...')
             }
@@ -160,6 +215,29 @@ async function startWhatsApp() {
         console.log('🔄 Reintentando en 5 segundos...')
         setTimeout(startWhatsApp, 5000)
     }
+}
+
+function setupResponseListener() {
+    console.log('🔗 Configurando listener para respuestas del servidor...')
+    
+    // Polling periódico para verificar respuestas pendientes
+    setInterval(async () => {
+        try {
+            const response = await axios.get('http://localhost:8000/whatsapp/pending-responses')
+            
+            if (response.data && response.data.length > 0) {
+                for (const pendingResponse of response.data) {
+                    await responseQueueManager.add(
+                        pendingResponse.jid,
+                        pendingResponse.message,
+                        pendingResponse.delay || 0
+                    )
+                }
+            }
+        } catch (error) {
+            // Ignorar errores de polling silenciosamente
+        }
+    }, 1000) // Verificar cada segundo
 }
 
 async function handleMessage(sock, message) {
@@ -224,42 +302,21 @@ async function handleMessage(sock, message) {
             groupName: groupName
         }
 
-        // Enviar a EconomIAssist
+        // Enviar a EconomIAssist v2.0 (ahora sin esperar respuesta inmediata)
         try {
-            console.log('🔄 Enviando a EconomIAssist...')
+            console.log('🔄 Enviando a EconomIAssist v2.0 (Conversation Manager)...')
             
             const response = await axios.get(ECONOMÍ_ASSIST_URL, {
                 params: messageInfo,
-                timeout: 30000 // 30 segundos timeout
+                timeout: 5000 // Timeout más corto porque no esperamos respuesta inmediata
             })
 
-            let replyText = ''
-            
-            // Procesar respuesta de EconomIAssist
-            if (typeof response.data === 'string') {
-                replyText = response.data
-            } else if (response.data?.text) {
-                replyText = response.data.text
-            } else if (response.data?.message) {
-                replyText = response.data.message
-            } else if (response.data?.response) {
-                replyText = response.data.response
-            } else {
-                replyText = JSON.stringify(response.data)
-            }
-
-            // Enviar respuesta por WhatsApp
-            if (replyText) {
-                await sock.sendMessage(remoteJid, { text: replyText })
-                console.log(`✅ Respuesta enviada (${replyText.length} caracteres)`)
-            } else {
-                console.log('⚠️ EconomIAssist no devolvió respuesta')
-            }
+            console.log('✅ Mensaje enviado al Conversation Manager')
 
         } catch (error) {
             console.error('❌ Error comunicándose con EconomIAssist:', error.message)
             
-            // Mensaje de error amigable
+            // Mensaje de error amigable inmediato
             const errorMsg = 'Lo siento, hay un problema técnico temporalmente. Intenta de nuevo en unos minutos.'
             await sock.sendMessage(remoteJid, { text: errorMsg })
         }

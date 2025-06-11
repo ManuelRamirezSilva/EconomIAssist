@@ -70,3 +70,7 @@ dist/
 
 # Project specific
 resumeProyect.txt
+
+#Maquina de oli
+package.json
+setup.sh

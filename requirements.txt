@@ -21,7 +21,7 @@ googleapis-common-protos>=1.60.0
 # ================================================================
 # AZURE OPENAI - Modelo principal de IA
 # ================================================================
-azure-openai>=1.0.0
+# Note: Azure OpenAI is accessed through the openai package with Azure configuration
 
 # ================================================================
 # SERVIDORES MCP Y HERRAMIENTAS

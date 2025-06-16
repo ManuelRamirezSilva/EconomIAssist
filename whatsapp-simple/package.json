@@ -1,0 +1,19 @@
+{
+  "name": "whatsapp-simple",
+  "version": "1.0.0",
+  "description": "Versión minimalista de Baileys para EconomIAssist",
+  "main": "whatsapp-bridge.js",
+  "scripts": {
+    "start": "node whatsapp-bridge.js",
+    "dev": "node whatsapp-bridge.js"
+  },
+  "dependencies": {
+    "baileys": "^6.7.18",
+    "qrcode-terminal": "^0.12.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.0.0"
+  },
+  "keywords": ["whatsapp", "baileys", "economIAssist", "proxy"],
+  "author": "EconomIAssist Team",
+  "license": "MIT"
+}

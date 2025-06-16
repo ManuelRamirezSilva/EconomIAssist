@@ -90,8 +90,9 @@ class ConversationalAgent:
         self.azure_client = None
         self.openai_model = None
         self.mcp_manager = None
-        self.session_memory = []
-        # Solo parser de intenciones - sin MemoryManager
+        # Memoria temporal para contexto de sesión actual (no persistente)
+        self.current_session_context = []
+        # Solo parser de intenciones
         self.intent_parser = IntentParser()
         
         # Add agent logger
@@ -285,16 +286,19 @@ class ConversationalAgent:
         # Log user input
         self.agent_logger.log_user_input(user_input)
         
+        # Construir contexto de sesión
+        session_context = self._build_session_context_for_llm()
+        
+        # Construir instrucciones del sistema con contexto de sesión
+        system_content = self.system_instructions
+        if session_context:
+            system_content = f"{self.system_instructions}\n\n{session_context}"
+        
         # Construir mensajes con instrucciones del sistema y entrada del usuario
         messages = [
-            {"role": "system", "content": self.system_instructions},
+            {"role": "system", "content": system_content},
             {"role": "user", "content": user_input}
         ]
-        
-        # Agregar memoria de sesión temporal (solo para esta conversación)
-        for memory in self.session_memory[-5:]:  # Últimas 5 interacciones
-            messages.insert(-1, {"role": "user", "content": memory["user"]})
-            messages.insert(-1, {"role": "assistant", "content": memory["assistant"]})
         
         # Solo incluir funciones si hay herramientas MCP disponibles
         if self.mcp_functions:
@@ -390,12 +394,6 @@ class ConversationalAgent:
                               total_processing_time=total_time,
                               response_length=len(response))
         
-        # Guardar interacción en memoria de sesión
-        self.session_memory.append({
-            "user": user_input,
-            "assistant": response
-        })
-        
         return response
     
     
@@ -415,6 +413,10 @@ class ConversationalAgent:
             print(f"🤖 Procesando consulta: {user_input}")
             response = await self._call_openai_with_mcp(user_input)
             print(f"✅ Respuesta generada ({len(response)} caracteres)")
+            
+            # Agregar a contexto de sesión
+            self._add_to_session_context(user_input, response)
+            
             return response
         except Exception as e:
             error_msg = f"Error al procesar la consulta: {str(e)}"
@@ -428,6 +430,39 @@ class ConversationalAgent:
             
             print(f"❌ {error_msg}")
             return f"Lo siento, ocurrió un error al procesar tu consulta: {str(e)}"
+    
+
+    def _add_to_session_context(self, user_input: str, assistant_response: str):
+        """Agrega la interacción a la memoria temporal de sesión"""
+        interaction = {
+            "user": user_input,
+            "assistant": assistant_response,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        self.current_session_context.append(interaction)
+        
+        # Mantener solo las últimas 5 interacciones para no saturar el contexto
+        if len(self.current_session_context) > 5:
+            self.current_session_context = self.current_session_context[-5:]
+    
+    def _build_session_context_for_llm(self) -> str:
+        """Construye el contexto de sesión para incluir en el prompt"""
+        if not self.current_session_context:
+            return ""
+        
+        context_parts = ["CONTEXTO DE LA CONVERSACIÓN ACTUAL:"]
+        
+        # Tomar las últimas 5 interacciones completas
+        recent_interactions = self.current_session_context[-5:]
+        
+        for i, interaction in enumerate(recent_interactions, 1):
+            context_parts.append(f"{i}. Usuario: {interaction['user']}")
+            context_parts.append(f"   Asistente: {interaction['assistant']}")
+        
+        context_parts.append("--- FIN DEL CONTEXTO ---")
+        context_parts.append("IMPORTANTE: Cuando el usuario se refiera a mensajes anteriores, usa este contexto para responder correctamente.")
+        return "\n".join(context_parts)
     
 
     async def cleanup(self):

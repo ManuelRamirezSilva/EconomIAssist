@@ -73,7 +73,72 @@ class MCPServerRegistry:
         """Obtiene la ruta por defecto del archivo de configuración"""
         return os.path.join(os.path.dirname(__file__), "..", "..", "config", "mcp_servers.yaml")
     
-    # Eliminar completamente _load_builtin_servers()
+    # def _load_builtin_servers(self):
+    #     """Carga servidores MCP integrados"""
+        
+    #     # 🌐 Tavily Web Search
+    #     self.register_server(MCPServerSpec(
+    #         name="tavily",
+    #         description="Búsqueda web inteligente con Tavily AI",
+    #         command=["npx", "tavily-mcp"],
+    #         env_vars={"TAVILY_API_KEY": "$TAVILY_API_KEY"},
+    #         required_env_keys=["TAVILY_API_KEY"],
+    #         capabilities=["web_search", "real_time_data"],
+    #         priority=10
+    #     ))
+        
+    #     # 💰 Servidor Financiero (Google Sheets)
+    #     self.register_server(MCPServerSpec(
+    #         name="financial",
+    #         description="Gestión financiera con Google Sheets",
+    #         command=["python", "-m", "mcp_servers.financial"],
+    #         env_vars={
+    #             "GOOGLE_SHEETS_API_KEY": "$GOOGLE_SHEETS_API_KEY",
+    #             "SPREADSHEET_ID": "$FINANCIAL_SPREADSHEET_ID"
+    #         },
+    #         required_env_keys=["GOOGLE_SHEETS_API_KEY", "FINANCIAL_SPREADSHEET_ID"],
+    #         capabilities=["financial_data", "expense_tracking", "income_logging"],
+    #         priority=20
+    #     ))
+        
+    #     # 📅 Google Calendar (Web OAuth)
+    #     self.register_server(MCPServerSpec(
+    #         name="google_calendar",
+    #         description="Gestión completa de Google Calendar con OAuth Web Flow",
+    #         command=["node", "src/mcp_servers/google_calendar_web.js"],
+    #         env_vars={
+    #             "GOOGLE_OAUTH_PORT": "3000",
+    #             "GOOGLE_REDIRECT_URI": "http://localhost:3000/oauth2callback"
+    #         },
+    #         required_env_keys=[],
+    #         capabilities=["calendar_management", "event_scheduling", "meeting_management", "calendar_integration"],
+    #         priority=15,
+    #         auto_connect=True
+    #     ))
+        
+    #     # 🏦 BCRA (Banco Central República Argentina)
+    #     self.register_server(MCPServerSpec(
+    #         name="bcra",
+    #         description="Datos macroeconómicos del BCRA",
+    #         command=["npx", "bcra-mcp"],
+    #         env_vars={},  # API pública del BCRA
+    #         required_env_keys=[],
+    #         capabilities=["macroeconomic_data", "exchange_rates", "inflation"],
+    #         priority=5,
+    #         auto_connect=False  # Conectar solo cuando se necesite
+    #     ))
+        
+    #     # 📊 Análisis de Mercados
+    #     self.register_server(MCPServerSpec(
+    #         name="markets",
+    #         description="Análisis de mercados financieros",
+    #         command=["python", "-m", "mcp_servers.markets"],
+    #         env_vars={"ALPHA_VANTAGE_KEY": "$ALPHA_VANTAGE_API_KEY"},
+    #         required_env_keys=["ALPHA_VANTAGE_API_KEY"],
+    #         capabilities=["stock_data", "crypto_prices", "market_analysis"],
+    #         priority=8,
+    #         auto_connect=False
+    #     ))
     
     def _load_config_file(self):
         """Carga servidores desde archivo de configuración YAML"""

@@ -1,0 +1,52 @@
+@startuml
+title EconomIAssist - Arquitectura del Agente Conversacional con MCP
+
+actor Usuario
+
+package "ConversationalAgent" {
+    component AzureOpenAIConfig
+    component IntentParser  
+    component MemoryManager
+    component AgentCore
+}
+
+package "MCP Layer" {
+    component MCPManager
+    component MCPServerRegistry
+    component MCPConnection1
+    component MCPConnection2
+}
+
+package "Servidores MCP" {
+    component TavilyServer
+    component FinancialServer
+    component CalendarServer
+    component BCRAServer
+    component MarketsServer
+}
+
+cloud "Azure OpenAI" as Azure
+cloud "Google APIs" as Google
+cloud "Tavily API" as TavilyAPI
+cloud "BCRA API" as BCRAAPI
+
+Usuario --> AgentCore : Consulta
+AgentCore --> IntentParser : Analizar
+AgentCore --> MemoryManager : Contexto
+AgentCore --> MCPManager : Herramientas
+
+MCPManager --> MCPServerRegistry : Descubrir
+MCPManager --> MCPConnection1 : Conectar
+MCPManager --> MCPConnection2 : Conectar
+
+MCPConnection1 --> TavilyServer : JSON-RPC
+MCPConnection2 --> FinancialServer : JSON-RPC
+
+AzureOpenAIConfig --> Azure : API Calls
+TavilyServer --> TavilyAPI : Search
+FinancialServer --> Google : Sheets API
+BCRAServer --> BCRAAPI : Economic Data
+
+AgentCore --> Usuario : Respuesta
+
+@enduml

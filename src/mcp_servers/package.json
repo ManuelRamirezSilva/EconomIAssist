@@ -1,0 +1,17 @@
+{
+  "name": "google-calendar-mcp-server",
+  "version": "1.0.0",
+  "description": "Google Calendar MCP Server with Web OAuth Flow",
+  "type": "module",
+  "main": "google_calendar_web.js",
+  "scripts": {
+    "start": "node google_calendar_web.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "latest",
+    "express": "^4.18.2",
+    "googleapis": "^144.0.0",
+    "localtunnel": "^2.0.2",
+    "open": "^8.4.0"
+  }
+}

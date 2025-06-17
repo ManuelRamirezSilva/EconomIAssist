@@ -1,85 +1,131 @@
-# 🧠 EconomIAssist
+# 🤖 EconomIAssist
 
-EconomIAssist is a personal financial assistant that interacts with users naturally through WhatsApp to manage income, expenses, habits, and reminders using Google Sheets and Google Calendar. Built on a modular architecture with NLP capabilities and connected via MCP (Message Communication Protocol).
----
+**Asistente Financiero Personal con IA Conversacional**
 
-## 🎯 Motivation and Objective
-In the context of:
+EconomIAssist es un agente conversacional inteligente que combina Azure OpenAI con Model Context Protocol (MCP) para ofrecer asistencia financiera personalizada.
 
-* Low financial literacy
+## ✨ Características Principales
 
-* Daily financial decision complexity
+- 💬 **Conversación Natural**: Interfaz en español argentino
+- 🧠 **IA Avanzada**: Powered by Azure OpenAI GPT-4o-mini
+- 🔧 **Extensible**: Arquitectura MCP para nuevas capacidades
+- 🌐 **Búsqueda Web**: Integración con Tavily para información actualizada
+- 📊 **Gestión Financiera**: Seguimiento de ingresos, gastos y consejos
 
-* Need for accessible conversational assistants
+## 🚀 Instalación Rápida
 
-* This project aims to create an intelligent chatbot that helps users manage their personal finances in a simple, conversational way.
+```bash
+# Clonar el repositorio
+git clone <repository-url>
+cd EconomIAssist
 
----
+# Ejecutar setup automático
+chmod +x setup.sh
+./setup.sh
+```
 
-## ✨ Key Features
-* 📊 Track finances: Log income and expenses automatically via WhatsApp.
+## ⚙️ Configuración
 
-* ❓ Answer financial questions accurately and clearly.
+Crea un archivo `.env` en la raíz del proyecto:
 
-* 🚨 Alert users about excessive spending or inefficient habits.
+```env
+# Azure OpenAI (Requerido)
+AZURE_OPENAI_API_BASE=tu_endpoint_azure
+AZURE_OPENAI_API_KEY=tu_api_key_azure
+AZURE_OPENAI_API_VERSION=2024-12-01-preview
+AZURE_OPENAI_DEPLOYMENT_NAME=tu_deployment_name
 
-* 🧾 Generate reports with graphs and summaries from Google Sheets.
+# OpenAI API Key (Opcional - para funciones avanzadas)
+OPENAI_API_KEY=tu_openai_api_key
 
-* 🗓️ Set calendar reminders for payments and financial events.
+# Tavily API Key (Opcional - para búsqueda web)
+TAVILY_API_KEY=tu_tavily_api_key
+```
 
----
+## 🏃‍♂️ Uso
 
-## 📁 Project Structure
+### Ejecutar Pruebas
+```bash
+python tests/run_all_tests.py
+```
+
+### Usar el Agente
+```bash
+python src/agent/conversational_agent.py
+```
+
+### Ejemplos de Conversación
+- "¿Cuál es mi saldo actual?"
+- "Dame consejos de ahorro"
+- "Registra un gasto de 500 pesos"
+- "¿Cómo puedo mejorar mis finanzas?"
+
+## 📁 Estructura del Proyecto
 
 ```
+EconomIAssist/
 ├── src/
-│ ├── agent/ # NLP processing (intent detection, entity extraction)
-│ ├── integrations/ # Interfaces to WhatsApp, Google Sheets, and Google Calendar
-│ ├── mcp/ # Message Communication Protocol components
-│ ├── workflows/ # Business logic workflows and orchestration
-│ ├── utils/ # Shared utility functions
-│
-├── tests/ # Unit and integration tests
-├── scripts/ # Dev/ops scripts (e.g., setup, deployment)
-├── config/ # Config files (e.g., API keys, environment settings)
-├── docs/ # Documentation (architecture, onboarding, API)
-├── .gitignore
-├── requirements.txt
-├── README.md
+│   ├── agent/
+│   │   ├── conversational_agent.py    # Agente principal
+│   │   ├── intentParser.py           # Parser de intenciones
+│   │   ├── mcp_client.py            # Cliente MCP
+│   │   └── mcp_registry.py          # Registro de servidores MCP
+│   ├── mcp_servers/
+│   │   └── bcra_server.py           # Servidor BCRA
+│   └── utils/
+│       ├── agent_logger.py          # Logger del agente
+│       ├── intent_logger.py         # Logger de intenciones
+│       └── mcp_logger.py           # Logger MCP
+├── tests/
+│   ├── run_all_tests.py            # Suite de pruebas
+│   ├── test_azure_connection.py    # Prueba Azure OpenAI
+│   ├── test_knowledgebase_mcp_pure.py # Prueba Knowledge Base
+│   ├── test_tavily_mcp.py         # Prueba MCP+Tavily
+│   └── test_final_integration.py  # Prueba integración completa
+├── config/
+│   ├── mcp_servers.yaml           # Configuración servidores MCP
+│   ├── system_instructions.txt    # Instrucciones del sistema
+│   └── gcp-service-account.json   # Credenciales Google Cloud
+├── docs/                          # Documentación
+├── logs/                          # Archivos de log
+├── .env                          # Variables de entorno
+├── requirements.txt              # Dependencias Python
+└── setup.sh                     # Script de configuración
 ```
+
+## 🔧 Dependencias Principales
+
+- **mcp**: Model Context Protocol
+- **openai**: Azure OpenAI SDK
+- **structlog**: Logging estructurado
+- **pydantic**: Validación de datos
+- **python-dotenv**: Gestión de variables de entorno
+
+## 🧪 Pruebas
+
+El proyecto incluye pruebas automatizadas para:
+- ✅ Conectividad con Azure OpenAI
+- ✅ Funcionamiento del OpenAI Agents SDK
+- ✅ Integración MCP con Tavily
+
+## 📖 Documentación
+
+- [Arquitectura del Sistema](docs/architecture.md)
+- [Integración de Agentes](docs/agents_integration.md)
+
+## 📄 Licencia
+
+MIT License - Ver [LICENSE](LICENSE) para más detalles.
+
+## 👥 Contribuciones
+
+¡Las contribuciones son bienvenidas! Por favor:
+1. Fork el proyecto
+2. Crea una rama para tu feature
+3. Realiza tus cambios
+4. Ejecuta las pruebas
+5. Envía un Pull Request
+
 ---
 
-## 🔌 Tools & Integrations
-* WhatsApp (Twilio): Communication channel with the user.
-
-* Google Sheets: Acts as a financial backend.
-
-* Google Calendar: Creates and manages financial reminders.
-
-* MCP (Message Communication Protocol): Handles communication between modules.
-
-* Graphing Tools: For visual financial summaries.
-
-* Internet Access: To validate or extend financial information.
-
-* RAG & RLHF: Used for retrieval and quality scoring of responses.
-
----
-
-## 📈 Metrics & Evaluation
-* ✅ Data logging precision
-
-* 🧠 First-contact resolution rate
-
-* ⭐ Conversation quality scored via RLHF
-
----
-
-## 👥 Team
-* Olivia Browne Corbacho – ocorbacho@udesa.edu.ar
-
-* Maximo Simian – msimian@udesa.edu.ar
-
-* Agustin Manzano – amanzano@udesa.edu.ar
-
-* Manuel Ramirez Silva – mramirezsilva@udesa.edu.ar
+**Desarrollado con ❤️ para la gestión financiera inteligente**

@@ -1,0 +1,172 @@
+# Configuración de Servidores MCP para EconomIAssist
+# Este archivo define los servidores MCP disponibles y su configuración
+
+servers:
+  tavily:
+    name: tavily
+    description: Servidor MCP para búsqueda web usando Tavily API
+    command: ["npx", "tavily-mcp"]
+    auto_connect: true
+    priority: 1
+    capabilities:
+      - web_search
+      - news_search
+      - real_time_data
+    environment:
+      TAVILY_API_KEY: "${TAVILY_API_KEY}"
+    tools: []
+    resources: []
+    
+  knowledge_base:
+    name: knowledge_base
+    description: Servidor MCP para memoria conversacional usando KnowledgeBase Server
+    command: ["docker", "run", "--interactive", "--detach", "--name", "economyassist-kb", "--volume", "knowledgebase:/db", "mbcrawfo/knowledge-base-server"]
+    auto_connect: true
+    priority: 2
+    capabilities:
+      - user_memory
+      - conversation_history
+      - context_storage
+      - memory_search
+      - accounting_records
+      - financial_tracking
+    environment:
+      DATABASE_NAME: "${DATABASE_NAME}"
+    tools: []
+    resources: []
+    docker_config:
+      detached_mode: true
+      interactive_restart_command: ["docker", "run", "-i", "--name", "economyassist-kb", "--volume", "knowledgebase:/db", "mbcrawfo/knowledge-base-server"]
+      container_name: economyassist-kb
+      restart_on_connect: true
+
+  calculator:
+    name: calculator
+    description: Servidor MCP para realizar cálculos matemáticos precisos y confiables
+    command: ["python", "-m", "mcp_server_calculator"]
+    auto_connect: true
+    priority: 3
+    capabilities:
+      - mathematical_calculations
+      - arithmetic_operations
+      - expression_evaluation
+      - financial_calculations
+    environment: {}
+    tools: []
+    resources: []
+
+  google_calendar:
+    name: google_calendar
+    description: Servidor MCP para integración con Google Calendar usando Service Account
+    command: ["npx", "-y", "@cablate/mcp-google-calendar"]
+    auto_connect: true
+    priority: 4
+    capabilities:
+      - calendar_management
+      - event_creation
+      - event_listing
+      - schedule_checking
+      - availability_search
+    environment:
+      GOOGLE_CREDENTIALS_PATH: "${GOOGLE_CREDENTIALS_PATH}"
+      GOOGLE_CALENDAR_ID: "${GOOGLE_CALENDAR_ID}"
+      GOOGLE_TIME_ZONE: "${GOOGLE_TIME_ZONE}"
+      GOOGLE_CALENDAR_PUBLIC_URL: "${GOOGLE_CALENDAR_PUBLIC_URL}"
+      GOOGLE_CALENDAR_ICAL_PUBLIC: "${GOOGLE_CALENDAR_ICAL_PUBLIC}"
+      GOOGLE_CALENDAR_ICAL_SECRET: "${GOOGLE_CALENDAR_ICAL_SECRET}"
+    tools: []
+    resources: []
+
+  google_sheets:
+    name: google_sheets
+    description: Servidor MCP para integración con Google Drive y Google Sheets usando Service Account
+    command: ["uvx", "mcp-google-sheets@latest"]
+    auto_connect: true
+    priority: 5
+    capabilities:
+      - spreadsheet_management
+      - sheet_data_reading
+      - sheet_data_writing
+      - sheet_creation
+      - batch_operations
+      - formula_reading
+      - spreadsheet_sharing
+      - drive_integration
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: "${GOOGLE_CREDENTIALS_PATH}"
+      DRIVE_FOLDER_ID: "${GOOGLE_DRIVE_FOLDER_ID}"
+    tools: []
+    resources: []
+
+    
+
+# Configuración global de MCP
+settings:
+  protocol_version: "2024-11-05"
+  client_info:
+    name: EconomIAssist
+    version: "1.0.0"
+  connection_timeout: 30
+  retry_attempts: 3
+  log_level: INFO
+
+# Mapeo de capacidades a casos de uso
+capability_mapping:
+  web_search:
+    use_cases:
+      - búsqueda de tasas de cambio actuales
+      - noticias financieras
+      - información económica en tiempo real
+    preferred_server: tavily
+    
+  user_memory:
+    use_cases:
+      - recordar preferencias del usuario
+      - almacenar contexto conversacional
+      - recuperar interacciones pasadas
+      - personalizar respuestas financieras
+      - guardar información de perfil
+      - registrar gastos e ingresos
+    preferred_server: knowledge_base
+
+  mathematical_calculations:
+    use_cases:
+      - cálculos de presupuesto
+      - conversiones de moneda
+      - cálculos de interés y porcentajes
+      - operaciones aritméticas complejas
+      - evaluación de expresiones matemáticas
+    preferred_server: calculator
+
+  calendar_management:
+    use_cases:
+      - gestión de eventos en calendario
+      - creación de eventos
+      - listado de eventos
+      - verificación de horarios
+      - búsqueda de disponibilidad
+    preferred_server: google_calendar
+    
+  spreadsheet_management:
+    use_cases:
+      - creación y gestión de hojas de cálculo
+      - lectura de datos de hojas
+      - escritura y actualización de celdas
+      - operaciones por lotes en múltiples rangos
+      - compartir hojas de cálculo
+      - gestión de permisos
+      - acceso a archivos de Google Drive
+      - análisis de datos financieros en hojas de cálculo
+      - creación de nuevas pestañas
+      - lectura de fórmulas
+    preferred_server: google_sheets
+    
+  file_search:
+    use_cases:
+      - búsqueda de archivos por nombre en Google Drive
+      - exploración de carpetas compartidas
+      - acceso a documentos específicos
+      - recuperación de archivos de la carpeta configurada
+      - listado de hojas de cálculo disponibles
+    preferred_server: google_sheets
+

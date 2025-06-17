@@ -1,0 +1,164 @@
+📘 Documentación General del Proyecto – Agente Conversacional Modular (MCP)
+🧠 Nombre del Proyecto
+Agente Conversacional Modular con arquitectura distribuida basada en MCP (Modular Capability Protocol)
+
+🧱 1. Descripción General del Proyecto
+Este proyecto consiste en el desarrollo de un agente conversacional inteligente y modular, construido bajo el paradigma MCP (Modular Capability Protocol) impulsado por Anthropic. El agente será capaz de entender intenciones de los usuarios, enrutar las peticiones hacia módulos especializados (servers MCP), ejecutar tareas y responder de manera natural, incorporando también recuperación de información mediante un módulo RAG.
+
+La arquitectura se basa en una comunicación distribuida tipo JSON-RPC entre el cliente MCP (agente conversacional) y distintos servidores MCP, que exponen herramientas (funcionalidades) como APIs conversacionales.
+
+📐 2. Arquitectura del Sistema
+Componentes Principales:
+Usuario: Interactúa por texto o audio.
+
+MCP Client (Agente Conversacional):
+
+Procesamiento de Intenciones: Detecta qué quiere hacer el usuario.
+
+Routing Engine: Mapea intención a servidor/tool específico.
+
+Discovery: Descubre qué herramientas están disponibles (mediante el directorio MCP).
+
+Interacción JSON-RPC: Se comunica con los servidores a través de JSON-RPC.
+
+Manejo de memoria semántica (contexto + caché).
+
+MCP Servers:
+
+Servidor DB: db.query, db.insert, etc.
+
+Servidor Sheets: Manejo de datos en Airtable u hojas de cálculo.
+
+Servidor Tools: Servicios como calendario, clima, finanzas, etc.
+
+Servidor RAG: Recuperación de información y expansión de contexto mediante embeddings + búsqueda semántica.
+
+Directorio MCP: Permite al cliente descubrir qué capacidades están disponibles y cómo invocarlas.
+
+Logger estructurado: Captura inputs, herramientas invocadas y resultados.
+
+UI / Dashboard: Visualización de logs e interacción para debugging o demos.
+
+🧪 3. Métricas de Evaluación del Agente
+FCR (First Contact Resolution): ¿El agente resolvió la consulta en la primera interacción?
+
+Precisión por intención: ¿Identifica correctamente qué quiere hacer el usuario?
+
+Latencia promedio por turno: ¿Qué tan rápido responde el sistema?
+
+Evaluación semántica automática: Comparación de embedding de la respuesta con la respuesta esperada.
+
+Evaluación humana (formulario): Escala Likert o ranking de calidad.
+
+Tasa de éxito de ejecución (herramientas): ¿Falla la llamada JSON-RPC?
+
+Cobertura de herramientas: ¿Qué proporción de intents se pueden resolver con las herramientas disponibles?
+
+🚧 4. Backlog del MVP y Organización Ágil
+El equipo está compuesto por 4 integrantes. Se utilizará SCRUM con 5 sprints semanales. A continuación, se detalla el backlog por sprint (con puntajes y descripciones breves):
+
+
+
+🗓 Sprint 1 – Fundamentos y Setup
+📦 Inicializar entorno y repositorio compartido [Infra] – 3
+Setear entorno de desarrollo colaborativo con control de versiones.
+
+⚙️ Procesamiento de lenguaje natural (extracción de intenciones) [MCP Client] – 8
+Pipeline para detectar qué desea hacer el usuario (NLU).
+
+🔌 Integrar SDK de cliente MCP (Anthropic JSON-RPC) [MCP Client] – 5
+Conectar con protocolo JSON-RPC, configurar autenticación, sesiones.
+
+🔎 Discovery de capacidades (Capability Discovery) [MCP Client] – 5
+Consultar el directorio MCP para saber qué herramientas están disponibles.
+
+📁 Configurar Service Discovery (directorio MCP) [MCP Client] – 3
+Exponer metadata de servidores MCP para permitir descubrimiento.
+
+🧭 Documentar arquitectura general (primer borrador) [Docs] – 3
+Diagrama, descripción técnica y visión general.
+
+🗓 Sprint 2 – Primer flujo funcional + RAG
+🚦 Routing Engine (intención → servicio) [MCP Client] – 5
+Mapa intención → tool, con fallback y validaciones.
+
+🧠 Módulo RAG Server (IA + recuperación de info) [MCP Server] – 8
+Embeddings + búsqueda semántica + expansión de contexto.
+
+📄 Servidor Sheets/Airtable [MCP Server] – 5
+Servidor para consultar datos estructurados (ej: horarios, inventarios).
+
+💾 Módulo de memoria del modelo (session + cache) [Infra] – 5
+Almacenar inputs anteriores + entidades claves.
+
+🔁 Validar flujo end-to-end [QA] – 3
+Input → intención → servicio → respuesta.
+
+📉 Logs estructurados (servicio + respuestas) [Observability] – 3
+Registrar todas las interacciones clave del sistema.
+
+🗓 Sprint 3 – Herramientas auxiliares + Métricas
+🔧 Tools Server (servicios auxiliares) [MCP Server] – 5
+Ej: calendario, clima, dólar, etc.
+
+📈 Medir latencia y precisión semántica [Evaluación] – 3
+Monitoreo de rendimiento técnico y coherencia.
+
+🧠 Memoria de conversación con contexto semántico [MCP Client] – 5
+Fusión de memoria + contexto expandido por RAG.
+
+📊 Instrumentar logging para medición de rendimiento [Observability] – 3
+Tiempo por turno, errores por herramienta.
+
+📋 Formulario de evaluación humana [Evaluación] – 3
+Instrumento para evaluar la calidad de las respuestas.
+
+🗓 Sprint 4 – Refactor + Visualización + Poster
+🧹 Refactor + modularización del código [DevOps] – 5
+Reorganización por capas y módulos.
+
+🌐 UI de visualización de logs (web o Streamlit) [Visualización] – 5
+Permite ver inputs, outputs y herramientas invocadas.
+
+🧾 Contenido técnico para póster [Docs] – 3
+Resumen técnico para presentación académica.
+
+🎯 Medir FCR y precisión por intención [Evaluación] – 3
+Benchmark sobre efectividad real.
+
+🤖 Soporte para intents múltiples por consulta [MCP Client] – 5
+Separar y ejecutar múltiples intenciones en un mismo turno.
+
+🎥 Casos de uso para demo [Presentación] – 3
+Preparar ejemplos que muestren funcionalidades.
+
+🗓 Sprint 5 – QA Final + Presentación
+🧪 Test prompts largos / edge cases [QA] – 3
+Inputs ambiguos, extensos, inesperados.
+
+🔄 Validar errores de servidor [QA] – 3
+Simular caídas, timeouts, y analizar cómo responde el cliente.
+
+📚 Conversación multi-servicio [QA] – 3
+Ejecutar un flujo donde se usen 2+ servidores MCP.
+
+🗣 Ensayo general con el póster [Presentación] – 3
+Simular presentación completa y revisión cruzada.
+
+👥 Revisión cruzada del equipo [QA] – 3
+Code review + revisión de material de presentación.
+
+🔧 Últimos ajustes finales [DevOps] – 1
+Optimización final antes de la entrega.
+
+🧠 Consideraciones Técnicas Avanzadas
+Protocolo de comunicación: JSON-RPC 2.0 sobre stdio o HTTP/sse.
+
+Modelo base: Claude-3 (o compatible) con API de Anthropic.
+
+Discovery automático: El cliente pregunta al directorio qué herramientas están disponibles, cada una define su schema.
+
+Fallback a RAG: Si ninguna herramienta puede resolver la intención, se consulta al servidor RAG con embeddings.
+
+Memoria semántica: Fusión de contextos históricos + recuperación RAG para mantener coherencia.
+

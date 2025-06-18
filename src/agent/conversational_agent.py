@@ -409,27 +409,25 @@ class ConversationalAgent:
     async def process_user_input(self, user_input: str) -> str:
         parsed_intents = self.intent_parser.receive_message(user_input)
         logger.info(f"🔍 Intenciones detectadas: {parsed_intents}")
-        try:
-            print(f"🤖 Procesando consulta: {user_input}")
-            response = await self._call_openai_with_mcp(user_input)
-            print(f"✅ Respuesta generada ({len(response)} caracteres)")
-            
-            # Agregar a contexto de sesión
-            self._add_to_session_context(user_input, response)
-            
-            return response
-        except Exception as e:
-            error_msg = f"Error al procesar la consulta: {str(e)}"
-            
-            # Log error
-            self.agent_logger.log_error(
-                error_message=error_msg,
-                error_type=type(e).__name__,
-                details={"user_input": user_input}
-            )
-            
-            print(f"❌ {error_msg}")
-            return f"Lo siento, ocurrió un error al procesar tu consulta: {str(e)}"
+
+        responses = []
+        for intent in parsed_intents:
+            try:
+                print(f"🤖 Procesando intención: {intent}")
+                response = await self._call_openai_with_mcp(intent)
+                responses.append(response)
+                print(f"✅ Respuesta generada para intención: {response}")
+            except Exception as e:
+                error_msg = f"Error al procesar la intención '{intent}': {str(e)}"
+                self.agent_logger.log_error(
+                    error_message=error_msg,
+                    error_type=type(e).__name__,
+                    details={"intent": intent}
+                )
+                responses.append(f"❌ {error_msg}")
+
+        # Combine all responses into a single string
+        return "\n".join(responses)
     
 
     def _add_to_session_context(self, user_input: str, assistant_response: str):

@@ -162,3 +162,18 @@ async def main():
 if __name__ == "__main__":
     exit_code = asyncio.run(main())
     sys.exit(exit_code)
+
+import pytest
+from src.agent.conversational_agent import ConversationalAgent
+
+@pytest.mark.asyncio
+async def test_multiple_intents_processing():
+    agent = ConversationalAgent()
+    await agent.initialize()
+
+    user_input = "Add a meeting for tomorrow and tell me my account balance."
+    response = await agent.process_user_input(user_input)
+
+    assert "meeting" in response
+    assert "account balance" in response
+    assert len(response.split("\n")) == 2

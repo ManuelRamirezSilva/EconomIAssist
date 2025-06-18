@@ -320,3 +320,4 @@ if [ $NODEJS_AVAILABLE -ne 0 ]; then
     echo "💡 Nota: Sin Node.js, Google Calendar y Tavily no funcionarán"
     echo "   Instala Node.js 18+ y ejecuta este script nuevamente."
 fi
+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

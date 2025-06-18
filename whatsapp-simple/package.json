@@ -8,12 +8,18 @@
     "dev": "node whatsapp-bridge.js"
   },
   "dependencies": {
+    "@adiwajshing/baileys": "^5.0.0",
+    "axios": "^1.10.0",
     "baileys": "^6.7.18",
-    "qrcode-terminal": "^0.12.0",
-    "axios": "^1.6.0",
-    "dotenv": "^16.0.0"
+    "dotenv": "^16.0.0",
+    "qrcode-terminal": "^0.12.0"
   },
-  "keywords": ["whatsapp", "baileys", "economIAssist", "proxy"],
+  "keywords": [
+    "whatsapp",
+    "baileys",
+    "economIAssist",
+    "proxy"
+  ],
   "author": "EconomIAssist Team",
   "license": "MIT"
 }

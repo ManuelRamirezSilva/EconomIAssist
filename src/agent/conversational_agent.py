@@ -410,24 +410,35 @@ class ConversationalAgent:
         parsed_intents = self.intent_parser.receive_message(user_input)
         logger.info(f"🔍 Intenciones detectadas: {parsed_intents}")
 
-        responses = []
+        responses = {}
         for intent in parsed_intents:
             try:
-                print(f"🤖 Procesando intención: {intent}")
-                response = await self._call_openai_with_mcp(intent)
-                responses.append(response)
-                print(f"✅ Respuesta generada para intención: {response}")
+                print(f"🤖 Procesando intención: {intent.intent}")
+
+                # Check if the intent depends on a previous one
+                if intent.depends_on:
+                    dependency_result = responses.get(intent.depends_on)
+                    if not dependency_result:
+                        raise ValueError(f"Dependencia no satisfecha: {intent.depends_on}")
+
+                    # Modify the intent value to include the dependency result
+                    intent.value = f"{intent.value} usando resultado: {dependency_result}"
+
+                response = await self._call_openai_with_mcp(intent.value)
+                responses[intent.intent] = response
+
+                print(f"✅ Respuesta generada para intención '{intent.intent}': {response}")
             except Exception as e:
-                error_msg = f"Error al procesar la intención '{intent}': {str(e)}"
+                error_msg = f"Error al procesar la intención '{intent.intent}': {str(e)}"
                 self.agent_logger.log_error(
                     error_message=error_msg,
                     error_type=type(e).__name__,
-                    details={"intent": intent}
+                    details={"intent": intent.dict()}
                 )
-                responses.append(f"❌ {error_msg}")
+                responses[intent.intent] = f"❌ {error_msg}"
 
         # Combine all responses into a single string
-        return "\n".join(responses)
+        return "\n".join(responses.values())
     
 
     def _add_to_session_context(self, user_input: str, assistant_response: str):

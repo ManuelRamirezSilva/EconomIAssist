@@ -63,7 +63,7 @@ pytest-asyncio>=0.21.0
 matplotlib>=3.7.0  # Para gráficos
 seaborn>=0.12.0    # Para visualizaciones
 plotly>=5.15.0     # Para gráficos interactivos
-
+streamlit>=1.20.0  # Para dashboards interactivos
 
 fastapi==0.104.1
 uvicorn==0.24.0

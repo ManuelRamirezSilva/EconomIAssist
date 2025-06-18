@@ -6,11 +6,13 @@ import pydantic
 import json
 import time
 import structlog  # Add this import
+from typing import Optional
 
 
 class IntentResponse(pydantic.BaseModel):
     intent: str
     value: str
+    depends_on: Optional[str] = None  # New field to indicate dependencies
 
 class MultiIntentResponse(pydantic.BaseModel):
     intents: list[IntentResponse]
@@ -154,13 +156,23 @@ class IntentParser:
             "Output: [\"Add a meeting for tomorrow\", \"tell me my account balance.\"]"
         )
 
+        self.dependency_prompt = (
+            "You are an expert at analyzing user messages for a financial assistant. "
+            "Detect dependencies between intents based on phrases like 'y luego', 'usando el resultado anterior', etc. "
+            "Return intents as JSON objects with 'intent', 'value', and 'depends_on' fields. "
+            "Examples:\n"
+            "User: 'Investiga el precio oficial del dolar hoy en argentina y utilizando tu calculadora multiplicalo por 500.'\n"
+            "Output: [{\"intent\": \"query\", \"value\": \"precio oficial del dolar hoy en argentina\"}, "
+            "{\"intent\": \"calculate\", \"value\": \"multiplicalo por 500\", \"depends_on\": \"query\"}]"
+        )
+
         # Set the logger as an alias to intent_logger
         self.logger = self.intent_logger
     
     def receive_message(self, message: str):
         """
-        Detect and split multiple intents from a single user input.
-        Returns a list of intents instead of a single intent.
+        Detect and split multiple intents from a single user input, including dependencies.
+        Returns a list of intents with dependency information.
         """
         try:
             # First call: count intents
@@ -186,39 +198,35 @@ class IntentParser:
             )
             num_intents = 1
 
-        # If multiple intents detected, split the message
-        if num_intents > 1:
-            try:
-                split_response = self.client.chat.completions.create(
-                    messages=[
-                        {"role": "system", "content": self.split_intents_prompt},
-                        {"role": "user", "content": message},
-                    ],
-                    max_tokens=256,
-                    temperature=0.0,
-                    top_p=1.0,
-                    model=self.deployment
-                )
-                intent_texts = json.loads(split_response.choices[0].message.content)
-                if not isinstance(intent_texts, list) or not all(isinstance(x, str) for x in intent_texts):
-                    intent_texts = [message] * num_intents
+        try:
+            # Second call: detect dependencies
+            dependency_response = self.client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": self.dependency_prompt},
+                    {"role": "user", "content": message},
+                ],
+                max_tokens=256,
+                temperature=0.0,
+                top_p=1.0,
+                model=self.deployment
+            )
+            intents = json.loads(dependency_response.choices[0].message.content)
+            if not isinstance(intents, list) or not all(isinstance(x, dict) for x in intents):
+                raise ValueError("Invalid intent format")
+            self.logger.log_multiple_intents(
+                user_input=message,
+                intents_count=len(intents),
+                intents=intents
+            )
+        except Exception as e:
+            self.logger.log_parse_error(
+                user_input=message,
+                error_message=str(e),
+                error_type=type(e).__name__
+            )
+            intents = [{"intent": "other", "value": message}]
 
-                self.logger.log_multiple_intents(
-                    user_input=message,
-                    intents_count=len(intent_texts),
-                    intents=intent_texts
-                )
-            except Exception as e:
-                self.logger.log_parse_error(
-                    user_input=message,
-                    error_message=str(e),
-                    error_type=type(e).__name__
-                )
-                intent_texts = [message] * num_intents
-        else:
-            intent_texts = [message]
-
-        return intent_texts
+        return [IntentResponse(**intent) for intent in intents]
 
 # --- MAIN ---
 # if __name__ == "__main__":

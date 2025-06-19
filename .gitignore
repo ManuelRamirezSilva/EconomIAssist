@@ -70,3 +70,8 @@ dist/
 
 # Project specific
 resumeProyect.txt
+
+# WhatsApp specific - NO INCLUIR EN REPOSITORIO
+whatsapp-simple/auth_session/
+whatsapp-simple/node_modules/
+whatsapp-simple/package-lock.json

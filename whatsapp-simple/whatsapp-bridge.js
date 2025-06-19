@@ -4,6 +4,9 @@ const axios = require('axios')
 const WebSocket = require('ws')
 require('dotenv').config()
 
+// Configurar para ignorar errores SSL - SOLUCIÓN AL PROBLEMA DE CERTIFICADOS
+process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0
+
 // Configuración
 const ECONOMÍ_ASSIST_URL = process.env.ECONOMÍ_ASSIST_URL || 'http://localhost:8000/whatsapp/message'
 const BOT_NAME = process.env.BOT_NAME || 'EconomIAssist'
@@ -150,39 +153,88 @@ function processCommand(message) {
 
 async function startWhatsApp() {
     try {
+        console.log('🔧 Iniciando configuración de autenticación...')
+        
         // Configurar autenticación de WhatsApp
         const { state, saveCreds } = await useMultiFileAuthState('./auth_session')
         
-        // Crear socket de WhatsApp
+        console.log('🔧 Creando socket de WhatsApp...')
+        
+        // Crear socket de WhatsApp con configuración simple y efectiva
         const sock = makeWASocket({
             auth: state,
-            printQRInTerminal: false, // Lo haremos manualmente
+            // Remover printQRInTerminal ya que está deprecado
             browser: ['EconomIAssist', 'Chrome', '1.0.0'],
-            generateHighQualityLinkPreview: true,
-            markOnlineOnConnect: false
+            generateHighQualityLinkPreview: false,
+            markOnlineOnConnect: false,
+            connectTimeoutMs: 30000, // Reducir timeout
+            defaultQueryTimeoutMs: 30000,
+            keepAliveIntervalMs: 10000,
+            // Logger más simple
+            logger: {
+                level: 'silent',
+                child: () => ({
+                    level: 'silent',
+                    debug: () => {},
+                    info: () => {},
+                    warn: () => {},
+                    error: () => {},
+                    fatal: () => {},
+                    trace: () => {},
+                    child: () => this
+                }),
+                debug: () => {},
+                info: () => {},
+                warn: () => {},
+                error: () => {},
+                fatal: () => {},
+                trace: () => {}
+            }
         })
+
+        console.log('✅ Socket de WhatsApp creado exitosamente')
 
         // Guardar referencia global
         whatsappSocket = sock
 
-        // Manejar actualizaciones de conexión
+        // Manejar actualizaciones de conexión - MUY IMPORTANTE
         sock.ev.on('connection.update', (update) => {
             const { connection, lastDisconnect, qr } = update
             
+            console.log('🔄 Actualización de conexión:', { connection, hasQR: !!qr })
+            
+            // GENERAR QR INMEDIATAMENTE cuando esté disponible
             if (qr) {
-                console.log('\n🔗 Escanea este código QR con WhatsApp:')
-                qrcode.generate(qr, { small: true })
-                console.log('\n⏳ Esperando escaneo...')
+                console.log('')
+                console.log('📱 ¡CÓDIGO QR GENERADO! Escanéalo con WhatsApp:')
+                console.log('=' .repeat(60))
+                
+                // Generar QR en terminal
+                try {
+                    console.log('📋 QR Code:')
+                    qrcode.generate(qr, { small: true })
+                    console.log('')
+                } catch (error) {
+                    console.error('❌ Error generando QR en terminal:', error.message)
+                }
+                
+                // También mostrar enlace web como respaldo
+                console.log('🔗 O usa este enlace en tu navegador:')
+                console.log('https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(qr))
+                console.log('=' .repeat(60))
+                console.log('')
             }
             
             if (connection === 'close') {
                 const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut
                 
+                console.log('❌ Conexión cerrada. Código:', lastDisconnect?.error?.output?.statusCode)
+                
                 if (shouldReconnect) {
-                    console.log('🔄 Conexión perdida. Reconectando en 3 segundos...')
-                    setTimeout(startWhatsApp, 3000)
+                    console.log('🔄 Conexión perdida. Reconectando en 5 segundos...')
+                    setTimeout(startWhatsApp, 5000)
                 } else {
-                    console.log('❌ Sesión cerrada. Escanea el QR nuevamente.')
+                    console.log('❌ Sesión cerrada. Eliminar auth_session/ y escanear QR nuevamente.')
                 }
             } else if (connection === 'open') {
                 console.log('✅ ¡Conectado a WhatsApp exitosamente!')
@@ -193,7 +245,7 @@ async function startWhatsApp() {
                 // Establecer conexión con servidor para recibir respuestas
                 setupResponseListener()
             } else if (connection === 'connecting') {
-                console.log('🔄 Conectando a WhatsApp...')
+                console.log('🔄 Conectando a WhatsApp... (esperando QR)')
             }
         })
 
@@ -210,10 +262,12 @@ async function startWhatsApp() {
             }
         })
 
+        console.log('✅ Eventos de WhatsApp configurados')
+
     } catch (error) {
-        console.error('❌ Error iniciando WhatsApp:', error)
-        console.log('🔄 Reintentando en 5 segundos...')
-        setTimeout(startWhatsApp, 5000)
+        console.error('❌ Error iniciando WhatsApp:', error.message)
+        console.log('🔄 Reintentando en 10 segundos...')
+        setTimeout(startWhatsApp, 10000)
     }
 }
 

@@ -9,14 +9,14 @@ python-dotenv>=1.0.0
 openai-agents>=0.0.9
 openai>=1.40.0
 
-# ================================================================
-# GOOGLE APIS - Calendar y servicios de Google
-# ================================================================
-google-auth>=2.23.0
-google-auth-oauthlib>=1.0.0
-google-auth-httplib2>=0.1.0
-google-api-python-client>=2.100.0
-googleapis-common-protos>=1.60.0
+# # ================================================================
+# # GOOGLE APIS - Calendar y servicios de Google
+# # ================================================================
+# google-auth>=2.23.0
+# google-auth-oauthlib>=1.0.0
+# google-auth-httplib2>=0.1.0
+# google-api-python-client>=2.100.0
+# googleapis-common-protos>=1.60.0
 
 # ================================================================
 # AZURE OPENAI - Modelo principal de IA
@@ -34,7 +34,7 @@ pyyaml>=6.0
 structlog>=23.0.0
 
 # Para cliente HTTP
-httpx>=0.25.0
+# httpx>=0.25.0
 requests>=2.31.0
 
 # ================================================================
@@ -69,3 +69,15 @@ pytest-asyncio>=0.21.0
 matplotlib>=3.7.0  # Para gráficos
 seaborn>=0.12.0    # Para visualizaciones
 plotly>=5.15.0     # Para gráficos interactivos
+
+
+fastapi==0.104.1
+uvicorn==0.24.0
+httpx==0.25.2
+pydantic==2.5.0
+python-dotenv==1.0.0
+asyncio==3.4.3
+structlog==23.2.0
+
+# Dependencias para tu agente conversacional
+# (Agrega aquí las dependencias específicas que necesite tu ConversationalAgent)

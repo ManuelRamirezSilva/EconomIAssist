@@ -30,6 +30,7 @@ from openai import AsyncAzureOpenAI
 try:
     from .mcp_client import MCPManager
     from .intentParser import IntentParser, IntentResponse  # import local de intentParser.py
+    from .rag_module import query_rag  # Import RAG module
     # Importar loggers
     from ..utils.agent_logger import AgentLogger
     from ..utils.mcp_logger import MCPLogger
@@ -38,6 +39,7 @@ except ImportError:
     # Cuando se ejecuta directamente, usar importación absoluta
     from mcp_client import MCPManager
     from intentParser import IntentParser, IntentResponse
+    from rag_module import query_rag  # Import RAG module
     
     # Importar loggers con ruta absoluta cuando se ejecuta directamente
     import sys
@@ -94,6 +96,8 @@ class ConversationalAgent:
         self.current_session_context = []
         # Solo parser de intenciones
         self.intent_parser = IntentParser()
+        # RAG availability flag
+        self.rag_available = False
         
         # Add agent logger
         self.agent_logger = AgentLogger(agent_id="main_agent")
@@ -106,7 +110,8 @@ class ConversationalAgent:
             "azure_openai": False,
             "mcp_manager": False,
             "mcp_servers": False,
-            "mcp_tools": False
+            "mcp_tools": False,
+            "rag_module": False
         }
         
         start_time = time.time()
@@ -127,6 +132,10 @@ class ConversationalAgent:
             # Configurar herramientas MCP
             await self._setup_mcp_tools()
             components_status["mcp_tools"] = True
+            
+            # Check RAG availability
+            self._check_rag_availability()
+            components_status["rag_module"] = self.rag_available
             
             print("✅ Agente conversacional inicializado")
             
@@ -279,20 +288,60 @@ class ConversationalAgent:
             raise
     
     
-    async def _call_openai_with_mcp(self, user_input: str) -> str:
+    def _check_rag_availability(self):
+        """Check if RAG vector store is available"""
+        try:
+            # Try to get a test result from RAG
+            test_result = query_rag("test", k=1)
+            self.rag_available = True
+            print("📚 RAG module disponible - conocimiento base cargado")
+        except Exception as e:
+            self.rag_available = False
+            print(f"⚠️ RAG module no disponible: {e}")
+            self.agent_logger.warning("RAG module not available", error=str(e))
+    
+     
+    async def _call_openai_with_mcp(self, user_input: str, parsed_intents: list = None) -> str:
         """Invoca Azure OpenAI incluyendo las funciones MCP y maneja llamadas de función"""
         start_time = time.time()
         
         # Log user input
         self.agent_logger.log_user_input(user_input)
         
+        # Check if any intent is of type 'query' for RAG usage
+        should_use_rag = False
+        if parsed_intents:
+            query_intents = [intent for intent in parsed_intents if intent[0] == 'query']
+            should_use_rag = len(query_intents) > 0
+        
+        # Get RAG context only for 'query' type intents
+        rag_context = ""
+        if self.rag_available and should_use_rag:
+            try:
+                rag_context = query_rag(user_input, k=3)
+                if rag_context:
+                    print(f"📚 Contexto RAG encontrado para consulta de conocimiento ({len(rag_context)} caracteres)")
+                    self.agent_logger.info("RAG context retrieved for query intent", context_length=len(rag_context))
+                else:
+                    print("📚 RAG consultado pero sin resultados relevantes")
+            except Exception as e:
+                self.agent_logger.warning("RAG query failed", error=str(e))
+        elif self.rag_available and not should_use_rag:
+            intent_types = [intent[0] for intent in parsed_intents] if parsed_intents else ["unknown"]
+            print(f"🔧 Intento funcional detectado ({', '.join(intent_types)}) - omitiendo RAG")
+            self.agent_logger.info("Non-query intent detected, skipping RAG", intent_types=intent_types)
+        elif not self.rag_available:
+            print("⚠️ RAG no disponible")
+        
         # Construir contexto de sesión
         session_context = self._build_session_context_for_llm()
         
-        # Construir instrucciones del sistema con contexto de sesión
+        # Construir instrucciones del sistema con contexto de sesión y RAG
         system_content = self.system_instructions
         if session_context:
             system_content = f"{self.system_instructions}\n\n{session_context}"
+        if rag_context:
+            system_content = f"{system_content}\n\nCONTEXTO RELEVANTE DE LA BASE DE CONOCIMIENTOS:\n{rag_context}\n\nUSA esta información cuando sea relevante para responder la consulta del usuario."
         
         # Construir mensajes con instrucciones del sistema y entrada del usuario
         messages = [
@@ -406,7 +455,7 @@ class ConversationalAgent:
         logger.info(f"🔍 Intenciones detectadas: {parsed_intents}")
         try:
             print(f"🤖 Procesando consulta: {user_input}")
-            response = await self._call_openai_with_mcp(user_input)
+            response = await self._call_openai_with_mcp(user_input, parsed_intents)
             print(f"✅ Respuesta generada ({len(response)} caracteres)")
             
             # Agregar a contexto de sesión

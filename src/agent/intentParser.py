@@ -68,7 +68,7 @@ class IntentParser:
             "Tu trabajo es contar cuántas intenciones distintas (acciones o solicitudes) están presentes en el mensaje del usuario. "
             
             "EconomIAssist integra los siguientes servidores MCP con capacidades específicas:\n"
-            "🏦 BCRA Server: Datos económicos argentinos (dólar, inflación, tasas, MERVAL, análisis)\n"
+            "🏦 Búsqueda Web Financiera: Datos económicos argentinos (dólar, inflación, tasas, MERVAL, análisis)\n"
             "🌐 Tavily Server: Búsqueda web inteligente y noticias financieras\n"
             "💾 Knowledge Base: Memoria conversacional y registros personales\n"
             "🧮 Calculator: Cálculos matemáticos y financieros precisos\n"
@@ -112,7 +112,7 @@ class IntentParser:
             
             "🏦 SISTEMA MCP INTEGRADO - CAPACIDADES COMPLETAS:\n"
             
-            "📈 1. SERVIDOR BCRA (Banco Central República Argentina):\n"
+            "📈 1. BÚSQUEDA WEB FINANCIERA (Datos Económicos Argentinos):\n"
             "Herramientas disponibles:\n"
             "   • get_dollar_rates: Cotizaciones USD (oficial, blue, MEP, CCL)\n"
             "   • get_inflation_data: Inflación mensual, anual e interanual oficial\n"
@@ -120,8 +120,8 @@ class IntentParser:
             "   • get_reserves_data: Reservas internacionales actuales e históricas\n"
             "   • get_market_data: MERVAL, riesgo país, bonos\n"
             "   • get_economic_analysis: Análisis integral con insights y recomendaciones\n"
-            "Funcionalidades: Brecha cambiaria automática, tendencias, comparativos históricos\n"
-            "Fuente: API EstadisticasBCRA.com con token de autenticación\n"
+            "Funcionalidades: Búsqueda web de información financiera, procesamiento de datos económicos actuales\n"
+            "Fuente: Búsqueda web en tiempo real con Tavily\n"
             
             "🌐 2. SERVIDOR TAVILY (Búsqueda Web Inteligente):\n"
             "Herramientas disponibles:\n"
@@ -173,11 +173,11 @@ class IntentParser:
             
             "🎯 CATEGORÍAS DE INTENCIONES ACTUALIZADAS:\n"
             
-            "📈 DATOS ECONÓMICOS BCRA:\n"
+            "📈 DATOS ECONÓMICOS FINANCIEROS:\n"
             "• COTIZACION_DOLAR: Cotizaciones USD (oficial/blue/MEP/CCL/brecha)\n"
-            "• DATOS_INFLACION: Inflación mensual/anual del BCRA\n"
+            "• DATOS_INFLACION: Inflación mensual/anual actual\n"
             "• TASAS_INTERES: BADLAR, LELIQ, plazo fijo\n"
-            "• RESERVAS_BCRA: Reservas internacionales actuales/históricas\n"
+            "• RESERVAS_INTERNACIONALES: Reservas internacionales actuales/históricas\n"
             "• INDICES_MERCADO: MERVAL, riesgo país, bonos\n"
             "• ANALISIS_ECONOMICO: Análisis integral con insights\n"
             
@@ -231,7 +231,7 @@ class IntentParser:
             
             "📝 INSTRUCCIONES DE ANÁLISIS DETALLADAS:\n"
             "1. Identifica el servidor MCP más apropiado para la consulta\n"
-            "2. Determina si requiere datos en tiempo real (BCRA/Tavily)\n"
+            "2. Determina si requiere datos en tiempo real (Web/Tavily)\n"
             "3. Evalúa si necesita programación temporal (Google Calendar)\n"
             "4. Considera si involucra gestión documental (Google Sheets)\n"
             "5. Verifica si requiere cálculos (Calculator)\n"
@@ -292,7 +292,7 @@ class IntentParser:
         self.split_intents_prompt = (
             "Eres un experto en analizar mensajes de usuarios para EconomIAssist, un asistente financiero argentino con capacidades MCP integrales. "
             "El mensaje del usuario puede contener múltiples intenciones relacionadas con:\n"
-            "🏦 Datos económicos (BCRA): dólares, inflación, tasas, análisis\n"
+            "🏦 Datos económicos (Web): dólares, inflación, tasas, análisis\n"
             "🌐 Búsqueda web: noticias financieras, investigación de inversiones\n"
             "📅 Calendario: agendar reuniones, recordatorios financieros\n"
             "📊 Hojas de cálculo: registros, presupuestos, compartir documentos\n"
@@ -534,7 +534,7 @@ class IntentParser:
 # if __name__ == "__main__":
 #     # Ejemplos representativos para testear las capacidades principales del parser
 #     examples = [
-#         # Consulta BCRA básica
+#         # Consulta de datos económicos básica
 #         "¿Cuál es el dólar blue de hoy?",
         
 #         # Consulta de inflación
@@ -546,7 +546,7 @@ class IntentParser:
 #         # Google Calendar
 #         "Agendame una reunión con el contador para el viernes a las 15hs",
         
-#         # Múltiples intenciones: BCRA + Cálculos
+#         # Múltiples intenciones: Datos económicos + Cálculos
 #         "A cuánto está el dólar oficial y cuánto serían 500 dólares en pesos",
         
 #         # Consulta con jerga argentina

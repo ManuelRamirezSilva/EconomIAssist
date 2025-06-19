@@ -19,6 +19,11 @@ openai>=1.40.0
 # googleapis-common-protos>=1.60.0
 
 # ================================================================
+# AZURE OPENAI - Modelo principal de IA
+# ================================================================
+azure-openai>=1.0.0
+
+# ================================================================
 # SERVIDORES MCP Y HERRAMIENTAS
 # ================================================================
 # Para configuración YAML
@@ -63,7 +68,10 @@ pytest-asyncio>=0.21.0
 matplotlib>=3.7.0  # Para gráficos
 seaborn>=0.12.0    # Para visualizaciones
 plotly>=5.15.0     # Para gráficos interactivos
+
+
 streamlit>=1.20.0  # Para dashboards interactivos
+
 
 fastapi==0.104.1
 uvicorn==0.24.0
@@ -74,6 +82,7 @@ asyncio==3.4.3
 structlog==23.2.0
 
 # Dependencias para tu agente conversacional
+
 # (Agrega aquí las dependencias específicas que necesite tu ConversationalAgent)
 
 
@@ -82,3 +91,4 @@ structlog==23.2.0
 # ================================================================
 azure-openai>=1.0.0
 sqlite3  # Incluido en Python estándar
+

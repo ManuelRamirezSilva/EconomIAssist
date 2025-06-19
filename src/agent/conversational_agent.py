@@ -30,6 +30,7 @@ from openai import AsyncAzureOpenAI
 try:
     from .mcp_client import MCPManager
     from .intentParser import IntentParser, IntentResponse  # import local de intentParser.py
+    from .multi_tool_planner import MultiToolPlanner, MultiToolExecutor, ResponseSynthesizer
     # Importar loggers
     from ..utils.agent_logger import AgentLogger
     from ..utils.mcp_logger import MCPLogger
@@ -38,6 +39,7 @@ except ImportError:
     # Cuando se ejecuta directamente, usar importación absoluta
     from mcp_client import MCPManager
     from intentParser import IntentParser, IntentResponse
+    from multi_tool_planner import MultiToolPlanner, MultiToolExecutor, ResponseSynthesizer
     
     # Importar loggers con ruta absoluta cuando se ejecuta directamente
     import sys
@@ -85,7 +87,7 @@ class AzureOpenAIConfig:
         )
 
 class ConversationalAgent:
-    """Agente conversacional con capacidades MCP reales"""
+    """Agente conversacional con capacidades MCP reales y Multi-Tool Planning"""
     def __init__(self):
         self.azure_client = None
         self.openai_model = None
@@ -95,9 +97,14 @@ class ConversationalAgent:
         # Solo parser de intenciones
         self.intent_parser = IntentParser()
         
+        # Multi-Tool Planning components
+        self.multi_tool_planner = None
+        self.multi_tool_executor = None
+        self.response_synthesizer = None
+        
         # Add agent logger
         self.agent_logger = AgentLogger(agent_id="main_agent")
-        self.agent_logger.info("Agent instance created")
+        self.agent_logger.info("Agent instance created with Multi-Tool Planning support")
 
 
     async def initialize(self):
@@ -211,7 +218,7 @@ class ConversationalAgent:
     
     
     async def _setup_mcp_tools(self):
-        """Configura las herramientas MCP disponibles"""
+        """Configura las herramientas MCP disponibles y inicializa Multi-Tool Planning"""
         start_time = time.time()
         
         available_tools = await self.mcp_manager.get_available_tools()
@@ -231,6 +238,20 @@ class ConversationalAgent:
                 }
                 self.mcp_functions.append(function_def)
                 tool_count += 1
+        
+        # Inicializar componentes de Multi-Tool Planning
+        if self.azure_client and self.mcp_manager:
+            self.multi_tool_planner = MultiToolPlanner(
+                self.mcp_manager, 
+                self.azure_client, 
+                self.openai_model
+            )
+            self.multi_tool_executor = MultiToolExecutor(self.mcp_manager)
+            self.response_synthesizer = ResponseSynthesizer(
+                self.azure_client, 
+                self.openai_model
+            )
+            print("🧠 Multi-Tool Planning System activado")
         
         # Log MCP tools initialization
         self.agent_logger.log_mcp_tools_initialized(
@@ -395,6 +416,96 @@ class ConversationalAgent:
                               response_length=len(response))
         
         return response
+    
+    
+    async def _call_openai_with_multi_tools(self, user_input: str) -> str:
+        """
+        Nuevo método que usa Multi-Tool Planning para ejecutar múltiples herramientas MCP
+        """
+        start_time = time.time()
+        
+        # Log user input
+        self.agent_logger.log_user_input(user_input)
+        
+        # Construir contexto de sesión
+        session_context = self._build_session_context_for_llm()
+        
+        print(f"🧠 Analizando consulta con Multi-Tool Planning...")
+        
+        # Si no hay Multi-Tool Planning disponible, usar método legacy
+        if not self.multi_tool_planner:
+            print("⚠️ Multi-Tool Planning no disponible, usando método legacy")
+            return await self._call_openai_with_mcp(user_input)
+        
+        try:
+            # FASE 1: PLANIFICACIÓN
+            # Analizar la consulta y generar plan de herramientas
+            tools_plan = await self.multi_tool_planner.analyze_query_and_plan(
+                user_input, 
+                session_context
+            )
+            
+            if not tools_plan:
+                print("📝 No se requieren herramientas MCP, respondiendo directamente")
+                # Respuesta directa sin herramientas
+                messages = [
+                    {"role": "system", "content": self.system_instructions},
+                    {"role": "user", "content": user_input}
+                ]
+                
+                resp = await self.azure_client.chat.completions.create(
+                    model=self.openai_model,
+                    messages=messages,
+                    max_tokens=1500,
+                    temperature=0.7
+                )
+                return resp.choices[0].message.content
+            
+            print(f"📋 Plan generado: {len(tools_plan)} herramientas")
+            for i, tool in enumerate(tools_plan, 1):
+                print(f"   {i}. {tool.tool_name} (prioridad: {tool.priority})")
+            
+            # FASE 2: EJECUCIÓN
+            # Ejecutar las herramientas según el plan
+            execution_results = await self.multi_tool_executor.execute_plan(tools_plan)
+            
+            successful_tools = [r for r in execution_results.values() if r.success]
+            failed_tools = [r for r in execution_results.values() if not r.success]
+            
+            print(f"⚡ Ejecución completada: {len(successful_tools)} éxitos, {len(failed_tools)} fallos")
+            
+            # FASE 3: SÍNTESIS
+            # Combinar resultados en respuesta coherente
+            print(f"🔄 Sintetizando respuesta...")
+            
+            synthesized_response = await self.response_synthesizer.synthesize_response(
+                user_input,
+                execution_results,
+                tools_plan
+            )
+            
+            # Log successful multi-tool execution
+            total_time = time.time() - start_time
+            self.agent_logger.info("Multi-tool execution completed", 
+                                 tools_planned=len(tools_plan),
+                                 tools_successful=len(successful_tools),
+                                 tools_failed=len(failed_tools),
+                                 total_time=total_time,
+                                 response_length=len(synthesized_response))
+            
+            return synthesized_response
+            
+        except Exception as e:
+            # Log error en multi-tool planning
+            self.agent_logger.error("Multi-tool planning error", 
+                                   error=str(e),
+                                   error_type=type(e).__name__)
+            
+            print(f"❌ Error en Multi-Tool Planning: {e}")
+            print("🔄 Fallback a método legacy...")
+            
+            # Fallback al método original
+            return await self._call_openai_with_mcp(user_input)
     
     
     async def process_query(self, user_input: str) -> str:

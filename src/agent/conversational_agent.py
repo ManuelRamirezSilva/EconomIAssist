@@ -413,9 +413,6 @@ class ConversationalAgent:
         responses = {}
         for intent in parsed_intents:
             try:
-                print(f"🤖 Procesando intención: {intent.intent}")
-
-                # Check if the intent depends on a previous one
                 if intent.depends_on:
                     dependency_result = responses.get(intent.depends_on)
                     if not dependency_result:

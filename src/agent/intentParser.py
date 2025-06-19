@@ -156,7 +156,7 @@ class IntentParser:
             "Output: [\"Add a meeting for tomorrow\", \"tell me my account balance.\"]"
         )
 
-        self.dependency_prompt = (
+        self.dependency_prompt = ( #EXPAND ON
             "You are an expert at analyzing user messages for a financial assistant. "
             "Detect dependencies between intents based on phrases like 'y luego', 'usando el resultado anterior', etc. "
             "Return intents as JSON objects with 'intent', 'value', and 'depends_on' fields. "

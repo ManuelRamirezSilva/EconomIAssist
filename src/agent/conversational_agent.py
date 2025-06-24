@@ -492,6 +492,7 @@ class ConversationalAgent:
                 
                 # Add to session context for each processed intent
                 self._add_to_session_context(intent.value, response)
+
             except Exception as e:
                 error_msg = f"Error al procesar la intención '{intent.intent}': {str(e)}"
                 self.agent_logger.log_error(

@@ -87,7 +87,7 @@ class AzureOpenAIConfig:
         )
 
 class ConversationalAgent:
-    """Agente conversacional con capacidades MCP reales"""
+    """Agente conversacional con capacidades MCP reales y RAG"""
     def __init__(self):
         self.azure_client = None
         self.openai_model = None
@@ -287,61 +287,75 @@ class ConversationalAgent:
             print(f"❌ Error configurando Azure OpenAI: {e}")
             raise
     
-    
     def _check_rag_availability(self):
-        """Check if RAG vector store is available"""
+        """Check if RAG module and vector database are available"""
         try:
-            # Try to get a test result from RAG
-            test_result = query_rag("test", k=1)
-            self.rag_available = True
-            print("📚 RAG module disponible - conocimiento base cargado")
+            # Try to import query_rag and check if chroma DB exists
+            chroma_path = os.path.join(os.path.dirname(__file__), '..', '..', 'chroma_db')
+            if os.path.exists(chroma_path):
+                # Try a simple test query to verify RAG is working
+                test_result = query_rag("test", k=1, relevance_threshold=0.1)
+                self.rag_available = True
+                print("✅ RAG module available and working")
+            else:
+                self.rag_available = False
+                print("❌ RAG database not found")
         except Exception as e:
             self.rag_available = False
-            print(f"⚠️ RAG module no disponible: {e}")
-            self.agent_logger.warning("RAG module not available", error=str(e))
+            print(f"❌ RAG module not available: {e}")
     
-     
-    async def _call_openai_with_mcp(self, user_input: str, parsed_intents: list = None) -> str:
+    def _should_use_rag(self, intent_type: str) -> bool:
+        """Determine if a query should use RAG based on intent type"""
+        rag_intent_types = {
+            "EDUCACION_FINANCIERA", 
+            "CONSULTA_GENERAL", 
+            "ASESORAMIENTO",
+            "define",  # From intent parser output
+            "query"   # From intent parser output
+        }
+        return intent_type in rag_intent_types and self.rag_available
+    
+    def _get_rag_context(self, user_input: str) -> str:
+        """Get RAG context for theoretical questions"""
+        try:
+            context = query_rag(user_input, k=3, relevance_threshold=0.3)
+            if context:
+                return f"CONTEXTO RELEVANTE DE LA BASE DE CONOCIMIENTO:\n{context}\n\n"
+            return ""
+        except Exception as e:
+            logger.warning(f"Error getting RAG context: {e}")
+            return ""
+    
+    async def _call_openai_with_mcp(self, user_input: str, intent_type: str = None) -> str:
         """Invoca Azure OpenAI incluyendo las funciones MCP y maneja llamadas de función"""
         start_time = time.time()
         
         # Log user input
         self.agent_logger.log_user_input(user_input)
         
-        # Check if any intent is of type 'query' for RAG usage
-        should_use_rag = False
-        if parsed_intents:
-            query_intents = [intent for intent in parsed_intents if intent[0] == 'query']
-            should_use_rag = len(query_intents) > 0
-        
-        # Get RAG context only for 'query' type intents
-        rag_context = ""
-        if self.rag_available and should_use_rag:
-            try:
-                rag_context = query_rag(user_input, k=3)
-                if rag_context:
-                    print(f"📚 Contexto RAG encontrado para consulta de conocimiento ({len(rag_context)} caracteres)")
-                    self.agent_logger.info("RAG context retrieved for query intent", context_length=len(rag_context))
-                else:
-                    print("📚 RAG consultado pero sin resultados relevantes")
-            except Exception as e:
-                self.agent_logger.warning("RAG query failed", error=str(e))
-        elif self.rag_available and not should_use_rag:
-            intent_types = [intent[0] for intent in parsed_intents] if parsed_intents else ["unknown"]
-            print(f"🔧 Intento funcional detectado ({', '.join(intent_types)}) - omitiendo RAG")
-            self.agent_logger.info("Non-query intent detected, skipping RAG", intent_types=intent_types)
-        elif not self.rag_available:
-            print("⚠️ RAG no disponible")
-        
         # Construir contexto de sesión
         session_context = self._build_session_context_for_llm()
+        
+        # Get RAG context if this is a theoretical question
+        rag_context = ""
+        if intent_type and self._should_use_rag(intent_type):
+            rag_context = self._get_rag_context(user_input)
+            if rag_context:
+                print(f"📚 Using RAG context for {intent_type} query")
         
         # Construir instrucciones del sistema con contexto de sesión y RAG
         system_content = self.system_instructions
         if session_context:
             system_content = f"{self.system_instructions}\n\n{session_context}"
         if rag_context:
-            system_content = f"{system_content}\n\nCONTEXTO RELEVANTE DE LA BASE DE CONOCIMIENTOS:\n{rag_context}\n\nUSA esta información cuando sea relevante para responder la consulta del usuario."
+            # For theoretical questions, add specific instructions to prioritize RAG content
+            rag_instructions = (
+                "\n\nIMPORTANTE: Para preguntas teóricas y definiciones, DEBES usar principalmente el contexto "
+                "de la base de conocimiento proporcionado arriba. Si necesitas información adicional, "
+                "puedes complementar con búsquedas web, pero SIEMPRE prioriza y menciona la información "
+                "de la base de conocimiento primero.\n"
+            )
+            system_content = f"{system_content}\n\n{rag_context}{rag_instructions}"
         
         # Construir mensajes con instrucciones del sistema y entrada del usuario
         messages = [
@@ -447,33 +461,48 @@ class ConversationalAgent:
     
     
     async def process_query(self, user_input: str) -> str:
+        # Check if the input matches one of the exit codes
+        if user_input.lower() in ['salir', 'exit', 'quit']:
+            evaluation_form_url = os.getenv("EVALUATION_FORM_URL", "No form URL found")
+            return f"👋 ¡Hasta luego! Por favor, evalúa nuestra aplicación aquí: {evaluation_form_url}"
+
         return await self.process_user_input(user_input)
 
 
     async def process_user_input(self, user_input: str) -> str:
         parsed_intents = self.intent_parser.receive_message(user_input)
         logger.info(f"🔍 Intenciones detectadas: {parsed_intents}")
-        try:
-            print(f"🤖 Procesando consulta: {user_input}")
-            response = await self._call_openai_with_mcp(user_input, parsed_intents)
-            print(f"✅ Respuesta generada ({len(response)} caracteres)")
-            
-            # Agregar a contexto de sesión
-            self._add_to_session_context(user_input, response)
-            
-            return response
-        except Exception as e:
-            error_msg = f"Error al procesar la consulta: {str(e)}"
-            
-            # Log error
-            self.agent_logger.log_error(
-                error_message=error_msg,
-                error_type=type(e).__name__,
-                details={"user_input": user_input}
-            )
-            
-            print(f"❌ {error_msg}")
-            return f"Lo siento, ocurrió un error al procesar tu consulta: {str(e)}"
+
+        responses = {}
+        for intent in parsed_intents:
+            try:
+                if intent.depends_on:
+                    dependency_result = responses.get(intent.depends_on)
+                    if not dependency_result:
+                        raise ValueError(f"Dependencia no satisfecha: {intent.depends_on}")
+
+                    # Modify the intent value to include the dependency result
+                    intent.value = f"{intent.value} usando resultado: {dependency_result}"
+
+                # Pass the intent type to the OpenAI call for RAG decision
+                response = await self._call_openai_with_mcp(intent.value, intent.intent)
+                responses[intent.intent] = response
+
+                print(f"✅ Respuesta generada para intención '{intent.intent}': {response}")
+                
+                # Add to session context for each processed intent
+                self._add_to_session_context(intent.value, response)
+            except Exception as e:
+                error_msg = f"Error al procesar la intención '{intent.intent}': {str(e)}"
+                self.agent_logger.log_error(
+                    error_message=error_msg,
+                    error_type=type(e).__name__,
+                    details={"intent": intent.dict()}
+                )
+                responses[intent.intent] = f"❌ {error_msg}"
+
+        # Combine all responses into a single string
+        return "\n".join(responses.values())
     
 
     def _add_to_session_context(self, user_input: str, assistant_response: str):
@@ -539,14 +568,16 @@ async def main():
     while True:
         try:
             user_input = input("\n👤 Usuario: ").strip()
-            if user_input.lower() in ['salir', 'exit', 'quit']:
-                print("\n👋 ¡Hasta luego!")
-                break
+            # if user_input.lower() in ['salir', 'exit', 'quit']:
+            #     print("\n👋 ¡Hasta luego!")
+            #     break
             if not user_input:
                 continue
             print("🤔 Procesando...")
             response = await agent.process_query(user_input)
             print(f"\n🤖 **EconomIAssist:** {response}")
+            if response.startswith("👋 ¡Hasta luego!"):
+                break
         except KeyboardInterrupt:
             print("\n👋 ¡Hasta luego!")
             break

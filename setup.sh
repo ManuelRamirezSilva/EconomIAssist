@@ -82,13 +82,22 @@ detect_os() {
 # Verificar e instalar Docker si es necesario
 setup_docker() {
     if check_docker; then
-        # Verificar que Docker esté ejecutándose
-        if sudo docker info &> /dev/null; then
+        # Verificar que Docker esté ejecutándose (intentar múltiples sockets)
+        if docker info &> /dev/null; then
             echo "✅ Docker está funcionando correctamente"
+        elif sudo docker info &> /dev/null; then
+            echo "✅ Docker está funcionando correctamente (requiere sudo)"
         else
             echo "🔄 Iniciando servicio Docker..."
             sudo systemctl start docker
             sudo systemctl enable docker
+            # Verificar nuevamente
+            if docker info &> /dev/null || sudo docker info &> /dev/null; then
+                echo "✅ Docker iniciado correctamente"
+            else
+                echo "❌ Error al iniciar Docker. Verifica manualmente."
+                return 1
+            fi
         fi
     else
         echo "🐳 Docker es necesario para el servidor de base de conocimiento"
@@ -168,12 +177,19 @@ install_mcp_servers() {
         return 1
     fi
     
-    # Instalar MCP servers globalmente
-    echo "🔧 Instalando Google Calendar MCP..."
-    npm install -g @cablate/mcp-google-calendar
+    # Inicializar package.json si no existe
+    if [ ! -f "package.json" ]; then
+        echo "📦 Inicializando proyecto Node.js..."
+        npm init -y > /dev/null 2>&1
+    fi
     
-    echo "🔧 Instalando Tavily MCP..."
-    npm install -g tavily-mcp
+    # Instalar dependencias localmente usando package.json
+    echo "🔧 Instalando dependencias MCP via npm..."
+    if npm install; then
+        echo "✅ Dependencias MCP instaladas localmente"
+    else
+        echo "⚠️ Algunos paquetes npm pueden no estar disponibles"
+    fi
     
     # Instalar calculadora MCP vía pip
     echo "🔧 Instalando Calculator MCP..."
@@ -275,17 +291,36 @@ if [ $DOCKER_AVAILABLE -eq 0 ]; then
     echo ""
     echo "🗄️ Preparando base de conocimiento..."
     
+    # Función helper para ejecutar docker con o sin sudo
+    run_docker() {
+        if docker "$@" 2>/dev/null; then
+            return 0
+        elif sudo docker "$@" 2>/dev/null; then
+            return 0
+        else
+            return 1
+        fi
+    }
+    
     # Verificar si el volumen existe
-    if docker volume ls | grep -q knowledgebase; then
+    if run_docker volume ls | grep -q knowledgebase; then
         echo "✅ Volumen 'knowledgebase' ya existe"
     else
         echo "📦 Creando volumen 'knowledgebase'..."
-        docker volume create knowledgebase
+        if run_docker volume create knowledgebase; then
+            echo "✅ Volumen creado exitosamente"
+        else
+            echo "❌ Error creando volumen Docker"
+        fi
     fi
     
     # Descargar imagen de KnowledgeBase
     echo "⬇️ Descargando imagen del servidor de base de conocimiento..."
-    docker pull mbcrawfo/knowledge-base-server
+    if run_docker pull mbcrawfo/knowledge-base-server; then
+        echo "✅ Imagen descargada exitosamente"
+    else
+        echo "⚠️ Error descargando imagen Docker"
+    fi
 fi
 
 # Instalar servidores MCP

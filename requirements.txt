@@ -42,7 +42,7 @@ requests>=2.31.0
 # ================================================================
 # FRAMEWORK WEB Y BASE DE DATOS
 # ================================================================
-fastapi>=0.104.0
+fastapi>=0.104.1
 uvicorn>=0.24.0
 pydantic>=2.4.0
 
@@ -84,5 +84,16 @@ structlog==23.2.0
 # ================================================================
 # AZURE OPENAI - Modelo principal de IA
 # ================================================================
-azure-openai>=1.0.0
-sqlite3  # Incluido en Python estándar
+# azure-openai>=1.0.0
+# sqlite3  # Incluido en Python estándar
+
+
+# ================================================================
+# CHROMA DB - Base de datos vectorial
+# ================================================================
+langchain>=0.1.0
+langchain-community>=0.1.0
+langchain-chroma>=0.1.0
+langchain-openai>=0.1.0
+chromadb>=1.0.12
+pypdf>=3.17.0  # Para manejo de PDFs

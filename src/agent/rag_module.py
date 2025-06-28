@@ -158,12 +158,12 @@ def query_rag(query, k=2, relevance_threshold=0.5):
 
 if __name__ == "__main__":
     # Build the vector store with Azure embeddings
-    #build_vector_store(resume=True)
+    build_vector_store(resume=True)
     
     # Example queries:
-    # print("\n=== TESTING QUERIES ===")
-    # print("PREGUNTA 1: ¿Qué es la economía?")
-    # print(query_rag("¿Qué es la economía?"))
+    print("\n=== TESTING QUERIES ===")
+    print("PREGUNTA 1: ¿Qué es la economía?")
+    print(query_rag("¿Qué es la economía?"))
 
     # print("\n***********\nPREGUNTA 2: ¿Cuáles son los principales indicadores económicos de Argentina?\n")
     # print(query_rag("¿Cuáles son los principales indicadores económicos de Argentina?"))
@@ -175,42 +175,42 @@ if __name__ == "__main__":
     
     # preguntas_con_texto.py
 
-    print("Texto: Principios-de-economía.pdf")
-    print("Pregunta: ¿Cuáles fueron las tres razones que motivaron a los autores a escribir un texto propio para el curso de economía en la Universidad de San Andrés?\n")
-    print(query_rag("¿Cuáles fueron las tres razones que motivaron a los autores a escribir un texto propio para el curso de economía en la Universidad de San Andrés?"))
-    print("\n")
+    # print("Texto: Principios-de-economía.pdf")
+    # print("Pregunta: ¿Cuáles fueron las tres razones que motivaron a los autores a escribir un texto propio para el curso de economía en la Universidad de San Andrés?\n")
+    # print(query_rag("¿Cuáles fueron las tres razones que motivaron a los autores a escribir un texto propio para el curso de economía en la Universidad de San Andrés?"))
+    # print("\n")
 
-    print("Texto: EcoiaParaNoEcoistas.pdf")
-    print("Pregunta: ¿Qué ejemplo utiliza el prólogo para ilustrar cómo el poder de mercado puede perjudicar a los consumidores incluso fuera del ámbito empresarial tradicional?\n")
-    print(query_rag("¿Qué ejemplo utiliza el prólogo para ilustrar cómo el poder de mercado puede perjudicar a los consumidores incluso fuera del ámbito empresarial tradicional?"))
-    print("\n")
+    # print("Texto: EcoiaParaNoEcoistas.pdf")
+    # print("Pregunta: ¿Qué ejemplo utiliza el prólogo para ilustrar cómo el poder de mercado puede perjudicar a los consumidores incluso fuera del ámbito empresarial tradicional?\n")
+    # print(query_rag("¿Qué ejemplo utiliza el prólogo para ilustrar cómo el poder de mercado puede perjudicar a los consumidores incluso fuera del ámbito empresarial tradicional?"))
+    # print("\n")
 
-    print("Texto: BCRA-PUSF-Informe-2024.pdf")
-    print("Pregunta: ¿Cuáles son los tres ejes de acción que el BCRA define como 'las 3 P' en su informe sobre la protección de las personas usuarias de servicios financieros?\n")
-    print(query_rag("¿Cuáles son los tres ejes de acción que el BCRA define como 'las 3 P' en su informe sobre la protección de las personas usuarias de servicios financieros?"))
-    print("\n")
+    # print("Texto: BCRA-PUSF-Informe-2024.pdf")
+    # print("Pregunta: ¿Cuáles son los tres ejes de acción que el BCRA define como 'las 3 P' en su informe sobre la protección de las personas usuarias de servicios financieros?\n")
+    # print(query_rag("¿Cuáles son los tres ejes de acción que el BCRA define como 'las 3 P' en su informe sobre la protección de las personas usuarias de servicios financieros?"))
+    # print("\n")
 
-    print("Texto: ARCA-sistema_tarjetas_de_debito_y_credito_v1.0.pdf")
-    print("Pregunta: ¿Cuál es el objetivo del módulo Tarjetas de Débito/Crédito dentro del sistema de Trámites con Clave Fiscal?\n")
-    print(query_rag("¿Cuál es el objetivo del módulo Tarjetas de Débito/Crédito dentro del sistema de Trámites con Clave Fiscal?"))
-    print("\n")
+    # print("Texto: ARCA-sistema_tarjetas_de_debito_y_credito_v1.0.pdf")
+    # print("Pregunta: ¿Cuál es el objetivo del módulo Tarjetas de Débito/Crédito dentro del sistema de Trámites con Clave Fiscal?\n")
+    # print(query_rag("¿Cuál es el objetivo del módulo Tarjetas de Débito/Crédito dentro del sistema de Trámites con Clave Fiscal?"))
+    # print("\n")
 
-    print("Texto: ARCA-Procedimiento-gestion-clave-fiscal-doble-factor-TOKEN.pdf")
-    print("Pregunta: ¿Qué ocurre con una aplicación OTP existente cuando se activa la aplicación Token para clave fiscal nivel 4?\n")
-    print(query_rag("¿Qué ocurre con una aplicación OTP existente cuando se activa la aplicación Token para clave fiscal nivel 4?"))
-    print("\n")
+    # print("Texto: ARCA-Procedimiento-gestion-clave-fiscal-doble-factor-TOKEN.pdf")
+    # print("Pregunta: ¿Qué ocurre con una aplicación OTP existente cuando se activa la aplicación Token para clave fiscal nivel 4?\n")
+    # print(query_rag("¿Qué ocurre con una aplicación OTP existente cuando se activa la aplicación Token para clave fiscal nivel 4?"))
+    # print("\n")
 
-    print("Texto: ARCA-Manual-Autodeclaracion-Deudas-Aduaneras-Ley-27743-Usuarios-Externos.pdf")
-    print("Pregunta: ¿Qué fecha debe indicarse como 'Fecha Momento Imponible' al generar una LMAN por deudas aduaneras en pesos bajo la Ley 27.743?\n")
-    print(query_rag("¿Qué fecha debe indicarse como 'Fecha Momento Imponible' al generar una LMAN por deudas aduaneras en pesos bajo la Ley 27.743?"))
-    print("\n")
+    # print("Texto: ARCA-Manual-Autodeclaracion-Deudas-Aduaneras-Ley-27743-Usuarios-Externos.pdf")
+    # print("Pregunta: ¿Qué fecha debe indicarse como 'Fecha Momento Imponible' al generar una LMAN por deudas aduaneras en pesos bajo la Ley 27.743?\n")
+    # print(query_rag("¿Qué fecha debe indicarse como 'Fecha Momento Imponible' al generar una LMAN por deudas aduaneras en pesos bajo la Ley 27.743?"))
+    # print("\n")
 
-    print("Texto: ARCA-Declaracion-de-Deudas-Aduaneras-para-sujetos-no-imex.pdf")
-    print("Pregunta: ¿Qué información debe incluirse en la solicitud de generación de una LMAN por parte de un sujeto sin perfil IMEX?\n")
-    print(query_rag("¿Qué información debe incluirse en la solicitud de generación de una LMAN por parte de un sujeto sin perfil IMEX?"))
-    print("\n")
+    # print("Texto: ARCA-Declaracion-de-Deudas-Aduaneras-para-sujetos-no-imex.pdf")
+    # print("Pregunta: ¿Qué información debe incluirse en la solicitud de generación de una LMAN por parte de un sujeto sin perfil IMEX?\n")
+    # print(query_rag("¿Qué información debe incluirse en la solicitud de generación de una LMAN por parte de un sujeto sin perfil IMEX?"))
+    # print("\n")
 
-    print("Texto: ARCA-AutorizacionesElectronicasISTA.pdf")
-    print("Pregunta: ¿Qué formulario se emite como constancia cuando se crea una nueva autorización electrónica para transportistas ISTA?\n")
-    print(query_rag("¿Qué formulario se emite como constancia cuando se crea una nueva autorización electrónica para transportistas ISTA?"))
-    print("\n")
+    # print("Texto: ARCA-AutorizacionesElectronicasISTA.pdf")
+    # print("Pregunta: ¿Qué formulario se emite como constancia cuando se crea una nueva autorización electrónica para transportistas ISTA?\n")
+    # print(query_rag("¿Qué formulario se emite como constancia cuando se crea una nueva autorización electrónica para transportistas ISTA?"))
+    # print("\n")

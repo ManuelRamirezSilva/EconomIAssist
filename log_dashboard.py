@@ -4,6 +4,7 @@ import os
 import re
 import json
 from datetime import datetime
+import plotly.express as px
 
 # Configuración inicial de la aplicación  
 st.set_page_config(page_title="Dashboard de Logs y Métricas", layout="wide")
@@ -11,6 +12,10 @@ st.set_page_config(page_title="Dashboard de Logs y Métricas", layout="wide")
 # Add custom CSS for better JSON display
 st.markdown("""
 <style>
+body {
+    background-color: #ffffff;
+    color: #000000;
+}
 .log-detail-modal {
     background: #f0f2f6;
     border: 1px solid #ddd;
@@ -84,6 +89,51 @@ def format_json_value(value, max_length=100):
         return value[:max_length] + "..."
     else:
         return str(value)
+
+def extract_server_name(log_text, event):
+    """Extract server_name from log text when event is 'MCP tool call'"""
+    if event != "MCP tool call" or not log_text:
+        return ""
+    
+    # Try to parse the entire text as JSON first
+    try:
+        json_data = json.loads(log_text)
+        if isinstance(json_data, dict) and "server_name" in json_data:
+            return str(json_data["server_name"])
+    except:
+        pass
+    
+    # Look for embedded JSON objects that might contain server_name
+    json_pattern = r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}'
+    json_matches = re.findall(json_pattern, log_text)
+    
+    for json_match in json_matches:
+        try:
+            json_obj = json.loads(json_match)
+            if isinstance(json_obj, dict) and "server_name" in json_obj:
+                return str(json_obj["server_name"])
+        except:
+            continue
+    
+    # Look for server_name key-value patterns
+    server_name_patterns = [
+        r'server_name\s*=\s*"([^"]*)"',  # server_name="value"
+        r'server_name\s*=\s*\'([^\']*)\'',  # server_name='value'  
+        r'server_name\s*=\s*([^\s,;]+)',  # server_name=value
+        r'server_name\s*:\s*"([^"]*)"',  # server_name:"value"
+        r'server_name\s*:\s*\'([^\']*)\'',  # server_name:'value'
+        r'server_name\s*:\s*([^\s,;]+)',  # server_name:value
+        r'\[server_name\s*=\s*([^\]]+)\]',  # [server_name=value]
+        r'"server_name"\s*:\s*"([^"]+)"',  # "server_name": "value"
+        r"'server_name'\s*:\*'([^']+)'",  # 'server_name': 'value'
+    ]
+    
+    for pattern in server_name_patterns:
+        match = re.search(pattern, log_text, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+    
+    return ""
 
 def parse_log_sections(log_text):
     """Enhanced log text parsing with better JSON handling"""
@@ -186,12 +236,12 @@ def display_json_section(json_data, title="JSON Data"):
 # Función mejorada para parsear logs
 def parse_log_line(line):
     """
-    Parse a log line into timestamp, event, and other components.
-    Looks for actual "event" key in the log data.
+    Parse a log line into timestamp, event, server_name, and other components.
+    Looks for actual "event" key in the log data and extracts server_name for MCP tool calls.
     """
     line = line.strip()
     if not line:
-        return {"timestamp": "", "event": "", "other": ""}
+        return {"timestamp": "", "event": "", "server_name": "", "other": ""}
     
     # Common timestamp patterns
     timestamp_patterns = [
@@ -281,9 +331,13 @@ def parse_log_line(line):
             event = ""
             other = remaining_line
     
+    # Extract server_name if event is "MCP tool call"
+    server_name = extract_server_name(other, event)
+    
     return {
         "timestamp": format_timestamp(timestamp),
         "event": event,
+        "server_name": server_name,
         "other": other
     }
 
@@ -295,7 +349,7 @@ def cargar_logs():
     
     if not os.path.exists(carpeta_logs):
         st.warning(f"La carpeta '{carpeta_logs}' no existe.")
-        return pd.DataFrame(columns=["timestamp", "event", "other", "file", "original_log", "line_number"])
+        return pd.DataFrame(columns=["timestamp", "event", "server_name", "other", "file", "original_log", "line_number"])
     
     for archivo in os.listdir(carpeta_logs):
         if archivo.endswith(".log"):
@@ -343,7 +397,7 @@ def clean_timestamps(df):
 
 # Cargar los logs
 st.title("Dashboard de Logs y Métricas")
-st.markdown("Este dashboard parsea automáticamente los logs en componentes estructurados: **timestamp**, **event**, y **other**.")
+st.markdown("Este dashboard parsea automáticamente los logs en componentes estructurados: **timestamp**, **event**, **server_name**, y **other**.")
 
 logs_df = cargar_logs()
 
@@ -366,13 +420,15 @@ if not logs_df.empty:
         logs_por_archivo = logs_df
     
     # Filtros adicionales
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         filtro_evento = st.text_input("Filtrar por evento")
     with col2:
         filtro_timestamp = st.text_input("Filtrar por timestamp")
     with col3:
+        filtro_server_name = st.text_input("Filtrar por server_name")
+    with col4:
         filtro_otros = st.text_input("Filtrar por contenido en 'other'")
     
     # Aplicar filtros
@@ -381,24 +437,28 @@ if not logs_df.empty:
         logs_filtrados = logs_filtrados[logs_filtrados["event"].str.contains(filtro_evento, case=False, na=False)]
     if filtro_timestamp:
         logs_filtrados = logs_filtrados[logs_filtrados["timestamp"].str.contains(filtro_timestamp, case=False, na=False)]
+    if filtro_server_name:
+        logs_filtrados = logs_filtrados[logs_filtrados["server_name"].str.contains(filtro_server_name, case=False, na=False)]
     if filtro_otros:
         logs_filtrados = logs_filtrados[logs_filtrados["other"].str.contains(filtro_otros, case=False, na=False)]
     
     # Mostrar estadísticas
+    mcp_tool_calls = logs_filtrados[logs_filtrados["event"] == "MCP tool call"]
+    
     if archivo_seleccionado != "Todos los archivos":
-        st.write(f"**Archivo:** {archivo_seleccionado} | **Logs en archivo:** {len(logs_por_archivo)} | **Logs filtrados:** {len(logs_filtrados)}")
+        st.write(f"**Archivo:** {archivo_seleccionado} | **Logs en archivo:** {len(logs_por_archivo)} | **Logs filtrados:** {len(logs_filtrados)} | **MCP tool calls:** {len(mcp_tool_calls)}")
     else:
-        st.write(f"**Total de logs:** {len(logs_df)} | **Logs filtrados:** {len(logs_filtrados)}")
+        st.write(f"**Total de logs:** {len(logs_df)} | **Logs filtrados:** {len(logs_filtrados)} | **MCP tool calls:** {len(mcp_tool_calls)}")
     
     # Crear columnas para mostrar
     if not logs_filtrados.empty:
         # Reordenar columnas para mejor visualización
-        display_columns = ["timestamp", "event", "other", "file", "line_number"]
+        display_columns = ["timestamp", "event", "server_name", "other", "file", "line_number"]
         display_df = logs_filtrados[display_columns].copy()
         
         # Truncate 'other' column for table display
         display_df['other_preview'] = display_df['other'].apply(
-            lambda x: x[:80] + "..." if isinstance(x, str) and len(x) > 80 else x
+            lambda x: x[:60] + "..." if isinstance(x, str) and len(x) > 60 else x
         )
         display_df = display_df.drop('other', axis=1)
         display_df = display_df.rename(columns={'other_preview': 'other'})
@@ -413,6 +473,7 @@ if not logs_df.empty:
                 "file": st.column_config.TextColumn("Archivo", help="Archivo de origen"),
                 "timestamp": st.column_config.TextColumn("Timestamp", help="Marca de tiempo extraída"),
                 "event": st.column_config.TextColumn("Evento", help="Tipo de evento identificado"),
+                "server_name": st.column_config.TextColumn("Server Name", help="Nombre del servidor MCP (solo para MCP tool calls)"),
                 "other": st.column_config.TextColumn("Otros", help="Información adicional del log")
             }
         )
@@ -430,14 +491,15 @@ if not logs_df.empty:
             "1642248645 FATAL System shutdown initiated by admin",
             '2024-01-15T10:30:45Z event="user_login" user_id=12345 status="success"',
             'INFO: Processing event="data_sync" source="database" records=150',
-            '2024-01-15T10:30:45Z {"event": "user_action", "user_id": 12345, "action": "login", "metadata": {"ip": "192.168.1.1", "user_agent": "Mozilla/5.0"}}',
+            '2024-01-15T10:30:45Z event="MCP tool call" server_name="file_manager" tool="read_file" path="/etc/config"',
+            '2024-01-15T10:30:45Z {"event": "MCP tool call", "server_name": "database_server", "tool": "query", "table": "users"}',
             '2024-01-15T10:30:45Z Processing request {"request_id": "abc123", "endpoint": "/api/users", "method": "GET", "response_time": 45}'
         ]
         
         for sample in sample_logs:
             parsed = parse_log_line(sample)
             st.write(f"**Original:** `{sample}`")
-            st.write(f"**Parsed:** timestamp=`{parsed['timestamp']}`, event=`{parsed['event']}`, other=`{parsed['other']}`")
+            st.write(f"**Parsed:** timestamp=`{parsed['timestamp']}`, event=`{parsed['event']}`, server_name=`{parsed['server_name']}`, other=`{parsed['other']}`")
             
             # Show what the JSON parsing would extract
             if parsed['other']:
@@ -456,6 +518,62 @@ else:
 if not logs_df.empty:
     st.subheader("Análisis de Logs")
     
+    # MCP Tool Calls Analysis
+    mcp_calls = logs_df[logs_df["event"] == "MCP tool call"]
+    
+    if not mcp_calls.empty:
+        st.write("### Análisis de MCP Tool Calls")
+        
+        # Server name frequency analysis
+        server_name_counts = mcp_calls['server_name'].value_counts()
+        server_name_counts = server_name_counts[server_name_counts.index != ""]  # Remove empty server names
+        
+        if not server_name_counts.empty:
+            col1, col2 = st.columns([2, 1])
+            
+            with col1:
+                st.write("**Frecuencia de Server Names en MCP Tool Calls:**")
+                # Create a bar chart using plotly for better interactivity
+                fig = px.bar(
+                    x=server_name_counts.index,
+                    y=server_name_counts.values,
+                    labels={'x': 'Server Name', 'y': 'Frequency'},
+                    title="Frecuencia de Server Names en MCP Tool Calls"
+                )
+
+                fig.update_layout(
+                    font=dict(color='#000000'),
+                    xaxis=dict(
+                        color='#000000',
+                        tickfont=dict(color='#000000'),
+                        title=dict(font=dict(color='#000000'))  # ✅ CORRECTO
+                    ),
+                    yaxis=dict(
+                        color='#000000',
+                        tickfont=dict(color='#000000'),
+                        title=dict(font=dict(color='#000000'))  # ✅ CORRECTO
+                    )
+                )
+
+
+                fig.update_layout(xaxis_tickangle=-45)
+                st.plotly_chart(fig, use_container_width=True)
+            
+            with col2:
+                st.write("**Estadísticas de Server Names:**")
+                st.write(f"Total MCP calls: {len(mcp_calls)}")
+                st.write(f"MCP calls con server_name: {len(mcp_calls[mcp_calls['server_name'] != ''])}")
+                st.write(f"Servidores únicos: {len(server_name_counts)}")
+                
+                st.write("**Top 5 Servidores:**")
+                for i, (server, count) in enumerate(server_name_counts.head().items(), 1):
+                    st.write(f"{i}. {server}: {count} calls")
+        else:
+            st.info("No se encontraron server_names en los MCP tool calls.")
+    else:
+        st.info("No se encontraron MCP tool calls en los logs.")
+    
+    # General analysis
     col1, col2 = st.columns(2)
     
     with col1:
@@ -486,13 +604,13 @@ with col2:
     if st.button("Exportar a CSV") and not logs_df.empty:
         # Choose what to export based on current view
         if 'logs_filtrados' in locals() and not logs_filtrados.empty:
-            export_df = logs_filtrados[["timestamp", "event", "other", "file", "line_number", "original_log"]]
+            export_df = logs_filtrados[["timestamp", "event", "server_name", "other", "file", "line_number", "original_log"]]
             if 'archivo_seleccionado' in locals() and archivo_seleccionado != "Todos los archivos":
                 filename_suffix = f"_{archivo_seleccionado.replace('.log', '')}"
             else:
                 filename_suffix = "_filtrados"
         else:
-            export_df = logs_df[["line_number","timestamp", "event", "other", "file", "original_log"]]
+            export_df = logs_df[["line_number","timestamp", "event", "server_name", "other", "file", "original_log"]]
             filename_suffix = "_todos_archivos"
         
         csv_data = export_df.to_csv(index=False)

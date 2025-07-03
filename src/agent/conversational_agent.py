@@ -472,12 +472,17 @@ class ConversationalAgent:
     async def process_user_input(self, user_input: str) -> str:
         parsed_intents = self.intent_parser.receive_message(user_input)
         logger.info(f"🔍 Intenciones detectadas: {parsed_intents}")
-        print(f"🔍 Número de intenciones detectadas: {len(parsed_intents)}")
 
         responses = {}
+        user_facing_responses = []  # Solo respuestas para mostrar al usuario
+        
         for intent in parsed_intents:
             try:
-                if intent.depends_on:
+                # Logging diferenciado por tipo de paso
+                step_emoji = "🔧" if intent.step == "intermedio" else "🎯"
+                print(f"{step_emoji} Procesando {intent.step}: {intent.intent}")
+                
+                if intent.depends_on and intent.depends_on != "independiente":
                     dependency_result = responses.get(intent.depends_on)
                     if not dependency_result:
                         raise ValueError(f"Dependencia no satisfecha: {intent.depends_on}")
@@ -489,10 +494,16 @@ class ConversationalAgent:
                 response = await self._call_openai_with_mcp(intent.value, intent.intent)
                 responses[intent.intent] = response
 
-                print(f"✅ Respuesta generada para intención '{intent.intent}': {response}")
-                
-                # Add to session context for each processed intent
-                self._add_to_session_context(intent.value, response)
+                # Solo agregar a respuestas visibles si es paso final
+                if intent.step == "final":
+                    user_facing_responses.append(response)
+                    print(f"✅ Respuesta final para '{intent.intent}': {response}")
+                    # Solo agregar pasos finales al contexto de sesión
+                    self._add_to_session_context(intent.value, response, is_final_step=True)
+                else:
+                    print(f"🔧 Paso intermedio completado silenciosamente: {intent.intent}")
+                    # Log intermediate step execution
+                    self._log_intent_execution(intent, response, 0.0)
 
             except Exception as e:
                 error_msg = f"Error al procesar la intención '{intent.intent}': {str(e)}"
@@ -502,13 +513,24 @@ class ConversationalAgent:
                     details={"intent": intent.dict()}
                 )
                 responses[intent.intent] = f"❌ {error_msg}"
+                
+                # Solo agregar errores de pasos finales a respuestas visibles
+                if intent.step == "final":
+                    user_facing_responses.append(f"❌ {error_msg}")
 
-        # Combine all responses into a single string
-        return "\n".join(responses.values())
+        # Solo retornar respuestas de pasos finales
+        if user_facing_responses:
+            return "\n".join(user_facing_responses)
+        else:
+            return "✅ Operación completada silenciosamente"
     
 
-    def _add_to_session_context(self, user_input: str, assistant_response: str):
+    def _add_to_session_context(self, user_input: str, assistant_response: str, is_final_step: bool = True):
         """Agrega la interacción a la memoria temporal de sesión"""
+        # Solo agregar si es paso final para no saturar el contexto
+        if not is_final_step:
+            return
+            
         interaction = {
             "user": user_input,
             "assistant": assistant_response,
@@ -548,6 +570,22 @@ class ConversationalAgent:
         self.agent_logger.log_cleanup(success=True)
         
         logger.info("🧹 Recursos del agente limpiados")
+    
+    def _log_intent_execution(self, intent: IntentResponse, response: str, execution_time: float):
+        """Log intent execution with step-aware formatting"""
+        step_info = {
+            "intent_name": intent.intent,
+            "intent_value": intent.value,
+            "step_type": intent.step,
+            "depends_on": intent.depends_on,
+            "execution_time": execution_time,
+            "response_length": len(response)
+        }
+        
+        if intent.step == "intermedio":
+            self.agent_logger.info("Intermediate step executed silently", **step_info)
+        else:
+            self.agent_logger.info("Final step executed with user response", **step_info)
     
 
 async def main():

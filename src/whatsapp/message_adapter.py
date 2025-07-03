@@ -77,15 +77,6 @@ class WhatsAppMessageAdapter:
                 group_name=group_name
             )
             
-            # Log del mensaje recibido
-            logger.info(
-                "Procesando mensaje de WhatsApp",
-                sender=sender_number,
-                is_group=is_group,
-                group_name=group_name,
-                message_length=len(message)
-            )
-            
             # Procesar con el agente conversacional de EconomIAssist
             response = await self.agent.process_user_input(enriched_message)
             
@@ -96,22 +87,11 @@ class WhatsAppMessageAdapter:
                 sender_number=sender_number
             )
             
-            # Log de la respuesta
-            logger.info(
-                "Respuesta generada",
-                response_length=len(formatted_response),
-                sender=sender_number
-            )
-            
             return formatted_response
             
         except Exception as e:
-            logger.error(
-                "Error procesando mensaje de WhatsApp",
-                error=str(e),
-                sender=sender_number,
-                message=message[:100]
-            )
+            # Solo log de errores críticos
+            print(f"❌ Error en MessageAdapter para {sender_number}: {e}")
             
             # Respuesta de error amigable
             return "Disculpa, tuve un problema procesando tu mensaje. ¿Podrías intentar de nuevo?"

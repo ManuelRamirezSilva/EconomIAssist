@@ -7,6 +7,7 @@ Integra con el ConversationalAgent existente de EconomIAssist + Conversation Man
 import asyncio
 import os
 import sys
+import logging
 from typing import Optional, List, Dict
 from datetime import datetime
 
@@ -19,6 +20,18 @@ from fastapi import FastAPI, Query, HTTPException
 from fastapi.responses import JSONResponse, PlainTextResponse
 import uvicorn
 from dotenv import load_dotenv
+
+# Filtro personalizado para reducir logs HTTP repetitivos
+class HttpPollingFilter(logging.Filter):
+    """Filtro para suprimir logs HTTP de polling frecuente"""
+    
+    def filter(self, record):
+        # Suprimir logs de polling a /whatsapp/pending-responses
+        if hasattr(record, 'getMessage'):
+            message = record.getMessage()
+            if 'GET /whatsapp/pending-responses' in message and '200 OK' in message:
+                return False
+        return True
 
 # Importar el agente conversacional existente y nuevo conversation manager
 from src.agent.conversational_agent import ConversationalAgent
@@ -44,11 +57,16 @@ agent: Optional[ConversationalAgent] = None
 adapter: Optional[WhatsAppMessageAdapter] = None
 conversation_manager: Optional[ConversationManager] = None
 pending_responses: List[Dict] = []  # Cola de respuestas para el WhatsApp Bridge
+processed_messages: set = set()  # Cache de IDs de mensajes ya procesados (para evitar duplicados)
 
 @app.on_event("startup")
 async def startup_event():
     """Inicializar el agente conversacional y conversation manager al arrancar el servidor"""
     global agent, adapter, conversation_manager
+    
+    # Configurar filtro para logs HTTP
+    uvicorn_logger = logging.getLogger("uvicorn.access")
+    uvicorn_logger.addFilter(HttpPollingFilter())
     
     print("🚀 Iniciando EconomIAssist WhatsApp Server v2.0...")
     
@@ -106,11 +124,6 @@ async def process_grouped_messages(user_id: str, grouped_context: dict):
     global adapter, conversation_manager
     
     try:
-        print(f"🧠 Procesando conversación agrupada de {user_id}")
-        print(f"   📊 Mensajes: {grouped_context['message_count']}")
-        print(f"   🎭 Patrón: {grouped_context['conversation_pattern']}")
-        print(f"   📝 Texto: {grouped_context['combined_message'][:50]}...")
-        
         # Verificar si debe responder basado en el patrón
         should_respond = conversation_manager.should_respond_to_pattern(
             grouped_context['conversation_pattern'],
@@ -136,8 +149,6 @@ async def process_grouped_messages(user_id: str, grouped_context: dict):
         
         # Dividir respuesta en partes humanas si es necesario
         response_parts = conversation_manager.split_response_human_like(response)
-        
-        print(f"✅ Respuesta generada: {len(response_parts)} parte(s)")
         
         # Enviar cada parte con delay humano
         for i, part in enumerate(response_parts):
@@ -174,7 +185,11 @@ async def send_response_to_whatsapp(from_jid: str, response: str, delay: int = 0
     }
     
     pending_responses.append(response_data)
-    print(f"📤 Respuesta agregada a cola pendiente para {from_jid}: {response[:50]}...")
+    
+    # Log optimizado: solo salida WhatsApp
+    user_id = from_jid.split('@')[0] if '@' in from_jid else from_jid
+    response_preview = response[:50] + "..." if len(response) > 50 else response
+    print(f"📤 WhatsApp OUT: [{user_id}] \"{response_preview}\"")
 
 @app.get("/")
 async def root():
@@ -219,7 +234,21 @@ async def handle_whatsapp_message(
         )
     
     try:
-        print(f"📨 Mensaje WhatsApp recibido de {senderNumber}: {message[:50]}...")
+        print(f"📨 Mensaje WhatsApp recibido de {senderNumber}: {message[:50]}... [ID: {messageId}]")
+        
+        # Verificar si ya procesamos este mensaje (evitar duplicados)
+        if messageId in processed_messages:
+            print(f"⚠️ Mensaje duplicado detectado [ID: {messageId}] - Ignorando")
+            return PlainTextResponse(content="", status_code=200)
+        
+        # Marcar mensaje como procesado
+        processed_messages.add(messageId)
+        print(f"✅ Mensaje marcado como procesado [ID: {messageId}]")
+        
+        # Limpiar cache si tiene muchas entradas (mantener últimas 1000)
+        if len(processed_messages) > 1000:
+            processed_messages.clear()
+            print("🧹 Cache de mensajes procesados limpiado")
         
         # Preparar datos del mensaje para el Conversation Manager
         message_data = {
@@ -261,6 +290,7 @@ async def test_endpoint():
 async def get_pending_responses():
     """
     Endpoint para que el WhatsApp Bridge obtenga respuestas pendientes
+    (Silencioso - sin logs por el filtro HTTP)
     """
     global pending_responses
     
@@ -276,6 +306,10 @@ if __name__ == "__main__":
     # Ejecutar el servidor
     print("🤖 EconomIAssist WhatsApp Server")
     print("=" * 50)
+    
+    # Configurar logging para ser menos verboso
+    import logging
+    logging.getLogger("uvicorn.access").addFilter(HttpPollingFilter())
     
     uvicorn.run(
         "whatsapp_server:app",

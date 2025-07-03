@@ -74,10 +74,12 @@ class ConversationManager:
         # Agregar mensaje al buffer
         self.message_buffers[user_id].append(message_data)
         
-        logger.info("Mensaje agregado al buffer",
-                   user_id=user_id,
-                   buffer_size=len(self.message_buffers[user_id]),
-                   message_preview=message_data.get('message', '')[:30])
+        # Log optimizado: solo entrada WhatsApp
+        buffer_size = len(self.message_buffers[user_id])
+        message_preview = message_data.get('message', '')[:50]
+        message_id = message_data.get('message_id', 'No-ID')
+        
+        print(f"📥 WhatsApp IN: [{user_id}] \"{message_preview}\" → Buffer: {buffer_size} mensaje{'s' if buffer_size > 1 else ''} [ID: {message_id}]")
         
         # Cancelar timer anterior si existe
         if user_id in self.pending_timers:
@@ -117,21 +119,24 @@ class ConversationManager:
             # Agrupar mensajes en contexto conversacional
             grouped_context = self._group_messages(messages)
             
-            logger.info("Procesando mensajes agrupados",
-                       user_id=user_id,
-                       message_count=len(messages),
-                       grouped_text_length=len(grouped_context['combined_message']))
+            # Log optimizado: entrada al agente con mensajes agrupados
+            if len(messages) == 1:
+                combined_text = grouped_context['combined_message']
+                print(f"🤖 Agente IN: [{user_id}] 1 mensaje → \"{combined_text[:50]}...\"")
+            else:
+                individual_msgs = [msg[:30] + "..." if len(msg) > 30 else msg for msg in grouped_context['individual_messages']]
+                msgs_preview = " | ".join(individual_msgs)
+                print(f"🤖 Agente IN: [{user_id}] {len(messages)} mensajes → \"{msgs_preview}\"")
             
             # Procesar con callback si está configurado
             if self.process_callback:
                 await self.process_callback(user_id, grouped_context)
                 
         except asyncio.CancelledError:
-            # Timer cancelado por nuevo mensaje
-            logger.debug("Timer cancelado por nuevo mensaje", user_id=user_id)
+            # Timer cancelado por nuevo mensaje - no loguear, es normal
+            pass
         except Exception as e:
-            logger.error("Error procesando mensajes agrupados",
-                        user_id=user_id, error=str(e))
+            print(f"❌ Error procesando mensajes agrupados para {user_id}: {e}")
     
     def _group_messages(self, messages: List[Dict]) -> Dict:
         """

@@ -472,6 +472,7 @@ class ConversationalAgent:
     async def process_user_input(self, user_input: str) -> str:
         parsed_intents = self.intent_parser.receive_message(user_input)
         logger.info(f"🔍 Intenciones detectadas: {parsed_intents}")
+        print(f"🔍 Número de intenciones detectadas: {len(parsed_intents)}")
 
         responses = {}
         for intent in parsed_intents:

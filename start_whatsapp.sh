@@ -88,7 +88,8 @@ echo "📡 Iniciando servidor EconomIAssist en puerto 8000..."
 # Cambiar al directorio correcto y ejecutar en background
 cd src/whatsapp
 export PYTHONPATH="$PWD/../..:$PYTHONPATH"
-python whatsapp_server.py > ../../logs/whatsapp_server.log 2>&1 &
+# Ejecutar con uvicorn y sin logs de acceso HTTP
+uvicorn whatsapp_server:app --host 0.0.0.0 --port 8000 --no-access-log > ../../logs/whatsapp_server.log 2>&1 &
 ECONOMI_ASSIST_PID=$!
 cd ../..
 

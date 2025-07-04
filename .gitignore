@@ -10,6 +10,7 @@
 *.log
 *.sql
 *.sqlite
+logs/
 
 # Python
 __pycache__/

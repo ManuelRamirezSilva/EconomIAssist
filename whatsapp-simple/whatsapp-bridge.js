@@ -10,6 +10,7 @@ process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0
 // Configuración
 const ECONOMÍ_ASSIST_URL = process.env.ECONOMÍ_ASSIST_URL || 'http://localhost:8000/whatsapp/message'
 const BOT_NAME = process.env.BOT_NAME || 'EconomIAssist'
+const TIMEOUT_MS = parseInt(process.env.TIMEOUT_MS) || 30000
 
 // Configuración de filtros
 const RESPONSE_MODE = process.env.RESPONSE_MODE || 'always'
@@ -362,7 +363,7 @@ async function handleMessage(sock, message) {
             
             const response = await axios.get(ECONOMÍ_ASSIST_URL, {
                 params: messageInfo,
-                timeout: 5000 // Timeout más corto porque no esperamos respuesta inmediata
+                timeout: TIMEOUT_MS
             })
 
             console.log('✅ Mensaje enviado al Conversation Manager')

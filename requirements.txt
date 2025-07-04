@@ -6,50 +6,37 @@ mcp>=1.0.0
 python-dotenv>=1.0.0
 
 # OpenAI Agents SDK - framework oficial
-openai-agents>=0.0.9
 openai>=1.40.0
+# Nota: Usando versión específica de openai-agents para compatibilidad con pydantic
+openai-agents==0.0.9
 
-# # ================================================================
-# # GOOGLE APIS - Calendar y servicios de Google
-# # ================================================================
-# google-auth>=2.23.0
-# google-auth-oauthlib>=1.0.0
-# google-auth-httplib2>=0.1.0
-# google-api-python-client>=2.100.0
-# googleapis-common-protos>=1.60.0
-
+# ================================================================
+# FRAMEWORK WEB Y BASE DE DATOS
+# ================================================================
+fastapi>=0.104.1
+uvicorn>=0.24.0
+httpx>=0.25.2
+# Debe ser >=2.10.0 porque openai-agents lo requiere
+pydantic>=2.10.0,<3.0.0
 
 # ================================================================
 # SERVIDORES MCP Y HERRAMIENTAS
 # ================================================================
 # Para configuración YAML
 PyYAML>=6.0
-pyyaml>=6.0
 
 # Para logging estructurado
-structlog>=23.0.0
+structlog>=23.2.0
 
 # Para cliente HTTP
-# httpx>=0.25.0
 requests>=2.31.0
-
-# ================================================================
-# APIS EXTERNAS
-# ================================================================
-# Para búsqueda web (Tavily se instala vía npm)
-# Para BCRA API (usamos requests)
-
-# ================================================================
-# FRAMEWORK WEB Y BASE DE DATOS
-# ================================================================
-uvicorn>=0.24.0
-pydantic>=2.4.0
 
 # ================================================================
 # UTILIDADES Y PROCESAMIENTO
 # ================================================================
 numpy>=1.24.0
 pandas>=2.0.0  # Para análisis de datos económicos
+asyncio>=3.4.3
 
 # ================================================================
 # DESARROLLO Y TESTING
@@ -64,28 +51,14 @@ matplotlib>=3.7.0  # Para gráficos
 seaborn>=0.12.0    # Para visualizaciones
 plotly>=5.15.0     # Para gráficos interactivos
 
-streamlit>=1.20.0  # Para dashboards interactivos
-
-
-fastapi==0.104.1
-uvicorn==0.24.0
-httpx==0.25.2
-pydantic==2.5.0
-python-dotenv==1.0.0
-asyncio==3.4.3
-structlog==23.2.0
-
-# Dependencias para tu agente conversacional
-
-# (Agrega aquí las dependencias específicas que necesite tu ConversationalAgent)
-
+# Para dashboards interactivos
+streamlit>=1.20.0  
 
 # ================================================================
 # AZURE OPENAI - Modelo principal de IA
 # ================================================================
 # azure-openai>=1.0.0
 # sqlite3  # Incluido en Python estándar
-
 
 # ================================================================
 # CHROMA DB - Base de datos vectorial

@@ -74,6 +74,11 @@ python tests/run_all_tests.py
 python src/agent/conversational_agent.py
 ```
 
+### Ejecutar Visualizador de Logs
+```bash
+streamlit run log_dashboard.py
+```
+
 ### Ejemplos de Conversación
 - "¿Cuál es mi saldo actual?"
 - "Dame consejos de ahorro."

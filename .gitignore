@@ -72,6 +72,14 @@ dist/
 # Project specific
 resumeProyect.txt
 
+# Node.js
+node_modules/
+whatsapp-simple/node_modules/
+
+# WhatsApp authentication sessions
+auth_session/
+whatsapp-simple/auth_session/
+
 #Maquina de oli
 package.json
 setup.sh

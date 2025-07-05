@@ -1,0 +1,298 @@
+QUERIES CON PREGUNTAS DE CADA TEXTO PARA VER SI TRAE EL CHUNK CORRECTO - success
+
+Texto: Principios-de-economía.pdf
+Pregunta: ¿Cuáles fueron las tres razones que motivaron a los autores a escribir un texto propio para el curso de economía en la Universidad de San Andrés?
+
+    /home/olivia/Desktop/EconomIAssist/src/agent/rag_module.py:148: LangChainDeprecationWarning: The class `Chroma` was deprecated in LangChain 0.2.9 and will be removed in 1.0. An updated version of the class exists in the :class:`~langchain-chroma package and should be used instead. To use it run `pip install -U :class:`~langchain-chroma` and import as `from :class:`~langchain_chroma import Chroma``.
+    vectordb = Chroma(
+    Prefacio
+    El ﬁnal del /two.prop/zero.prop/two.prop/zero.prop nos encontró con la noticia de que íbamos a compartir, durante el año
+    siguiente, un curso introductorio de economía en la Universidad de San Andrés, Eco I. Sin
+    embargo, rápidamente nos dimos cuenta que el material que se usaba tradicionalmente
+    para este curso no alcanzaba a satisfacer los objetivos que nos habíamos planteado:
+    compartir algunas intuiciones fundamentales del análisis económico y, luego ejercitar
+    la rigurosidad de pensamiento económico y del análisis empírico en economía en la
+    resolución de problemas concretos de la realidad. Para muchos de nuestros alumnos este
+    sería el primer y último curso de economía, con lo cual había que focalizarse en transmitir
+    conceptos importantes y útiles.
+    Había otras tres razones de peso para encarar el abordaje de estos objetivos con un
+    texto propio. Primero, porque los textos existentes eran mayoritariamente extranjeros. La
+
+    ---
+
+    Había otras tres razones de peso para encarar el abordaje de estos objetivos con un
+    texto propio. Primero, porque los textos existentes eran mayoritariamente extranjeros. La
+    ciencia económica aplica por igual en EE. UU., Argentina o Vietnam, pero ilustrarlo con
+    ejemplos que los alumnos sientan cercanos siempre ayuda a la transmisión de las ideas.
+    Segundo, porque nuestra impresión es que la manera que se enseña macroeconomía
+    -el estudio de la evolución agregada de la economía-, en los textos tradicionales desde
+    Samuelson a Mankiw no incorpora los avances de la disciplina de los últimos /five.prop/zero.prop años.
+    La macroeconomía ha desarrollado en las últimas décadas un sólido marco teórico que,
+    con rigurosidad, analiza el sistema como un todo, lo cual implica tomar en cuenta las
+    repercusiones del cambio de una variable o comportamiento sobre el resto de las variables
+    del sistema. Sin embargo, esta rigurosidad no estaba reﬂejada en los textos que venían
+
+    ---
+
+
+
+Texto: EcoiaParaNoEcoistas.pdf
+Pregunta: ¿Qué ejemplo utiliza el prólogo para ilustrar cómo el poder de mercado puede perjudicar a los consumidores incluso fuera del ámbito empresarial tradicional?
+
+    tienen las bocas de venta de libros, y fijar precios de monopolio. Probablemente,
+    si se hubiera fijado un precio superior se habría incrementado el beneficio, pero
+    se habrían vendido muchos menos ejemplares.  Este es un claro ejemplo de
+    como el poder de mercado habría afectado negativamente a los consumidores.
+    Es más, resulta uno particularmente interesante, en tanto evidencia que el poder
+    de mercado no sólo proviene de la existencia de grandes empresas, sino que,
+    como en este caso, la colusión entre los agentes expendedores podría haber
+    conducido a que en conjunto actuaran como si fueran una sola empresa
+    monopólica, fijando precios. En nuestro caso el objetivo era maximizar la difusión
+    del libro, lo cual se consiguió, cubriendo los costos de edición y publicación, lo
+    que también se consiguió. La pregunta que a los lectores queda responder es:
+    ¿por qué, entonces, el precio promedio de los libros que se venden en  plaza es
+
+    ---
+
+    /one.up/seven.up El rol del mercado en la asignación de los recursos/two.up/one.up/seven.up
+    que el gobierno amenazó con abrir el mercado a la importación de
+    neumáticos, lo cual implicaba incorporar más competencia, forzar el
+    precio a la baja y con eso devolverle el excedente a los consumidores. No
+    hace falta aclarar que a los dos días de dicha amenaza trabajadores y
+    empresarios se pusieron de acuerdo y acordaron las condiciones para
+    seguir la producción, en las convenientes condiciones de la protección
+    que les permite apropiar (a ambos) recursos de los consumidores.
+    Este dilema en el diseño de las políticas nos obliga a mencionar una
+    idea muy importante de un economista norteamericano llamado Mancur
+    Olson. Mancur Olson escribió un libro llamadoLa Lógica de la Acción
+    Colectiva en el que postulaba que el diseño de las políticas publicas era una
+    batalla entre intereses concentrados e intereses diluidos. Según Olson,
+    los intereses concentrados tienen mucha más capacidad de organizarse
+
+    ---
+
+
+Texto: BCRA-PUSF-Informe-2024.pdf
+Pregunta: ¿Cuáles son los tres ejes de acción que el BCRA define como 'las 3 P' en su informe sobre la protección de las personas usuarias de servicios financieros?
+
+    Financieros”, que trata sobre la información que se reúne a través de los canales de comunicación 
+    disponibles para realizar reclamos y consultas, los dere chos de las personas usuarias, las obligaciones de 
+    las entidades, la normativa y las funciones del BCRA en la materia.   
+    
+    En ese marco, el objetivo principal es proveer a la protección de los derechos de las personas usuarias de 
+    servicios financieros, a través de tres ejes de acción conocidos como “las 3 P”:  
+    
+    • Proteger a las personas usuarias de servicios financieros respecto del accionar de las entidades.   
+    • Prevenir en las entidades, situaciones de errores o incumplimientos frecuentes.  
+    • Promover mejores prácticas en beneficio de las personas usuarias.
+
+    ---
+
+    Informe sobre Protección a las Personas Usuarias de Servicios Financieros | Diciembre de 2024 | BCRA | 44 
+    Capítulo 3 | Acciones del BCRA con foco en las personas 
+    usuarias 
+    
+    El Banco Central realizó diferentes acciones con el objetivo de mejorar la protección e información 
+    para las personas usuarias del Sistema Financiero. 
+    
+    A continuación, se resumen las principales acciones relacionadas con adecuaciones 
+    reglamentarias, noticias de interés para las personas usuarias, información puesta a disposición 
+    a través de redes sociales y los principales links con información para el usuario. 
+    
+    
+    Adecuaciones reglamentarias 
+    
+    Se tomaron las siguientes medidas a favor de las personas usuarias: 
+    
+    • Convenio entre el BCRA y la ALEA para combatir la ludopatía, el juego ilegal y las apuestas 
+    de menores. 
+    • Interoperabilidad de los códigos QR para el pago con tarjetas de crédito. 
+    • Transferencias inmediatas pull para el fondeo entre cuentas propias.  
+    • Nuevo plazo fijo electrónico.
+
+    ---
+
+
+
+Texto: ARCA-sistema_tarjetas_de_debito_y_credito_v1.0.pdf
+Pregunta: ¿Cuál es el objetivo del módulo Tarjetas de Débito/Crédito dentro del sistema de Trámites con Clave Fiscal?
+
+    II. INTRODUCCIÓN AL MÓDULO TARJETAS DE DÉBITO/CRÉDITO - RG 
+    1166/02, 1486/03 – TRANSFERENCIA DE INFORMACIÓN 
+    
+    El Módulo Tarjetas de Débito/Crédito - RG 1166/02, 1486/03 – Transferencia 
+    de Información, forma parte del Sistema Trámites con Clave Fiscal – Régimen 
+    de Transferencia Electrónica de Datos. 
+    
+    
+    1. Objetivo del Módulo 
+    
+    El objetivo del Módulo Tarjetas de Débito/Crédito – RG 1166/02, 1486/03 – 
+    Transferencia de Información es brindar, a las Administradoras de Tarjetas de 
+    Débito y de Crédito adheridas al Sistema, un medio ágil y seguro para efectuar 
+    las transferencias de los archivos que contienen información sobre las 
+    devoluciones de IVA realizadas a sus clientes, por los consumos efectuados por 
+    éstos con dichas tarjetas, en el territorio de la República Argentina y en la 
+    moneda de curso legal en el país, de acuerdo con lo estipulado por la normativa 
+    vigente en la materia: 
+     Decreto 1548/01 y RG 1166/02, par a Entidades Administradoras de Tarjetas 
+    de Débito
+
+    ---
+
+    I. CONSIDERACIONES AL MANUAL DEL USUARIO 
+    
+    1. Objetivo 
+    
+    El objetivo del presente documento es proveer a los Usuarios del Módulo 
+    Tarjetas de Débito/Crédito - RG 1166/02, 1486/03 – Transferencia de 
+    Información, una herramienta descriptiva de su funcionalidad y operatoria, con el 
+    objeto de facilitar la interacción con el mismo.  
+    
+    Este documento podrá ser modificado por la AFIP, ante eventuales cambios en los 
+    futuros desarrollos, para beneficio de los destinatarios del mismo. 
+    
+    2. Alcance 
+    
+    El presente documento comprende las pautas generales del sistema y la 
+    descripción de su proceso operativo. 
+    
+    Este Manual puede complementarse con los restantes Manuales del Usuario que 
+    componen el Sistema Trámites con Clave Fiscal. 
+    
+    
+    Los usuarios de esta aplicación pueden efectuar una consulta web desde: 
+    https://servicioscf.arca.gob.ar/publico/crmcit/consulta.aspx
+
+    ---
+
+Texto: ARCA-Procedimiento-gestion-clave-fiscal-doble-factor-TOKEN.pdf
+Pregunta: ¿Qué ocurre con una aplicación OTP existente cuando se activa la aplicación Token para clave fiscal nivel 4?
+
+    física en una dependencia de esta Administración Federal (agencia, distrito, aduana o
+    centros de atención ARCA), oportunidad en la que se deberá cumplir con los requisitos
+    previstos en el artículo 3° de la Resolución General N° 2.811, sus modificatorias y
+    complementarias. 
+    4. En el caso de contar con hardware token y querer acceder a la aplicación Token,
+    primero se deberá dar de baja el hardware token acercándose a una dependencia
+    ARCA.
+    5. Al activar la aplicación Token el nivel de acceso de la clave fiscal se incrementa a nivel
+    4.
+    6. En  el  caso  de  contar  con  la  aplicación  de  OTP,  al  activar  la  aplicación  Token,  se
+    desactiva la de OTP.
+    II. PAUTAS PARA LA INSTALACIÓN DE LA APLICACIÓN “TOKEN” 
+    1. Deberá descargarse la aplicación “Token”, disponible para iOS y Android. 
+    2. La aplicación consultará si la activación será a través de cajero automático o en una
+    dependencia ARCA. De acuerdo a la selección que se realice se procederá a activar la
+    aplicación.
+
+    ---
+
+    Claves”.
+    4. Dentro de la opción “Gestionar Claves” se debe selección “Gestionar Clave ARCA”
+    5. Una vez finalizado el proceso, el código generado por cajero automático es el que se
+    debe  ingresar  en  la  aplicación.  Para  ello  en  la  aplicación  móvil  “TOKEN”  debe
+    seleccionar la opción “Ingresar código”. 
+    6. Una vez ingresado el código en la aplicación, se eleva la clave fiscal a Nivel 4 yse
+    encuentra lista para ser utilizada.
+    Una vez generado el código por el cajero automático, el ciudadano tiene 48 horas para
+    activar la aplicación. En caso de contingencia, la aplicación móvil prevee la posibilidad de
+    cancelar y reiniciar el trámite. Para ello debe seleccionar la opción “Reiniciar trámite”.
+
+    ---
+
+Texto: ARCA-Manual-Autodeclaracion-Deudas-Aduaneras-Ley-27743-Usuarios-Externos.pdf
+Pregunta: ¿Qué fecha debe indicarse como 'Fecha Momento Imponible' al generar una LMAN por deudas aduaneras en pesos bajo la Ley 27.743?
+
+    Impuesto a las Ganancias (Concepto 424) formuladas en pesos, el contribuyente 
+    deberá generar una Liquidación Malvina Anticipada motivo “CAPM” (Cargos en Pesos 
+    Manuales) indicando como Fecha Momento Imponible 23/09/1993, y expresando los 
+    montos en pesos. Posteriormente, deberá generar una LMAN motivo “AUDP” 
+    (Autodeclaración de Deudas en Pesos), indicando como documento de referencia la 
+    LMAN motvo “CAPM” generada anteriormente, a fin de poder acceder al plan de 
+    facilidades.
+    Cuando se trate de deuda aduanera por conceptos de derechos de exportación 
+    adicional (Conceptos 038 o 039), el contribuyente deberá generar una Liquidación 
+    Malvina Anticipada motivo CAPM (Cargos en Pesos Manuales) indicando como Fecha 
+    Momento Imponible 23/09/1993, y expresando los montos en pesos, que surge del 
+    monto en dólares liquidado en la LMAN motivo LADA por el tipo de cambio vigente a 
+    la fecha de oficialización de la destinación.
+
+    ---
+
+    Declaración de deudas aduaneras para su 
+        inclusión en un plan de facilidades
+    A continuación, se detalla el procedimiento para la declaración de deuda aduanera que
+    se incluirá en un plan de facilidades de la Ley 27.743, Resolución General N.º 
+    5525/2024.
+    El contribuyente efectuará una declaración previa al ingreso al sistema “MIS 
+    FACILIDADES” en el que registrará el plan. A tal fin, deberá acceder con clave fiscal al 
+    servicio “Deudas Aduaneras”, e ingresar los datos que el sistema requiera, a efectos de 
+    la determinación de la deuda tributaria aduanera y de la generación automática de una
+    liquidación Malvina Anticipada (LMAN) motivo AUDE. Para ello, el sistema solicitará -
+    entre otros datos, en el campo documento de referencia el número de LMAN motivo 
+    “CSUP – Cargos suplementarios con ingreso al SIFIAD”, “CSUM Cargos suplementarios 
+    manuales”, “CONT -Multas por cargos de origen contencioso”, o “CAPM” registradas 
+    previamente en el SIM vencidas al 31/03/2024 inclusive.
+
+    ---
+
+Texto: ARCA-Declaracion-de-Deudas-Aduaneras-para-sujetos-no-imex.pdf
+Pregunta: ¿Qué información debe incluirse en la solicitud de generación de una LMAN por parte de un sujeto sin perfil IMEX?
+
+    Declaración de deudas aduaneras para sujetos que no cuentan con el 
+    perfil de Importador/Exportador
+    Aquellos  sujetos  que  no  cuenten  con  perfil  IMEX,  deberán  requerir  al  servicio aduanero 
+    la generación de una LMAN con motivo AUDE (deudas liquidadas en dólares) o AUDP (deudas 
+    liquidadas en pesos), para luego poder ingresar al aplicatvo “Mis Facilidades” y contnuar con 
+    el trámite previsto en la normatva vigente, a fines de formalizar la adhesión al régimen.
+    1. A dichos efectos, se deberá remitr la solicitud de generación de dicha LMAN mediante 
+    consultasigea@arca.gob.ar al área que corresponda, de conformidad a la siguiente distnción:
+    i. Actuaciones vinculadas a mercaderías que ingresaron o egresaron por las Aduanas 
+    dependientes de la Subdirección General de Operaciones Aduaneras Metropolitanas:
+    a) Sección Recaudación de la División Control Ex-Ante en las Aduanas de las aduanas 
+    de Buenos Aires o Ezeiza o b) Sección Económica Financiera, en las Aduanas de La Plata
+
+    ---
+
+    pagar. 
+    Se deja constancia que el servicio aduanero efectuará la liquidación manual en base a la 
+    presentación con los datos aportados por los administrados, sin que ello implique la 
+    regularización definitva de ningún tpo de deuda.
+    Una vez generada la LMAN por parte del servicio aduanero, la misma se verá reflejada en el 
+    sistema “Mis Facilidades” a efectos de que el administrado contnúe con el trámite de 
+    adhesión al régimen.
+
+    ---
+
+
+Texto: ARCA-AutorizacionesElectronicasISTA.pdf
+Pregunta: ¿Qué formulario se emite como constancia cuando se crea una nueva autorización electrónica para transportistas ISTA?
+
+    Autorizaciones Electrónicas
+    Transportista ISTA y
+    Apoderado de
+    Transportista ISTA
+    Resolución General AFIP N° 2449
+    Manual de Operación
+    Versión 1.0
+
+    ---
+
+    3
+    Para crear una nueva autorización, se deberá ingresar a la opción 
+    “Crear Nueva Autorización”. Allí se visualizará la siguiente pantalla:
+    El Usuario visualizará los siguientes campos:
+    • Autorizante: Se visualizará el CUIT y el Nombre y Apellido 
+    del usuario que está otorgando la autorización.
+    • Autorizaciones: Se deberá seleccionar la autorización “Autorización 
+    para realizar Tránsitos Monitoreados”.
+    • Facultades: Se visualizarán las facultades asociadas con el tipo de
+    autorización seleccionado.
+    • Agente Autorizante: Deberá ser tipo de operador Transportista ISTA o
+    Apoderado de Transportista ISTA
+    • Agente Autorizado: Se deberá seleccionar el Tipo de Agente del 
+    usuario que está recibiendo la autorización. Despachante de
+    Aduanas o Agente de Transporte Aduanero.
+
+    ---

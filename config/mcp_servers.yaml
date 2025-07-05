@@ -1,0 +1,179 @@
+# Configuración OPTIMIZADA de Servidores MCP para EconomIAssist
+# Este archivo define los servidores MCP con descripciones específicas para finanzas argentinas
+
+servers:
+  tavily:
+    name: tavily
+    description: "Motor de búsqueda web especializado en información financiera actualizada de Argentina. Busca cotizaciones, tasas bancarias, noticias económicas, inflación y datos del BCRA en tiempo real."
+    command: ["npx", "tavily-mcp"]
+    auto_connect: true
+    priority: 1
+    capabilities:
+      - cotizaciones_argentina
+      - tasas_interes_bancos
+      - noticias_economicas
+      - inflacion_bcra
+      - productos_financieros
+    environment:
+      TAVILY_API_KEY: "${TAVILY_API_KEY}"
+    tools: []
+    resources: []
+    
+  knowledge_base:
+    name: knowledge_base
+    description: "Base de datos de memoria personal financiera del usuario. Almacena perfil, gastos, ingresos, metas de ahorro, patrones de consumo y decisiones financieras históricas para personalización completa."
+    command: ["docker", "run", "--interactive", "--detach", "--name", "economyassist-kb", "--volume", "knowledgebase:/db", "mbcrawfo/knowledge-base-server"]
+    auto_connect: true
+    priority: 2
+    capabilities:
+      - memoria_financiera_personal
+      - perfil_usuario
+      - historial_gastos_ingresos
+      - metas_ahorro
+      - patrones_consumo
+      - decisiones_financieras
+    environment:
+      DATABASE_NAME: "${DATABASE_NAME}"
+    tools: []
+    resources: []
+    docker_config:
+      detached_mode: true
+      interactive_restart_command: ["docker", "run", "-i", "--name", "economyassist-kb", "--volume", "knowledgebase:/db", "mbcrawfo/knowledge-base-server"]
+      container_name: economyassist-kb
+      restart_on_connect: true
+
+  calculator:
+    name: calculator
+    description: "Calculadora financiera de alta precisión para presupuestos, interés compuesto, conversiones de moneda, porcentajes de ahorro y proyecciones financieras con inflación argentina."
+    command: ["python", "-m", "mcp_server_calculator"]
+    auto_connect: true
+    priority: 3
+    capabilities:
+      - calculos_presupuesto
+      - interes_compuesto
+      - conversiones_moneda
+      - porcentajes_ahorro
+      - proyecciones_inflacion
+    environment: {}
+    tools: []
+    resources: []
+
+  google_calendar:
+    name: google_calendar
+    description: "Gestor de agenda financiera para recordatorios de pagos, vencimientos de tarjetas, fechas de cobro, revisiones de presupuesto y planificación de metas financieras."
+    command: ["npx", "-y", "@cablate/mcp-google-calendar"]
+    auto_connect: true
+    priority: 4
+    capabilities:
+      - recordatorios_pagos
+      - vencimientos_tarjetas
+      - fechas_cobro
+      - planificacion_financiera
+      - alertas_presupuesto
+    environment:
+      GOOGLE_CREDENTIALS_PATH: "${GOOGLE_CREDENTIALS_PATH}"
+      GOOGLE_CALENDAR_ID: "${GOOGLE_CALENDAR_ID}"
+      GOOGLE_TIME_ZONE: "${GOOGLE_TIME_ZONE}"
+      GOOGLE_CALENDAR_PUBLIC_URL: "${GOOGLE_CALENDAR_PUBLIC_URL}"
+      GOOGLE_CALENDAR_ICAL_PUBLIC: "${GOOGLE_CALENDAR_ICAL_PUBLIC}"
+      GOOGLE_CALENDAR_ICAL_SECRET: "${GOOGLE_CALENDAR_ICAL_SECRET}"
+    tools: []
+    resources: []
+
+  google_sheets:
+    name: google_sheets
+    description: "Sistema de registro financiero estructurado para control de gastos, ingresos, presupuestos detallados, análisis de patrones de consumo y reportes financieros automatizados."
+    command: ["uvx", "mcp-google-sheets@latest"]
+    auto_connect: true
+    priority: 5
+    capabilities:
+      - registro_gastos_ingresos
+      - presupuestos_detallados
+      - analisis_patrones_gasto
+      - reportes_financieros
+      - categorización_automatica
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: "${GOOGLE_CREDENTIALS_PATH}"
+      DRIVE_FOLDER_ID: "${GOOGLE_DRIVE_FOLDER_ID}"
+    tools: []
+    resources: []
+
+# Configuración global de MCP
+settings:
+  protocol_version: "2024-11-05"
+  client_info:
+    name: EconomIAssist
+    version: "2.1.0"
+  connection_timeout: 30
+  retry_attempts: 3
+  log_level: INFO
+
+# Mapeo optimizado de capacidades a casos de uso financieros argentinos
+capability_mapping:
+  cotizaciones_argentina:
+    use_cases:
+      - "cotización dólar blue hoy"
+      - "precio dólar oficial BCRA"
+      - "cotización peso argentino"
+      - "valor bitcoin Argentina"
+      - "precio oro Argentina"
+    preferred_server: tavily
+    triggers: ["cotización", "precio", "dólar", "blue", "oficial", "crypto"]
+    
+  memoria_financiera_personal:
+    use_cases:
+      - "recordar mi sueldo mensual"
+      - "guardar gasto en supermercado"
+      - "mi presupuesto de entretenimiento"
+      - "cuánto gasto en transporte"
+      - "mis metas de ahorro"
+    preferred_server: knowledge_base
+    triggers: ["mi", "mis", "recordar", "guardar", "gasto", "ingreso", "presupuesto"]
+
+  calculos_presupuesto:
+    use_cases:
+      - "calcular ahorro mensual con inflación"
+      - "interés compuesto plazo fijo"
+      - "porcentaje de gastos por categoría"
+      - "proyección de aumento salarial"
+      - "conversión pesos a dólares"
+    preferred_server: calculator
+    triggers: ["calcular", "cuánto", "porcentaje", "%", "interés", "suma", "resta"]
+    
+  recordatorios_pagos:
+    use_cases:
+      - "recordar pago tarjeta de crédito"
+      - "vencimiento seguro automotor"
+      - "fecha de cobro sueldo"
+      - "pago impuesto ganancias"
+      - "renovación subscripción Netflix"
+    preferred_server: google_calendar
+    triggers: ["recordar", "pagar", "vencimiento", "fecha", "cuando"]
+    
+  registro_gastos_ingresos:
+    use_cases:
+      - "registrar compra supermercado $5000"
+      - "anotar ingreso freelance $20000"
+      - "crear presupuesto mensual detallado"
+      - "análisis gastos último trimestre"
+      - "reporte ingresos vs gastos"
+    preferred_server: google_sheets
+    triggers: ["registrar", "anotar", "guardar", "reporte", "análisis"]
+
+# Criterios de decisión automatizada para el agente
+decision_criteria:
+  web_search_triggers:
+    - contains_any: ["hoy", "actual", "ahora", "último", "reciente"]
+    - contains_financial: ["cotización", "precio", "tasa", "inflación", "BCRA"]
+    - country_specific: ["Argentina", "argentino", "peso", "blue", "oficial", "crypto"]
+    
+  memory_search_triggers:
+    - personal_pronouns: ["mi", "mis", "yo", "me"]
+    - memory_verbs: ["recordar", "olvidé", "dijiste", "mencioné"]
+    - personal_data: ["sueldo", "trabajo", "gasto", "ahorro"]
+    
+  calculation_triggers:
+    - math_operators: ["+", "-", "*", "/", "%"]
+    - calculation_verbs: ["calcular", "sumar", "restar", "cuánto"]
+    - financial_math: ["interés", "porcentaje", "proyección", "ahorro"]
+

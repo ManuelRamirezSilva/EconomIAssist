@@ -1,0 +1,449 @@
+{"parser_id": "main_intent_parser", "event": "Intent parser logger initialized", "timestamp": "2025-06-04T18:28:51.500656Z"}
+{"event": "Intent parser instance created", "timestamp": "2025-06-04T18:28:51.501090Z"}
+{"success": true, "azure_config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Intent parser initialization", "timestamp": "2025-06-04T18:28:51.501134Z"}
+{"agent_id": "main_agent", "event": "Agent logger initialized", "timestamp": "2025-06-04T18:28:51.501310Z"}
+{"event": "Agent instance created", "timestamp": "2025-06-04T18:28:51.501369Z"}
+{"model": "gpt-4o-mini-agustin", "setup_time": 0.015383005142211914, "config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Azure OpenAI configured successfully", "timestamp": "2025-06-04T18:28:51.516809Z"}
+{"event": "\ud83d\udcc4 Configuraci\u00f3n cargada desde: /Users/maxi/Documents/Udesa/NLP/EconomIAssist/src/agent/../../config/mcp_servers.yaml", "timestamp": "2025-06-04T18:28:51.524952Z"}
+{"server_id": "mcp_manager", "event": "MCP logger initialized", "timestamp": "2025-06-04T18:28:51.525188Z"}
+{"event": "MCP manager instance created", "timestamp": "2025-06-04T18:28:51.525262Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: google_calendar", "timestamp": "2025-06-04T18:28:51.525393Z"}
+{"event": "\u2705 Conectado al servidor MCP: google_calendar", "timestamp": "2025-06-04T18:28:55.071457Z"}
+{"server_name": "google_calendar", "success": true, "connection_time": 3.6487438678741455, "event": "MCP server connection", "timestamp": "2025-06-04T18:28:55.174099Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: calculator", "timestamp": "2025-06-04T18:28:55.174456Z"}
+{"event": "\u2705 Conectado al servidor MCP: calculator", "timestamp": "2025-06-04T18:28:55.726471Z"}
+{"server_name": "calculator", "success": true, "connection_time": 0.6580469608306885, "event": "MCP server connection", "timestamp": "2025-06-04T18:28:55.832362Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: knowledge_base", "timestamp": "2025-06-04T18:28:55.832820Z"}
+{"event": "\ud83d\udc33 Creando contenedor Docker: economyassist-kb", "timestamp": "2025-06-04T18:28:58.509475Z"}
+{"event": "\ud83d\udd04 Reiniciando contenedor economyassist-kb en modo interactivo...", "timestamp": "2025-06-04T18:28:58.544123Z"}
+{"event": "\u2705 Conectado al servidor MCP: knowledge_base", "timestamp": "2025-06-04T18:29:00.647136Z"}
+{"server_name": "knowledge_base", "success": true, "connection_time": 4.955019950866699, "event": "MCP server connection", "timestamp": "2025-06-04T18:29:00.787772Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: tavily", "timestamp": "2025-06-04T18:29:00.788836Z"}
+{"event": "\u2705 Conectado al servidor MCP: tavily", "timestamp": "2025-06-04T18:29:01.555037Z"}
+{"server_name": "tavily", "success": true, "connection_time": 0.8696529865264893, "event": "MCP server connection", "timestamp": "2025-06-04T18:29:01.657986Z"}
+{"servers_attempted": 4, "servers_connected": 4, "server_results": {"google_calendar": true, "calculator": true, "knowledge_base": true, "tavily": true}, "event": "MCP auto connect", "timestamp": "2025-06-04T18:29:01.658203Z"}
+{"connected": "4/4", "connection_time": 10.132983922958374, "event": "MCP servers connection completed", "timestamp": "2025-06-04T18:29:01.658292Z"}
+{"server_name": "google_calendar", "tools_count": 4, "tools": ["create_event", "list_events", "update_event", "delete_event"], "event": "MCP tool discovery", "timestamp": "2025-06-04T18:29:01.658367Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T18:29:01.658493Z"}
+{"server_name": "calculator", "tools_count": 1, "tools": ["calculate"], "event": "MCP tool discovery", "timestamp": "2025-06-04T18:29:01.658580Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T18:29:01.658654Z"}
+{"server_name": "knowledge_base", "tools_count": 5, "tools": ["SearchMemory", "ConnectMemories", "GetTopics", "CreateMemory", "GetMemoryById"], "event": "MCP tool discovery", "timestamp": "2025-06-04T18:29:01.658720Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T18:29:01.658778Z"}
+{"server_name": "tavily", "tools_count": 4, "tools": ["tavily-search", "tavily-extract", "tavily-crawl", "tavily-map"], "event": "MCP tool discovery", "timestamp": "2025-06-04T18:29:01.658849Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T18:29:01.658906Z"}
+{"tool_count": 14, "servers": {"google_calendar": 4, "calculator": 1, "knowledge_base": 5, "tavily": 4}, "event": "MCP tools initialized", "timestamp": "2025-06-04T18:29:01.660006Z"}
+{"tool_count": 14, "servers_count": 4, "setup_time": 0.001734018325805664, "event": "MCP tools setup completed", "timestamp": "2025-06-04T18:29:01.660094Z"}
+{"success": true, "components": {"azure_openai": true, "mcp_manager": true, "mcp_servers": true, "mcp_tools": true}, "event": "Agent initialization", "timestamp": "2025-06-04T18:29:01.660169Z"}
+{"initialization_time": 10.158812761306763, "event": "Agent initialization completed", "timestamp": "2025-06-04T18:29:01.660219Z"}
+{"parser_id": "main_intent_parser", "event": "Intent parser logger initialized", "timestamp": "2025-06-04T18:33:53.448228Z"}
+{"event": "Intent parser instance created", "timestamp": "2025-06-04T18:33:53.448687Z"}
+{"success": true, "azure_config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Intent parser initialization", "timestamp": "2025-06-04T18:33:53.448726Z"}
+{"agent_id": "main_agent", "event": "Agent logger initialized", "timestamp": "2025-06-04T18:33:53.448897Z"}
+{"event": "Agent instance created", "timestamp": "2025-06-04T18:33:53.449064Z"}
+{"model": "gpt-4o-mini-agustin", "setup_time": 0.015804052352905273, "config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Azure OpenAI configured successfully", "timestamp": "2025-06-04T18:33:53.464924Z"}
+{"event": "\ud83d\udcc4 Configuraci\u00f3n cargada desde: /Users/maxi/Documents/Udesa/NLP/EconomIAssist/src/agent/../../config/mcp_servers.yaml", "timestamp": "2025-06-04T18:33:53.470777Z"}
+{"server_id": "mcp_manager", "event": "MCP logger initialized", "timestamp": "2025-06-04T18:33:53.471152Z"}
+{"event": "MCP manager instance created", "timestamp": "2025-06-04T18:33:53.471404Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: google_calendar", "timestamp": "2025-06-04T18:33:53.471577Z"}
+{"event": "\u2705 Conectado al servidor MCP: google_calendar", "timestamp": "2025-06-04T18:33:55.373870Z"}
+{"server_name": "google_calendar", "success": true, "connection_time": 2.0048277378082275, "event": "MCP server connection", "timestamp": "2025-06-04T18:33:55.476342Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: calculator", "timestamp": "2025-06-04T18:33:55.476666Z"}
+{"event": "\u2705 Conectado al servidor MCP: calculator", "timestamp": "2025-06-04T18:33:55.944986Z"}
+{"server_name": "calculator", "success": true, "connection_time": 0.5753450393676758, "event": "MCP server connection", "timestamp": "2025-06-04T18:33:56.051887Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: knowledge_base", "timestamp": "2025-06-04T18:33:56.052295Z"}
+{"event": "\ud83d\udc33 Creando contenedor Docker: economyassist-kb", "timestamp": "2025-06-04T18:33:56.142782Z"}
+{"event": "\ud83d\udd04 Reiniciando contenedor economyassist-kb en modo interactivo...", "timestamp": "2025-06-04T18:33:56.168271Z"}
+{"event": "\u2705 Conectado al servidor MCP: knowledge_base", "timestamp": "2025-06-04T18:33:58.264546Z"}
+{"server_name": "knowledge_base", "success": true, "connection_time": 2.3413689136505127, "event": "MCP server connection", "timestamp": "2025-06-04T18:33:58.393681Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: tavily", "timestamp": "2025-06-04T18:33:58.395259Z"}
+{"event": "\u2705 Conectado al servidor MCP: tavily", "timestamp": "2025-06-04T18:33:58.983128Z"}
+{"server_name": "tavily", "success": true, "connection_time": 0.6915421485900879, "event": "MCP server connection", "timestamp": "2025-06-04T18:33:59.086178Z"}
+{"servers_attempted": 4, "servers_connected": 4, "server_results": {"google_calendar": true, "calculator": true, "knowledge_base": true, "tavily": true}, "event": "MCP auto connect", "timestamp": "2025-06-04T18:33:59.086410Z"}
+{"connected": "4/4", "connection_time": 5.615044116973877, "event": "MCP servers connection completed", "timestamp": "2025-06-04T18:33:59.086499Z"}
+{"server_name": "google_calendar", "tools_count": 4, "tools": ["create_event", "list_events", "update_event", "delete_event"], "event": "MCP tool discovery", "timestamp": "2025-06-04T18:33:59.086594Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T18:33:59.086701Z"}
+{"server_name": "calculator", "tools_count": 1, "tools": ["calculate"], "event": "MCP tool discovery", "timestamp": "2025-06-04T18:33:59.086757Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T18:33:59.086814Z"}
+{"server_name": "knowledge_base", "tools_count": 5, "tools": ["SearchMemory", "ConnectMemories", "GetTopics", "CreateMemory", "GetMemoryById"], "event": "MCP tool discovery", "timestamp": "2025-06-04T18:33:59.086859Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T18:33:59.086913Z"}
+{"server_name": "tavily", "tools_count": 4, "tools": ["tavily-search", "tavily-extract", "tavily-crawl", "tavily-map"], "event": "MCP tool discovery", "timestamp": "2025-06-04T18:33:59.086963Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T18:33:59.087009Z"}
+{"tool_count": 14, "servers": {"google_calendar": 4, "calculator": 1, "knowledge_base": 5, "tavily": 4}, "event": "MCP tools initialized", "timestamp": "2025-06-04T18:33:59.088520Z"}
+{"tool_count": 14, "servers_count": 4, "setup_time": 0.0019931793212890625, "event": "MCP tools setup completed", "timestamp": "2025-06-04T18:33:59.088576Z"}
+{"success": true, "components": {"azure_openai": true, "mcp_manager": true, "mcp_servers": true, "mcp_tools": true}, "event": "Agent initialization", "timestamp": "2025-06-04T18:33:59.088635Z"}
+{"initialization_time": 5.639577150344849, "event": "Agent initialization completed", "timestamp": "2025-06-04T18:33:59.088678Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 2.4281349182128906, "event": "Intent model call", "timestamp": "2025-06-04T18:34:26.561666Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 0.7489931583404541, "event": "Intent model call", "timestamp": "2025-06-04T18:34:27.311249Z"}
+{"intent": "other", "confidence": 0.9, "event": "Intent confidence", "timestamp": "2025-06-04T18:34:27.312355Z"}
+{"user_input_length": 4, "user_input_preview": "hola", "detected_intents": {"intents": [{"intent": "other", "value": "hola"}]}, "processing_time": 3.1791090965270996, "event": "Intent detection", "timestamp": "2025-06-04T18:34:27.312539Z"}
+{"event": "\ud83d\udd0d Intenciones detectadas: [('other', 'hola')]", "timestamp": "2025-06-04T18:34:27.313030Z"}
+{"user_input": "hola", "session_id": null, "event": "User input received", "timestamp": "2025-06-04T18:34:27.313279Z"}
+{"model": "gpt-4o-mini-agustin", "token_count": 0, "success": true, "event": "OpenAI API call", "timestamp": "2025-06-04T18:34:27.313465Z"}
+{"response_length": 32, "response_preview": "\u00a1Hola! \u00bfC\u00f3mo puedo ayudarte hoy?", "session_id": null, "event": "Agent response sent", "timestamp": "2025-06-04T18:34:28.845205Z"}
+{"total_processing_time": 1.532698154449463, "response_length": 32, "event": "Response generated successfully", "timestamp": "2025-06-04T18:34:28.845967Z"}
+{"parser_id": "main_intent_parser", "event": "Intent parser logger initialized", "timestamp": "2025-06-04T20:47:58.567983Z"}
+{"event": "Intent parser instance created", "timestamp": "2025-06-04T20:47:58.568538Z"}
+{"success": true, "azure_config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Intent parser initialization", "timestamp": "2025-06-04T20:47:58.568579Z"}
+{"agent_id": "main_agent", "event": "Agent logger initialized", "timestamp": "2025-06-04T20:47:58.568765Z"}
+{"event": "Agent instance created", "timestamp": "2025-06-04T20:47:58.568959Z"}
+{"model": "gpt-4o-mini-agustin", "setup_time": 0.01594996452331543, "config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Azure OpenAI configured successfully", "timestamp": "2025-06-04T20:47:58.584964Z"}
+{"event": "\ud83d\udcc4 Configuraci\u00f3n cargada desde: /Users/maxi/Documents/Udesa/NLP/EconomIAssist/src/agent/../../config/mcp_servers.yaml", "timestamp": "2025-06-04T20:47:58.594725Z"}
+{"server_id": "mcp_manager", "event": "MCP logger initialized", "timestamp": "2025-06-04T20:47:58.595178Z"}
+{"event": "MCP manager instance created", "timestamp": "2025-06-04T20:47:58.595800Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: google_calendar", "timestamp": "2025-06-04T20:47:58.595950Z"}
+{"event": "\u2705 Conectado al servidor MCP: google_calendar", "timestamp": "2025-06-04T20:48:01.875576Z"}
+{"server_name": "google_calendar", "success": true, "connection_time": 3.3819260597229004, "event": "MCP server connection", "timestamp": "2025-06-04T20:48:01.977814Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: calculator", "timestamp": "2025-06-04T20:48:01.978126Z"}
+{"event": "\u2705 Conectado al servidor MCP: calculator", "timestamp": "2025-06-04T20:48:02.401361Z"}
+{"server_name": "calculator", "success": true, "connection_time": 0.5300710201263428, "event": "MCP server connection", "timestamp": "2025-06-04T20:48:02.508025Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: knowledge_base", "timestamp": "2025-06-04T20:48:02.508313Z"}
+{"event": "\ud83d\udc33 Creando contenedor Docker: economyassist-kb", "timestamp": "2025-06-04T20:48:04.896678Z"}
+{"event": "\ud83d\udd04 Reiniciando contenedor economyassist-kb en modo interactivo...", "timestamp": "2025-06-04T20:48:04.943448Z"}
+{"event": "\u2705 Conectado al servidor MCP: knowledge_base", "timestamp": "2025-06-04T20:48:07.048516Z"}
+{"server_name": "knowledge_base", "success": true, "connection_time": 4.679424047470093, "event": "MCP server connection", "timestamp": "2025-06-04T20:48:07.187660Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: tavily", "timestamp": "2025-06-04T20:48:07.189494Z"}
+{"event": "\u2705 Conectado al servidor MCP: tavily", "timestamp": "2025-06-04T20:48:07.928116Z"}
+{"server_name": "tavily", "success": true, "connection_time": 0.8424282073974609, "event": "MCP server connection", "timestamp": "2025-06-04T20:48:08.030907Z"}
+{"servers_attempted": 4, "servers_connected": 4, "server_results": {"google_calendar": true, "calculator": true, "knowledge_base": true, "tavily": true}, "event": "MCP auto connect", "timestamp": "2025-06-04T20:48:08.031091Z"}
+{"connected": "4/4", "connection_time": 9.435312986373901, "event": "MCP servers connection completed", "timestamp": "2025-06-04T20:48:08.031154Z"}
+{"server_name": "google_calendar", "tools_count": 4, "tools": ["create_event", "list_events", "update_event", "delete_event"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:48:08.031209Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:48:08.031308Z"}
+{"server_name": "calculator", "tools_count": 1, "tools": ["calculate"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:48:08.031350Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:48:08.031392Z"}
+{"server_name": "knowledge_base", "tools_count": 5, "tools": ["SearchMemory", "ConnectMemories", "GetTopics", "CreateMemory", "GetMemoryById"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:48:08.031466Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:48:08.031508Z"}
+{"server_name": "tavily", "tools_count": 4, "tools": ["tavily-search", "tavily-extract", "tavily-crawl", "tavily-map"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:48:08.031541Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:48:08.031573Z"}
+{"tool_count": 14, "servers": {"google_calendar": 4, "calculator": 1, "knowledge_base": 5, "tavily": 4}, "event": "MCP tools initialized", "timestamp": "2025-06-04T20:48:08.033016Z"}
+{"tool_count": 14, "servers_count": 4, "setup_time": 0.001878976821899414, "event": "MCP tools setup completed", "timestamp": "2025-06-04T20:48:08.033081Z"}
+{"success": true, "components": {"azure_openai": true, "mcp_manager": true, "mcp_servers": true, "mcp_tools": true}, "event": "Agent initialization", "timestamp": "2025-06-04T20:48:08.033142Z"}
+{"initialization_time": 9.464216947555542, "event": "Agent initialization completed", "timestamp": "2025-06-04T20:48:08.033234Z"}
+{"parser_id": "main_intent_parser", "event": "Intent parser logger initialized", "timestamp": "2025-06-04T20:49:45.921130Z"}
+{"event": "Intent parser instance created", "timestamp": "2025-06-04T20:49:45.921646Z"}
+{"success": true, "azure_config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Intent parser initialization", "timestamp": "2025-06-04T20:49:45.921693Z"}
+{"agent_id": "main_agent", "event": "Agent logger initialized", "timestamp": "2025-06-04T20:49:45.921864Z"}
+{"event": "Agent instance created", "timestamp": "2025-06-04T20:49:45.922036Z"}
+{"model": "gpt-4o-mini-agustin", "setup_time": 0.01564502716064453, "config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Azure OpenAI configured successfully", "timestamp": "2025-06-04T20:49:45.937738Z"}
+{"event": "\ud83d\udcc4 Configuraci\u00f3n cargada desde: /Users/maxi/Documents/Udesa/NLP/EconomIAssist/src/agent/../../config/mcp_servers.yaml", "timestamp": "2025-06-04T20:49:45.945233Z"}
+{"server_id": "mcp_manager", "event": "MCP logger initialized", "timestamp": "2025-06-04T20:49:45.945587Z"}
+{"event": "MCP manager instance created", "timestamp": "2025-06-04T20:49:45.945810Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: google_calendar", "timestamp": "2025-06-04T20:49:45.945988Z"}
+{"event": "\u2705 Conectado al servidor MCP: google_calendar", "timestamp": "2025-06-04T20:49:48.192060Z"}
+{"server_name": "google_calendar", "success": true, "connection_time": 2.3484678268432617, "event": "MCP server connection", "timestamp": "2025-06-04T20:49:48.294377Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: calculator", "timestamp": "2025-06-04T20:49:48.294679Z"}
+{"event": "\u2705 Conectado al servidor MCP: calculator", "timestamp": "2025-06-04T20:49:48.699609Z"}
+{"server_name": "calculator", "success": true, "connection_time": 0.5109949111938477, "event": "MCP server connection", "timestamp": "2025-06-04T20:49:48.805520Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: knowledge_base", "timestamp": "2025-06-04T20:49:48.805805Z"}
+{"event": "\ud83d\udc33 Creando contenedor Docker: economyassist-kb", "timestamp": "2025-06-04T20:49:48.902768Z"}
+{"event": "\ud83d\udd04 Reiniciando contenedor economyassist-kb en modo interactivo...", "timestamp": "2025-06-04T20:49:48.926517Z"}
+{"event": "\u2705 Conectado al servidor MCP: knowledge_base", "timestamp": "2025-06-04T20:49:51.015628Z"}
+{"server_name": "knowledge_base", "success": true, "connection_time": 2.3394289016723633, "event": "MCP server connection", "timestamp": "2025-06-04T20:49:51.145229Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: tavily", "timestamp": "2025-06-04T20:49:51.146838Z"}
+{"event": "\u2705 Conectado al servidor MCP: tavily", "timestamp": "2025-06-04T20:49:53.286393Z"}
+{"server_name": "tavily", "success": true, "connection_time": 2.2434608936309814, "event": "MCP server connection", "timestamp": "2025-06-04T20:49:53.389477Z"}
+{"servers_attempted": 4, "servers_connected": 4, "server_results": {"google_calendar": true, "calculator": true, "knowledge_base": true, "tavily": true}, "event": "MCP auto connect", "timestamp": "2025-06-04T20:49:53.389700Z"}
+{"connected": "4/4", "connection_time": 7.443918943405151, "event": "MCP servers connection completed", "timestamp": "2025-06-04T20:49:53.389785Z"}
+{"server_name": "google_calendar", "tools_count": 4, "tools": ["create_event", "list_events", "update_event", "delete_event"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:49:53.389854Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:49:53.389964Z"}
+{"server_name": "calculator", "tools_count": 1, "tools": ["calculate"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:49:53.390050Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:49:53.390120Z"}
+{"server_name": "knowledge_base", "tools_count": 5, "tools": ["SearchMemory", "ConnectMemories", "GetTopics", "CreateMemory", "GetMemoryById"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:49:53.390196Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:49:53.390253Z"}
+{"server_name": "tavily", "tools_count": 4, "tools": ["tavily-search", "tavily-extract", "tavily-crawl", "tavily-map"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:49:53.390306Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:49:53.390360Z"}
+{"tool_count": 14, "servers": {"google_calendar": 4, "calculator": 1, "knowledge_base": 5, "tavily": 4}, "event": "MCP tools initialized", "timestamp": "2025-06-04T20:49:53.391247Z"}
+{"tool_count": 14, "servers_count": 4, "setup_time": 0.0014729499816894531, "event": "MCP tools setup completed", "timestamp": "2025-06-04T20:49:53.391322Z"}
+{"success": true, "components": {"azure_openai": true, "mcp_manager": true, "mcp_servers": true, "mcp_tools": true}, "event": "Agent initialization", "timestamp": "2025-06-04T20:49:53.391392Z"}
+{"initialization_time": 7.469367027282715, "event": "Agent initialization completed", "timestamp": "2025-06-04T20:49:53.391441Z"}
+{"parser_id": "main_intent_parser", "event": "Intent parser logger initialized", "timestamp": "2025-06-04T20:52:04.212852Z"}
+{"event": "Intent parser instance created", "timestamp": "2025-06-04T20:52:04.213399Z"}
+{"success": true, "azure_config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Intent parser initialization", "timestamp": "2025-06-04T20:52:04.213448Z"}
+{"agent_id": "main_agent", "event": "Agent logger initialized", "timestamp": "2025-06-04T20:52:04.213627Z"}
+{"event": "Agent instance created", "timestamp": "2025-06-04T20:52:04.213800Z"}
+{"model": "gpt-4o-mini-agustin", "setup_time": 0.01611804962158203, "config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Azure OpenAI configured successfully", "timestamp": "2025-06-04T20:52:04.229975Z"}
+{"event": "\ud83d\udcc4 Configuraci\u00f3n cargada desde: /Users/maxi/Documents/Udesa/NLP/EconomIAssist/src/agent/../../config/mcp_servers.yaml", "timestamp": "2025-06-04T20:52:04.237307Z"}
+{"server_id": "mcp_manager", "event": "MCP logger initialized", "timestamp": "2025-06-04T20:52:04.237547Z"}
+{"event": "MCP manager instance created", "timestamp": "2025-06-04T20:52:04.237709Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: google_sheets", "timestamp": "2025-06-04T20:52:04.237855Z"}
+{"event": "\u274c Error conectando a google_sheets: [Errno 2] No such file or directory: 'uvx'", "timestamp": "2025-06-04T20:52:04.242894Z"}
+{"server_name": "google_sheets", "success": false, "connection_time": 0.0052678585052490234, "event": "MCP server connection", "timestamp": "2025-06-04T20:52:04.243063Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: google_calendar", "timestamp": "2025-06-04T20:52:04.243241Z"}
+{"event": "\u2705 Conectado al servidor MCP: google_calendar", "timestamp": "2025-06-04T20:52:05.984877Z"}
+{"server_name": "google_calendar", "success": true, "connection_time": 1.8445498943328857, "event": "MCP server connection", "timestamp": "2025-06-04T20:52:06.087715Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: calculator", "timestamp": "2025-06-04T20:52:06.088126Z"}
+{"event": "\u2705 Conectado al servidor MCP: calculator", "timestamp": "2025-06-04T20:52:06.466235Z"}
+{"server_name": "calculator", "success": true, "connection_time": 0.4904899597167969, "event": "MCP server connection", "timestamp": "2025-06-04T20:52:06.578437Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: knowledge_base", "timestamp": "2025-06-04T20:52:06.578812Z"}
+{"event": "\ud83d\udc33 Creando contenedor Docker: economyassist-kb", "timestamp": "2025-06-04T20:52:06.611990Z"}
+{"event": "\ud83d\udd04 Reiniciando contenedor economyassist-kb en modo interactivo...", "timestamp": "2025-06-04T20:52:06.638807Z"}
+{"event": "\u2705 Conectado al servidor MCP: knowledge_base", "timestamp": "2025-06-04T20:52:08.730253Z"}
+{"server_name": "knowledge_base", "success": true, "connection_time": 2.280679941177368, "event": "MCP server connection", "timestamp": "2025-06-04T20:52:08.859466Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: tavily", "timestamp": "2025-06-04T20:52:08.861040Z"}
+{"event": "\u2705 Conectado al servidor MCP: tavily", "timestamp": "2025-06-04T20:52:12.487027Z"}
+{"server_name": "tavily", "success": true, "connection_time": 3.729652166366577, "event": "MCP server connection", "timestamp": "2025-06-04T20:52:12.589979Z"}
+{"servers_attempted": 5, "servers_connected": 4, "server_results": {"google_sheets": false, "google_calendar": true, "calculator": true, "knowledge_base": true, "tavily": true}, "event": "MCP auto connect", "timestamp": "2025-06-04T20:52:12.590148Z"}
+{"connected": "4/5", "connection_time": 8.352438926696777, "event": "MCP servers connection completed", "timestamp": "2025-06-04T20:52:12.590205Z"}
+{"server_name": "google_calendar", "tools_count": 4, "tools": ["create_event", "list_events", "update_event", "delete_event"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:52:12.590254Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:52:12.590327Z"}
+{"server_name": "calculator", "tools_count": 1, "tools": ["calculate"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:52:12.590370Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:52:12.590417Z"}
+{"server_name": "knowledge_base", "tools_count": 5, "tools": ["SearchMemory", "ConnectMemories", "GetTopics", "CreateMemory", "GetMemoryById"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:52:12.590467Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:52:12.590510Z"}
+{"server_name": "tavily", "tools_count": 4, "tools": ["tavily-search", "tavily-extract", "tavily-crawl", "tavily-map"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:52:12.590542Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:52:12.590574Z"}
+{"tool_count": 14, "servers": {"google_calendar": 4, "calculator": 1, "knowledge_base": 5, "tavily": 4}, "event": "MCP tools initialized", "timestamp": "2025-06-04T20:52:12.591301Z"}
+{"tool_count": 14, "servers_count": 4, "setup_time": 0.0011010169982910156, "event": "MCP tools setup completed", "timestamp": "2025-06-04T20:52:12.591351Z"}
+{"success": true, "components": {"azure_openai": true, "mcp_manager": true, "mcp_servers": true, "mcp_tools": true}, "event": "Agent initialization", "timestamp": "2025-06-04T20:52:12.591389Z"}
+{"initialization_time": 8.37758493423462, "event": "Agent initialization completed", "timestamp": "2025-06-04T20:52:12.591421Z"}
+{"parser_id": "main_intent_parser", "event": "Intent parser logger initialized", "timestamp": "2025-06-04T20:53:26.675025Z"}
+{"event": "Intent parser instance created", "timestamp": "2025-06-04T20:53:26.675369Z"}
+{"success": true, "azure_config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Intent parser initialization", "timestamp": "2025-06-04T20:53:26.675406Z"}
+{"agent_id": "main_agent", "event": "Agent logger initialized", "timestamp": "2025-06-04T20:53:26.675834Z"}
+{"event": "Agent instance created", "timestamp": "2025-06-04T20:53:26.675881Z"}
+{"model": "gpt-4o-mini-agustin", "setup_time": 0.015359878540039062, "config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Azure OpenAI configured successfully", "timestamp": "2025-06-04T20:53:26.691298Z"}
+{"event": "\ud83d\udcc4 Configuraci\u00f3n cargada desde: /Users/maxi/Documents/Udesa/NLP/EconomIAssist/src/agent/../../config/mcp_servers.yaml", "timestamp": "2025-06-04T20:53:26.698856Z"}
+{"server_id": "mcp_manager", "event": "MCP logger initialized", "timestamp": "2025-06-04T20:53:26.699182Z"}
+{"event": "MCP manager instance created", "timestamp": "2025-06-04T20:53:26.699238Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: google_sheets", "timestamp": "2025-06-04T20:53:26.699359Z"}
+{"event": "\u274c Error conectando a google_sheets: [Errno 2] No such file or directory: 'uvx'", "timestamp": "2025-06-04T20:53:26.702743Z"}
+{"server_name": "google_sheets", "success": false, "connection_time": 0.003618001937866211, "event": "MCP server connection", "timestamp": "2025-06-04T20:53:26.702922Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: google_calendar", "timestamp": "2025-06-04T20:53:26.703115Z"}
+{"event": "\u2705 Conectado al servidor MCP: google_calendar", "timestamp": "2025-06-04T20:53:29.320075Z"}
+{"server_name": "google_calendar", "success": true, "connection_time": 2.719403028488159, "event": "MCP server connection", "timestamp": "2025-06-04T20:53:29.422411Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: calculator", "timestamp": "2025-06-04T20:53:29.422735Z"}
+{"event": "\u2705 Conectado al servidor MCP: calculator", "timestamp": "2025-06-04T20:53:29.739387Z"}
+{"server_name": "calculator", "success": true, "connection_time": 0.4240880012512207, "event": "MCP server connection", "timestamp": "2025-06-04T20:53:29.846677Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: knowledge_base", "timestamp": "2025-06-04T20:53:29.847048Z"}
+{"event": "\ud83d\udc33 Creando contenedor Docker: economyassist-kb", "timestamp": "2025-06-04T20:53:29.875506Z"}
+{"event": "\ud83d\udd04 Reiniciando contenedor economyassist-kb en modo interactivo...", "timestamp": "2025-06-04T20:53:29.903490Z"}
+{"event": "\u2705 Conectado al servidor MCP: knowledge_base", "timestamp": "2025-06-04T20:53:31.997490Z"}
+{"server_name": "knowledge_base", "success": true, "connection_time": 2.279265880584717, "event": "MCP server connection", "timestamp": "2025-06-04T20:53:32.126260Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: tavily", "timestamp": "2025-06-04T20:53:32.127163Z"}
+{"event": "\u2705 Conectado al servidor MCP: tavily", "timestamp": "2025-06-04T20:53:32.931502Z"}
+{"server_name": "tavily", "success": true, "connection_time": 0.90714430809021, "event": "MCP server connection", "timestamp": "2025-06-04T20:53:33.034003Z"}
+{"servers_attempted": 5, "servers_connected": 4, "server_results": {"google_sheets": false, "google_calendar": true, "calculator": true, "knowledge_base": true, "tavily": true}, "event": "MCP auto connect", "timestamp": "2025-06-04T20:53:33.034186Z"}
+{"connected": "4/5", "connection_time": 6.334968090057373, "event": "MCP servers connection completed", "timestamp": "2025-06-04T20:53:33.034245Z"}
+{"server_name": "google_calendar", "tools_count": 4, "tools": ["create_event", "list_events", "update_event", "delete_event"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:53:33.034296Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:53:33.034379Z"}
+{"server_name": "calculator", "tools_count": 1, "tools": ["calculate"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:53:33.034432Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:53:33.034472Z"}
+{"server_name": "knowledge_base", "tools_count": 5, "tools": ["SearchMemory", "ConnectMemories", "GetTopics", "CreateMemory", "GetMemoryById"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:53:33.034512Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:53:33.034548Z"}
+{"server_name": "tavily", "tools_count": 4, "tools": ["tavily-search", "tavily-extract", "tavily-crawl", "tavily-map"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:53:33.034580Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:53:33.034613Z"}
+{"tool_count": 14, "servers": {"google_calendar": 4, "calculator": 1, "knowledge_base": 5, "tavily": 4}, "event": "MCP tools initialized", "timestamp": "2025-06-04T20:53:33.035922Z"}
+{"tool_count": 14, "servers_count": 4, "setup_time": 0.001683950424194336, "event": "MCP tools setup completed", "timestamp": "2025-06-04T20:53:33.035974Z"}
+{"success": true, "components": {"azure_openai": true, "mcp_manager": true, "mcp_servers": true, "mcp_tools": true}, "event": "Agent initialization", "timestamp": "2025-06-04T20:53:33.036027Z"}
+{"initialization_time": 6.360142946243286, "event": "Agent initialization completed", "timestamp": "2025-06-04T20:53:33.036057Z"}
+{"parser_id": "main_intent_parser", "event": "Intent parser logger initialized", "timestamp": "2025-06-04T20:55:27.587950Z"}
+{"event": "Intent parser instance created", "timestamp": "2025-06-04T20:55:27.588764Z"}
+{"success": true, "azure_config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Intent parser initialization", "timestamp": "2025-06-04T20:55:27.588805Z"}
+{"agent_id": "main_agent", "event": "Agent logger initialized", "timestamp": "2025-06-04T20:55:27.588966Z"}
+{"event": "Agent instance created", "timestamp": "2025-06-04T20:55:27.589137Z"}
+{"model": "gpt-4o-mini-agustin", "setup_time": 0.015489816665649414, "config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Azure OpenAI configured successfully", "timestamp": "2025-06-04T20:55:27.604681Z"}
+{"event": "\ud83d\udcc4 Configuraci\u00f3n cargada desde: /Users/maxi/Documents/Udesa/NLP/EconomIAssist/src/agent/../../config/mcp_servers.yaml", "timestamp": "2025-06-04T20:55:27.612236Z"}
+{"server_id": "mcp_manager", "event": "MCP logger initialized", "timestamp": "2025-06-04T20:55:27.612599Z"}
+{"event": "MCP manager instance created", "timestamp": "2025-06-04T20:55:27.612791Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: google_sheets", "timestamp": "2025-06-04T20:55:27.612965Z"}
+{"event": "\u274c Error conectando a google_sheets: [Errno 2] No such file or directory: 'uvx'", "timestamp": "2025-06-04T20:55:27.616097Z"}
+{"server_name": "google_sheets", "success": false, "connection_time": 0.0033769607543945312, "event": "MCP server connection", "timestamp": "2025-06-04T20:55:27.616261Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: google_calendar", "timestamp": "2025-06-04T20:55:27.616438Z"}
+{"event": "\u2705 Conectado al servidor MCP: google_calendar", "timestamp": "2025-06-04T20:55:29.071059Z"}
+{"server_name": "google_calendar", "success": true, "connection_time": 1.557039737701416, "event": "MCP server connection", "timestamp": "2025-06-04T20:55:29.173391Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: calculator", "timestamp": "2025-06-04T20:55:29.173711Z"}
+{"event": "\u2705 Conectado al servidor MCP: calculator", "timestamp": "2025-06-04T20:55:29.565198Z"}
+{"server_name": "calculator", "success": true, "connection_time": 0.49872398376464844, "event": "MCP server connection", "timestamp": "2025-06-04T20:55:29.672270Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: knowledge_base", "timestamp": "2025-06-04T20:55:29.672677Z"}
+{"event": "\ud83d\udc33 Creando contenedor Docker: economyassist-kb", "timestamp": "2025-06-04T20:55:29.772882Z"}
+{"event": "\ud83d\udd04 Reiniciando contenedor economyassist-kb en modo interactivo...", "timestamp": "2025-06-04T20:55:29.805085Z"}
+{"event": "\u2705 Conectado al servidor MCP: knowledge_base", "timestamp": "2025-06-04T20:55:31.893199Z"}
+{"server_name": "knowledge_base", "success": true, "connection_time": 2.3520560264587402, "event": "MCP server connection", "timestamp": "2025-06-04T20:55:32.024556Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: tavily", "timestamp": "2025-06-04T20:55:32.025005Z"}
+{"event": "\u2705 Conectado al servidor MCP: tavily", "timestamp": "2025-06-04T20:55:32.626252Z"}
+{"server_name": "tavily", "success": true, "connection_time": 0.7039511203765869, "event": "MCP server connection", "timestamp": "2025-06-04T20:55:32.728734Z"}
+{"servers_attempted": 5, "servers_connected": 4, "server_results": {"google_sheets": false, "google_calendar": true, "calculator": true, "knowledge_base": true, "tavily": true}, "event": "MCP auto connect", "timestamp": "2025-06-04T20:55:32.728946Z"}
+{"connected": "4/5", "connection_time": 5.116194009780884, "event": "MCP servers connection completed", "timestamp": "2025-06-04T20:55:32.729036Z"}
+{"server_name": "google_calendar", "tools_count": 4, "tools": ["create_event", "list_events", "update_event", "delete_event"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:55:32.729109Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:55:32.729234Z"}
+{"server_name": "calculator", "tools_count": 1, "tools": ["calculate"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:55:32.729297Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:55:32.729352Z"}
+{"server_name": "knowledge_base", "tools_count": 5, "tools": ["SearchMemory", "ConnectMemories", "GetTopics", "CreateMemory", "GetMemoryById"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:55:32.729397Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:55:32.729443Z"}
+{"server_name": "tavily", "tools_count": 4, "tools": ["tavily-search", "tavily-extract", "tavily-crawl", "tavily-map"], "event": "MCP tool discovery", "timestamp": "2025-06-04T20:55:32.729488Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T20:55:32.729535Z"}
+{"tool_count": 14, "servers": {"google_calendar": 4, "calculator": 1, "knowledge_base": 5, "tavily": 4}, "event": "MCP tools initialized", "timestamp": "2025-06-04T20:55:32.731504Z"}
+{"tool_count": 14, "servers_count": 4, "setup_time": 0.0024580955505371094, "event": "MCP tools setup completed", "timestamp": "2025-06-04T20:55:32.731560Z"}
+{"success": true, "components": {"azure_openai": true, "mcp_manager": true, "mcp_servers": true, "mcp_tools": true}, "event": "Agent initialization", "timestamp": "2025-06-04T20:55:32.731615Z"}
+{"initialization_time": 5.142483949661255, "event": "Agent initialization completed", "timestamp": "2025-06-04T20:55:32.731655Z"}
+{"parser_id": "main_intent_parser", "event": "Intent parser logger initialized", "timestamp": "2025-06-04T20:59:48.943184Z"}
+{"event": "Intent parser instance created", "timestamp": "2025-06-04T20:59:48.943771Z"}
+{"success": true, "azure_config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Intent parser initialization", "timestamp": "2025-06-04T20:59:48.943808Z"}
+{"agent_id": "main_agent", "event": "Agent logger initialized", "timestamp": "2025-06-04T20:59:48.943966Z"}
+{"event": "Agent instance created", "timestamp": "2025-06-04T20:59:48.944151Z"}
+{"model": "gpt-4o-mini-agustin", "setup_time": 0.015480756759643555, "config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Azure OpenAI configured successfully", "timestamp": "2025-06-04T20:59:48.959702Z"}
+{"event": "\ud83d\udcc4 Configuraci\u00f3n cargada desde: /Users/maxi/Documents/Udesa/NLP/EconomIAssist/src/agent/../../config/mcp_servers.yaml", "timestamp": "2025-06-04T20:59:48.967614Z"}
+{"server_id": "mcp_manager", "event": "MCP logger initialized", "timestamp": "2025-06-04T20:59:48.967947Z"}
+{"event": "MCP manager instance created", "timestamp": "2025-06-04T20:59:48.968138Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: google_sheets", "timestamp": "2025-06-04T20:59:48.968279Z"}
+{"event": "Timeout leyendo respuesta del servidor", "timestamp": "2025-06-04T20:59:58.975402Z"}
+{"event": "\u274c Error conectando a google_sheets: None", "timestamp": "2025-06-04T20:59:58.978915Z"}
+{"server_name": "google_sheets", "success": false, "connection_time": 10.010948181152344, "event": "MCP server connection", "timestamp": "2025-06-04T20:59:58.979183Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: google_calendar", "timestamp": "2025-06-04T20:59:58.979808Z"}
+{"event": "\u2705 Conectado al servidor MCP: google_calendar", "timestamp": "2025-06-04T21:00:01.808480Z"}
+{"server_name": "google_calendar", "success": true, "connection_time": 2.9315919876098633, "event": "MCP server connection", "timestamp": "2025-06-04T21:00:01.911004Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: calculator", "timestamp": "2025-06-04T21:00:01.911352Z"}
+{"event": "\u2705 Conectado al servidor MCP: calculator", "timestamp": "2025-06-04T21:00:02.384193Z"}
+{"server_name": "calculator", "success": true, "connection_time": 0.5795347690582275, "event": "MCP server connection", "timestamp": "2025-06-04T21:00:02.490730Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: knowledge_base", "timestamp": "2025-06-04T21:00:02.491044Z"}
+{"event": "\ud83d\udc33 Creando contenedor Docker: economyassist-kb", "timestamp": "2025-06-04T21:00:02.607252Z"}
+{"event": "\ud83d\udd04 Reiniciando contenedor economyassist-kb en modo interactivo...", "timestamp": "2025-06-04T21:00:02.637579Z"}
+{"event": "\u2705 Conectado al servidor MCP: knowledge_base", "timestamp": "2025-06-04T21:00:04.725395Z"}
+{"server_name": "knowledge_base", "success": true, "connection_time": 2.356239080429077, "event": "MCP server connection", "timestamp": "2025-06-04T21:00:04.847213Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: tavily", "timestamp": "2025-06-04T21:00:04.847909Z"}
+{"event": "\u2705 Conectado al servidor MCP: tavily", "timestamp": "2025-06-04T21:00:05.650407Z"}
+{"server_name": "tavily", "success": true, "connection_time": 0.9056971073150635, "event": "MCP server connection", "timestamp": "2025-06-04T21:00:05.753303Z"}
+{"servers_attempted": 5, "servers_connected": 4, "server_results": {"google_sheets": false, "google_calendar": true, "calculator": true, "knowledge_base": true, "tavily": true}, "event": "MCP auto connect", "timestamp": "2025-06-04T21:00:05.753473Z"}
+{"connected": "4/5", "connection_time": 16.785377025604248, "event": "MCP servers connection completed", "timestamp": "2025-06-04T21:00:05.753553Z"}
+{"server_name": "google_calendar", "tools_count": 4, "tools": ["create_event", "list_events", "update_event", "delete_event"], "event": "MCP tool discovery", "timestamp": "2025-06-04T21:00:05.753624Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T21:00:05.753725Z"}
+{"server_name": "calculator", "tools_count": 1, "tools": ["calculate"], "event": "MCP tool discovery", "timestamp": "2025-06-04T21:00:05.753793Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T21:00:05.753865Z"}
+{"server_name": "knowledge_base", "tools_count": 5, "tools": ["SearchMemory", "ConnectMemories", "GetTopics", "CreateMemory", "GetMemoryById"], "event": "MCP tool discovery", "timestamp": "2025-06-04T21:00:05.753916Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T21:00:05.753965Z"}
+{"server_name": "tavily", "tools_count": 4, "tools": ["tavily-search", "tavily-extract", "tavily-crawl", "tavily-map"], "event": "MCP tool discovery", "timestamp": "2025-06-04T21:00:05.754010Z"}
+{"total_servers": 4, "connected_servers": 4, "total_tools": 14, "capabilities": ["calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T21:00:05.754059Z"}
+{"tool_count": 14, "servers": {"google_calendar": 4, "calculator": 1, "knowledge_base": 5, "tavily": 4}, "event": "MCP tools initialized", "timestamp": "2025-06-04T21:00:05.754583Z"}
+{"tool_count": 14, "servers_count": 4, "setup_time": 0.0010209083557128906, "event": "MCP tools setup completed", "timestamp": "2025-06-04T21:00:05.754639Z"}
+{"success": true, "components": {"azure_openai": true, "mcp_manager": true, "mcp_servers": true, "mcp_tools": true}, "event": "Agent initialization", "timestamp": "2025-06-04T21:00:05.754696Z"}
+{"initialization_time": 16.810542821884155, "event": "Agent initialization completed", "timestamp": "2025-06-04T21:00:05.754743Z"}
+{"parser_id": "main_intent_parser", "event": "Intent parser logger initialized", "timestamp": "2025-06-04T21:01:58.067991Z"}
+{"event": "Intent parser instance created", "timestamp": "2025-06-04T21:01:58.069201Z"}
+{"success": true, "azure_config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Intent parser initialization", "timestamp": "2025-06-04T21:01:58.069272Z"}
+{"agent_id": "main_agent", "event": "Agent logger initialized", "timestamp": "2025-06-04T21:01:58.069550Z"}
+{"event": "Agent instance created", "timestamp": "2025-06-04T21:01:58.069771Z"}
+{"model": "gpt-4o-mini-agustin", "setup_time": 0.02131199836730957, "config": {"api_base": "https://manza-maeg3rtp-eastus2.cognitiveservices.azure.com/", "api_version": "2024-12-01-preview", "deployment": "gpt-4o-mini-agustin", "api_key": "[REDACTED]"}, "event": "Azure OpenAI configured successfully", "timestamp": "2025-06-04T21:01:58.091161Z"}
+{"event": "\ud83d\udcc4 Configuraci\u00f3n cargada desde: /Users/maxi/Documents/Udesa/NLP/EconomIAssist/src/agent/../../config/mcp_servers.yaml", "timestamp": "2025-06-04T21:01:58.104276Z"}
+{"server_id": "mcp_manager", "event": "MCP logger initialized", "timestamp": "2025-06-04T21:01:58.104591Z"}
+{"event": "MCP manager instance created", "timestamp": "2025-06-04T21:01:58.104826Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: google_sheets", "timestamp": "2025-06-04T21:01:58.104992Z"}
+{"event": "\u2705 Conectado al servidor MCP: google_sheets", "timestamp": "2025-06-04T21:02:05.975274Z"}
+{"server_name": "google_sheets", "success": true, "connection_time": 7.9755988121032715, "event": "MCP server connection", "timestamp": "2025-06-04T21:02:06.080559Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: google_calendar", "timestamp": "2025-06-04T21:02:06.081113Z"}
+{"event": "\u2705 Conectado al servidor MCP: google_calendar", "timestamp": "2025-06-04T21:02:10.807244Z"}
+{"server_name": "google_calendar", "success": true, "connection_time": 4.829085826873779, "event": "MCP server connection", "timestamp": "2025-06-04T21:02:10.909925Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: calculator", "timestamp": "2025-06-04T21:02:10.910274Z"}
+{"event": "\u2705 Conectado al servidor MCP: calculator", "timestamp": "2025-06-04T21:02:11.480915Z"}
+{"server_name": "calculator", "success": true, "connection_time": 0.6797308921813965, "event": "MCP server connection", "timestamp": "2025-06-04T21:02:11.589885Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: knowledge_base", "timestamp": "2025-06-04T21:02:11.590315Z"}
+{"event": "\ud83d\udc33 Creando contenedor Docker: economyassist-kb", "timestamp": "2025-06-04T21:02:11.696051Z"}
+{"event": "\ud83d\udd04 Reiniciando contenedor economyassist-kb en modo interactivo...", "timestamp": "2025-06-04T21:02:11.723992Z"}
+{"event": "\u2705 Conectado al servidor MCP: knowledge_base", "timestamp": "2025-06-04T21:02:13.817566Z"}
+{"server_name": "knowledge_base", "success": true, "connection_time": 2.3590362071990967, "event": "MCP server connection", "timestamp": "2025-06-04T21:02:13.949261Z"}
+{"event": "\ud83d\udd0c Conectando a servidor MCP: tavily", "timestamp": "2025-06-04T21:02:13.950822Z"}
+{"event": "\u2705 Conectado al servidor MCP: tavily", "timestamp": "2025-06-04T21:02:16.910101Z"}
+{"server_name": "tavily", "success": true, "connection_time": 3.063607931137085, "event": "MCP server connection", "timestamp": "2025-06-04T21:02:17.013655Z"}
+{"servers_attempted": 5, "servers_connected": 5, "server_results": {"google_sheets": true, "google_calendar": true, "calculator": true, "knowledge_base": true, "tavily": true}, "event": "MCP auto connect", "timestamp": "2025-06-04T21:02:17.013876Z"}
+{"connected": "5/5", "connection_time": 18.909071922302246, "event": "MCP servers connection completed", "timestamp": "2025-06-04T21:02:17.013967Z"}
+{"server_name": "google_sheets", "tools_count": 15, "tools": ["get_sheet_data", "get_sheet_formulas", "update_cells", "batch_update_cells", "add_rows", "add_columns", "list_sheets", "copy_sheet", "rename_sheet", "get_multiple_sheet_data", "get_multiple_spreadsheet_summary", "create_spreadsheet", "create_sheet", "list_spreadsheets", "share_spreadsheet"], "event": "MCP tool discovery", "timestamp": "2025-06-04T21:02:17.014060Z"}
+{"total_servers": 5, "connected_servers": 5, "total_tools": 29, "capabilities": ["spreadsheet_management", "sheet_data_reading", "sheet_data_writing", "sheet_creation", "batch_operations", "formula_reading", "spreadsheet_sharing", "drive_integration", "calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T21:02:17.014214Z"}
+{"server_name": "google_calendar", "tools_count": 4, "tools": ["create_event", "list_events", "update_event", "delete_event"], "event": "MCP tool discovery", "timestamp": "2025-06-04T21:02:17.014293Z"}
+{"total_servers": 5, "connected_servers": 5, "total_tools": 29, "capabilities": ["spreadsheet_management", "sheet_data_reading", "sheet_data_writing", "sheet_creation", "batch_operations", "formula_reading", "spreadsheet_sharing", "drive_integration", "calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T21:02:17.014364Z"}
+{"server_name": "calculator", "tools_count": 1, "tools": ["calculate"], "event": "MCP tool discovery", "timestamp": "2025-06-04T21:02:17.014438Z"}
+{"total_servers": 5, "connected_servers": 5, "total_tools": 29, "capabilities": ["spreadsheet_management", "sheet_data_reading", "sheet_data_writing", "sheet_creation", "batch_operations", "formula_reading", "spreadsheet_sharing", "drive_integration", "calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T21:02:17.014494Z"}
+{"server_name": "knowledge_base", "tools_count": 5, "tools": ["SearchMemory", "ConnectMemories", "GetTopics", "CreateMemory", "GetMemoryById"], "event": "MCP tool discovery", "timestamp": "2025-06-04T21:02:17.014545Z"}
+{"total_servers": 5, "connected_servers": 5, "total_tools": 29, "capabilities": ["spreadsheet_management", "sheet_data_reading", "sheet_data_writing", "sheet_creation", "batch_operations", "formula_reading", "spreadsheet_sharing", "drive_integration", "calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T21:02:17.014600Z"}
+{"server_name": "tavily", "tools_count": 4, "tools": ["tavily-search", "tavily-extract", "tavily-crawl", "tavily-map"], "event": "MCP tool discovery", "timestamp": "2025-06-04T21:02:17.014649Z"}
+{"total_servers": 5, "connected_servers": 5, "total_tools": 29, "capabilities": ["spreadsheet_management", "sheet_data_reading", "sheet_data_writing", "sheet_creation", "batch_operations", "formula_reading", "spreadsheet_sharing", "drive_integration", "calendar_management", "event_creation", "event_listing", "schedule_checking", "availability_search", "mathematical_calculations", "arithmetic_operations", "expression_evaluation", "financial_calculations", "user_memory", "conversation_history", "context_storage", "memory_search", "accounting_records", "financial_tracking", "web_search", "news_search", "real_time_data"], "event": "MCP connection stats", "timestamp": "2025-06-04T21:02:17.014702Z"}
+{"tool_count": 29, "servers": {"google_sheets": 15, "google_calendar": 4, "calculator": 1, "knowledge_base": 5, "tavily": 4}, "event": "MCP tools initialized", "timestamp": "2025-06-04T21:02:17.016180Z"}
+{"tool_count": 29, "servers_count": 5, "setup_time": 0.002228975296020508, "event": "MCP tools setup completed", "timestamp": "2025-06-04T21:02:17.016277Z"}
+{"success": true, "components": {"azure_openai": true, "mcp_manager": true, "mcp_servers": true, "mcp_tools": true}, "event": "Agent initialization", "timestamp": "2025-06-04T21:02:17.016362Z"}
+{"initialization_time": 18.946589946746826, "event": "Agent initialization completed", "timestamp": "2025-06-04T21:02:17.016417Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 2.0971567630767822, "event": "Intent model call", "timestamp": "2025-06-04T21:03:40.507777Z"}
+{"count": 4, "user_input_preview": "busca el listado de archivos en drive, toma el id ...", "event": "Multiple intents detected", "timestamp": "2025-06-04T21:03:40.510163Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 2.2447409629821777, "event": "Intent model call", "timestamp": "2025-06-04T21:03:42.755081Z"}
+{"user_input_preview": "busca el listado de archivos en drive, toma el id ...", "intents_count": 5, "intents": ["busca el listado de archivos en drive", "toma el id del archivo economiassist-tables", "lista las hojas", "toma el id de la hoja", "agrega una fila en esa hoja con las siguientes tres columnas: 'Oli', 'se', 'la', 'engulle'"], "event": "Multiple intents detected", "timestamp": "2025-06-04T21:03:42.755615Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 0.9204230308532715, "event": "Intent model call", "timestamp": "2025-06-04T21:03:43.676324Z"}
+{"intent": "other", "confidence": 0.9, "event": "Intent confidence", "timestamp": "2025-06-04T21:03:43.676879Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 0.7940080165863037, "event": "Intent model call", "timestamp": "2025-06-04T21:03:44.471182Z"}
+{"intent": "other", "confidence": 0.9, "event": "Intent confidence", "timestamp": "2025-06-04T21:03:44.471551Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 0.7379179000854492, "event": "Intent model call", "timestamp": "2025-06-04T21:03:45.209573Z"}
+{"intent": "other", "confidence": 0.9, "event": "Intent confidence", "timestamp": "2025-06-04T21:03:45.209949Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 0.6163578033447266, "event": "Intent model call", "timestamp": "2025-06-04T21:03:45.826476Z"}
+{"intent": "other", "confidence": 0.9, "event": "Intent confidence", "timestamp": "2025-06-04T21:03:45.826937Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 0.8198540210723877, "event": "Intent model call", "timestamp": "2025-06-04T21:03:46.647203Z"}
+{"intent": "add_event", "confidence": 0.9, "event": "Intent confidence", "timestamp": "2025-06-04T21:03:46.647702Z"}
+{"user_input_length": 216, "user_input_preview": "busca el listado de archivos en drive, toma el id ...", "detected_intents": {"intents": [{"intent": "other", "value": "busca el listado de archivos en drive"}, {"intent": "other", "value": "toma el id del archivo economiassist-tables"}, {"intent": "other", "value": "lista las hojas"}, {"intent": "other", "value": "toma el id de la hoja"}, {"intent": "add_event", "value": "agrega una fila en esa hoja con las siguientes tres columnas: 'Oli', 'se', 'la', 'engulle'"}]}, "processing_time": 8.237335681915283, "event": "Intent detection", "timestamp": "2025-06-04T21:03:46.647825Z"}
+{"event": "\ud83d\udd0d Intenciones detectadas: [('other', 'busca el listado de archivos en drive'), ('other', 'toma el id del archivo economiassist-tables'), ('other', 'lista las hojas'), ('other', 'toma el id de la hoja'), ('add_event', \"agrega una fila en esa hoja con las siguientes tres columnas: 'Oli', 'se', 'la', 'engulle'\")]", "timestamp": "2025-06-04T21:03:46.648087Z"}
+{"user_input": "busca el listado de archivos en drive, toma el id del archivo economiassist-tables y lista las hojas, toma el id de la hoja y agrega una fila en esa hoja con las siguientes tres columnas: \"Oli\", \"se\", \"la\", \"engulle\"", "session_id": null, "event": "User input received", "timestamp": "2025-06-04T21:03:46.649515Z"}
+{"model": "gpt-4o-mini-agustin", "token_count": 0, "success": true, "event": "OpenAI API call", "timestamp": "2025-06-04T21:03:46.649628Z"}
+{"function": "google_sheets_list_spreadsheets", "args": {}, "event": "Function call detected", "timestamp": "2025-06-04T21:03:48.477917Z"}
+{"server_name": "google_sheets", "tool_name": "list_spreadsheets", "arguments": {}, "success": true, "response_size": 157, "execution_time": 0.8326709270477295, "event": "MCP tool call", "timestamp": "2025-06-04T21:03:49.311041Z"}
+{"function_name": "google_sheets_list_spreadsheets", "success": true, "execution_time": 0.8341081142425537, "event": "Function call", "timestamp": "2025-06-04T21:03:49.312397Z"}
+{"model": "gpt-4o-mini-agustin", "token_count": 0, "success": true, "event": "OpenAI API call", "timestamp": "2025-06-04T21:03:49.313433Z"}
+{"response_length": 158, "response_preview": "He encontrado el archivo \"EconomIAssist-tables\" con el ID: `1buxcqW3Ujg-YZLbUzBV4FoUFZyzPQIb3WmKDYno...", "session_id": null, "event": "Agent response sent", "timestamp": "2025-06-04T21:03:50.311959Z"}
+{"total_processing_time": 3.662799835205078, "response_length": 158, "event": "Response generated successfully", "timestamp": "2025-06-04T21:03:50.312315Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 1.102658748626709, "event": "Intent model call", "timestamp": "2025-06-04T21:03:57.295053Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 0.6808357238769531, "event": "Intent model call", "timestamp": "2025-06-04T21:03:57.976471Z"}
+{"intent": "other", "confidence": 0.9, "event": "Intent confidence", "timestamp": "2025-06-04T21:03:57.976998Z"}
+{"user_input_length": 4, "user_input_preview": "dale", "detected_intents": {"intents": [{"intent": "other", "value": "dale"}]}, "processing_time": 1.7847728729248047, "event": "Intent detection", "timestamp": "2025-06-04T21:03:57.977116Z"}
+{"event": "\ud83d\udd0d Intenciones detectadas: [('other', 'dale')]", "timestamp": "2025-06-04T21:03:57.977250Z"}
+{"user_input": "dale", "session_id": null, "event": "User input received", "timestamp": "2025-06-04T21:03:57.977315Z"}
+{"model": "gpt-4o-mini-agustin", "token_count": 0, "success": true, "event": "OpenAI API call", "timestamp": "2025-06-04T21:03:57.977367Z"}
+{"function": "google_sheets_list_sheets", "args": {"spreadsheet_id": "1buxcqW3Ujg-YZLbUzBV4FoUFZyzPQIb3WmKDYno7gQA"}, "event": "Function call detected", "timestamp": "2025-06-04T21:04:00.036796Z"}
+{"server_name": "google_sheets", "tool_name": "list_sheets", "arguments": {"spreadsheet_id": "1buxcqW3Ujg-YZLbUzBV4FoUFZyzPQIb3WmKDYno7gQA"}, "success": true, "response_size": 65, "execution_time": 1.302260160446167, "event": "MCP tool call", "timestamp": "2025-06-04T21:04:01.339759Z"}
+{"function_name": "google_sheets_list_sheets", "success": true, "execution_time": 1.302978277206421, "event": "Function call", "timestamp": "2025-06-04T21:04:01.340404Z"}
+{"model": "gpt-4o-mini-agustin", "token_count": 0, "success": true, "event": "OpenAI API call", "timestamp": "2025-06-04T21:04:01.340728Z"}
+{"response_length": 174, "response_preview": "He encontrado que la hoja en el archivo \"EconomIAssist-tables\" se llama \"pepe\". Ahora proceder\u00e9 a ag...", "session_id": null, "event": "Agent response sent", "timestamp": "2025-06-04T21:04:02.185508Z"}
+{"total_processing_time": 4.2085487842559814, "response_length": 174, "event": "Response generated successfully", "timestamp": "2025-06-04T21:04:02.185875Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 1.2311933040618896, "event": "Intent model call", "timestamp": "2025-06-04T21:04:19.979661Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 0.6410231590270996, "event": "Intent model call", "timestamp": "2025-06-04T21:04:20.621128Z"}
+{"intent": "other", "confidence": 0.9, "event": "Intent confidence", "timestamp": "2025-06-04T21:04:20.621629Z"}
+{"user_input_length": 24, "user_input_preview": "dale agregalo en la hoja", "detected_intents": {"intents": [{"intent": "other", "value": "dale agregalo en la hoja"}]}, "processing_time": 1.8733570575714111, "event": "Intent detection", "timestamp": "2025-06-04T21:04:20.621775Z"}
+{"event": "\ud83d\udd0d Intenciones detectadas: [('other', 'dale agregalo en la hoja')]", "timestamp": "2025-06-04T21:04:20.621987Z"}
+{"user_input": "dale agregalo en la hoja", "session_id": null, "event": "User input received", "timestamp": "2025-06-04T21:04:20.622130Z"}
+{"model": "gpt-4o-mini-agustin", "token_count": 0, "success": true, "event": "OpenAI API call", "timestamp": "2025-06-04T21:04:20.622235Z"}
+{"function": "google_sheets_add_rows", "args": {"spreadsheet_id": "1buxcqW3Ujg-YZLbUzBV4FoUFZyzPQIb3WmKDYno7gQA", "sheet": "pepe", "count": 1}, "event": "Function call detected", "timestamp": "2025-06-04T21:04:23.103815Z"}
+{"server_name": "google_sheets", "tool_name": "add_rows", "arguments": {"spreadsheet_id": "1buxcqW3Ujg-YZLbUzBV4FoUFZyzPQIb3WmKDYno7gQA", "sheet": "pepe", "count": 1}, "success": true, "response_size": 162, "execution_time": 0.5888791084289551, "event": "MCP tool call", "timestamp": "2025-06-04T21:04:23.693197Z"}
+{"function_name": "google_sheets_add_rows", "success": true, "execution_time": 0.5893890857696533, "event": "Function call", "timestamp": "2025-06-04T21:04:23.693632Z"}
+{"model": "gpt-4o-mini-agustin", "token_count": 0, "success": true, "event": "OpenAI API call", "timestamp": "2025-06-04T21:04:23.693832Z"}
+{"response_length": 124, "response_preview": "He agregado una fila en la hoja \"pepe\". Ahora proceder\u00e9 a actualizar esa fila con las columnas \"Oli\"...", "session_id": null, "event": "Agent response sent", "timestamp": "2025-06-04T21:04:24.491071Z"}
+{"total_processing_time": 3.8693320751190186, "response_length": 124, "event": "Response generated successfully", "timestamp": "2025-06-04T21:04:24.491462Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 1.2680599689483643, "event": "Intent model call", "timestamp": "2025-06-04T21:06:20.625666Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 0.717519998550415, "event": "Intent model call", "timestamp": "2025-06-04T21:06:21.345834Z"}
+{"intent": "other", "confidence": 0.9, "event": "Intent confidence", "timestamp": "2025-06-04T21:06:21.347551Z"}
+{"user_input_length": 97, "user_input_preview": "veo que estas pasando mal el json, donde dice coun...", "detected_intents": {"intents": [{"intent": "other", "value": "veo que estas pasando mal el json, donde dice count deberia decir 'data': (las filas que te pedi)"}]}, "processing_time": 1.9903287887573242, "event": "Intent detection", "timestamp": "2025-06-04T21:06:21.347899Z"}
+{"event": "\ud83d\udd0d Intenciones detectadas: [('other', \"veo que estas pasando mal el json, donde dice count deberia decir 'data': (las filas que te pedi)\")]", "timestamp": "2025-06-04T21:06:21.348130Z"}
+{"user_input": "veo que estas pasando mal el json, donde dice count deberia decir 'data': (las filas que te pedi)", "session_id": null, "event": "User input received", "timestamp": "2025-06-04T21:06:21.348268Z"}
+{"model": "gpt-4o-mini-agustin", "token_count": 0, "success": true, "event": "OpenAI API call", "timestamp": "2025-06-04T21:06:21.348383Z"}
+{"function": "google_sheets_add_rows", "args": {"spreadsheet_id": "1buxcqW3Ujg-YZLbUzBV4FoUFZyzPQIb3WmKDYno7gQA", "sheet": "pepe", "count": 1}, "event": "Function call detected", "timestamp": "2025-06-04T21:06:23.305467Z"}
+{"server_name": "google_sheets", "tool_name": "add_rows", "arguments": {"spreadsheet_id": "1buxcqW3Ujg-YZLbUzBV4FoUFZyzPQIb3WmKDYno7gQA", "sheet": "pepe", "count": 1}, "success": true, "response_size": 162, "execution_time": 0.6446437835693359, "event": "MCP tool call", "timestamp": "2025-06-04T21:06:23.950392Z"}
+{"function_name": "google_sheets_add_rows", "success": true, "execution_time": 0.6452140808105469, "event": "Function call", "timestamp": "2025-06-04T21:06:23.950887Z"}
+{"model": "gpt-4o-mini-agustin", "token_count": 0, "success": true, "event": "OpenAI API call", "timestamp": "2025-06-04T21:06:23.951078Z"}
+{"response_length": 189, "response_preview": "Parece que hubo un error al intentar agregar la fila en la hoja. Perm\u00edteme corregirlo e intentar nue...", "session_id": null, "event": "Agent response sent", "timestamp": "2025-06-04T21:06:24.841232Z"}
+{"total_processing_time": 3.493232011795044, "response_length": 189, "event": "Response generated successfully", "timestamp": "2025-06-04T21:06:24.841489Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 1.0761401653289795, "event": "Intent model call", "timestamp": "2025-06-04T21:06:58.642538Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 0.8144059181213379, "event": "Intent model call", "timestamp": "2025-06-04T21:06:59.457911Z"}
+{"intent": "other", "confidence": 0.9, "event": "Intent confidence", "timestamp": "2025-06-04T21:06:59.458416Z"}
+{"user_input_length": 123, "user_input_preview": "dale proba y fijate que donde diga \\n en realidad ...", "detected_intents": {"intents": [{"intent": "other", "value": "dale proba y fijate que donde diga \\n en realidad tiene que estar relleno con los campos que te pedi que agregues al sheets"}]}, "processing_time": 1.8921630382537842, "event": "Intent detection", "timestamp": "2025-06-04T21:06:59.458563Z"}
+{"event": "\ud83d\udd0d Intenciones detectadas: [('other', 'dale proba y fijate que donde diga \\\\n en realidad tiene que estar relleno con los campos que te pedi que agregues al sheets')]", "timestamp": "2025-06-04T21:06:59.458788Z"}
+{"user_input": "dale proba y fijate que donde diga \\n en realidad tiene que estar relleno con los campos que te pedi que agregues al sheets", "session_id": null, "event": "User input received", "timestamp": "2025-06-04T21:06:59.458930Z"}
+{"model": "gpt-4o-mini-agustin", "token_count": 0, "success": true, "event": "OpenAI API call", "timestamp": "2025-06-04T21:06:59.459038Z"}
+{"function": "google_sheets_add_rows", "args": {"spreadsheet_id": "1buxcqW3Ujg-YZLbUzBV4FoUFZyzPQIb3WmKDYno7gQA", "sheet": "pepe", "count": 1, "start_row": null}, "event": "Function call detected", "timestamp": "2025-06-04T21:07:02.027817Z"}
+{"server_name": "google_sheets", "tool_name": "add_rows", "arguments": {"spreadsheet_id": "1buxcqW3Ujg-YZLbUzBV4FoUFZyzPQIb3WmKDYno7gQA", "sheet": "pepe", "count": 1, "start_row": null}, "success": true, "response_size": 162, "execution_time": 0.5477280616760254, "event": "MCP tool call", "timestamp": "2025-06-04T21:07:02.576001Z"}
+{"function_name": "google_sheets_add_rows", "success": true, "execution_time": 0.5482029914855957, "event": "Function call", "timestamp": "2025-06-04T21:07:02.576399Z"}
+{"model": "gpt-4o-mini-agustin", "token_count": 0, "success": true, "event": "OpenAI API call", "timestamp": "2025-06-04T21:07:02.576566Z"}
+{"response_length": 190, "response_preview": "Parece que hubo un error al intentar agregar la fila en la hoja.  Voy a intentar nuevamente agregar ...", "session_id": null, "event": "Agent response sent", "timestamp": "2025-06-04T21:07:03.528013Z"}
+{"total_processing_time": 4.069499969482422, "response_length": 190, "event": "Response generated successfully", "timestamp": "2025-06-04T21:07:03.528432Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 1.301772117614746, "event": "Intent model call", "timestamp": "2025-06-04T21:07:44.435028Z"}
+{"model": "gpt-4o-mini-agustin", "success": true, "processing_time": 0.8029346466064453, "event": "Intent model call", "timestamp": "2025-06-04T21:07:45.240814Z"}
+{"intent": "other", "confidence": 0.9, "event": "Intent confidence", "timestamp": "2025-06-04T21:07:45.241262Z"}
+{"user_input_length": 4, "user_input_preview": "exir", "detected_intents": {"intents": [{"intent": "other", "value": "exir"}]}, "processing_time": 2.1083321571350098, "event": "Intent detection", "timestamp": "2025-06-04T21:07:45.241401Z"}
+{"event": "\ud83d\udd0d Intenciones detectadas: [('other', 'exir')]", "timestamp": "2025-06-04T21:07:45.241602Z"}
+{"user_input": "exir", "session_id": null, "event": "User input received", "timestamp": "2025-06-04T21:07:45.241728Z"}
+{"model": "gpt-4o-mini-agustin", "token_count": 0, "success": true, "event": "OpenAI API call", "timestamp": "2025-06-04T21:07:45.241836Z"}
+{"function": "google_sheets_add_rows", "args": {"spreadsheet_id": "1buxcqW3Ujg-YZLbUzBV4FoUFZyzPQIb3WmKDYno7gQA", "sheet": "pepe", "count": 1}, "event": "Function call detected", "timestamp": "2025-06-04T21:07:47.595892Z"}
+{"server_name": "google_sheets", "tool_name": "add_rows", "arguments": {"spreadsheet_id": "1buxcqW3Ujg-YZLbUzBV4FoUFZyzPQIb3WmKDYno7gQA", "sheet": "pepe", "count": 1}, "success": true, "response_size": 162, "execution_time": 0.8147380352020264, "event": "MCP tool call", "timestamp": "2025-06-04T21:07:48.411085Z"}
+{"function_name": "google_sheets_add_rows", "success": true, "execution_time": 0.8149700164794922, "event": "Function call", "timestamp": "2025-06-04T21:07:48.411269Z"}
+{"model": "gpt-4o-mini-agustin", "token_count": 0, "success": true, "event": "OpenAI API call", "timestamp": "2025-06-04T21:07:48.411366Z"}
+{"response_length": 157, "response_preview": "He agregado una fila en la hoja \"pepe\" del archivo \"EconomIAssist-tables\". Ahora proceder\u00e9 a actuali...", "session_id": null, "event": "Agent response sent", "timestamp": "2025-06-04T21:07:51.229160Z"}
+{"total_processing_time": 5.987920761108398, "response_length": 157, "event": "Response generated successfully", "timestamp": "2025-06-04T21:07:51.229674Z"}

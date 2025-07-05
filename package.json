@@ -1,0 +1,24 @@
+{
+  "name": "economiassist",
+  "version": "1.0.0",
+  "description": "**Asistente Financiero Personal con IA Conversacional**",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ManuelRamirezSilva/EconomIAssist.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ManuelRamirezSilva/EconomIAssist/issues"
+  },
+  "homepage": "https://github.com/ManuelRamirezSilva/EconomIAssist#readme"
+}
